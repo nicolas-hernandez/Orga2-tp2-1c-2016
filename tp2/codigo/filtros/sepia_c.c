@@ -21,10 +21,10 @@ void sepia_c    (
         {
             bgra_t *p_d = (bgra_t*) &dst_matrix[i][j * 4];
             bgra_t *p_s = (bgra_t*) &src_matrix[i][j * 4];
-            aux = p_s->r + p_s->g + p_s->b;
-			p_d->r = aux * 0.5;
-			p_d->g = aux * 0.3;
-			p_d->b = aux * 0.2;
+            aux = (int) p_s->r + (int) p_s->g + (int) p_s->b;
+			p_d->r = (aux * 0.5 > 255)? 255 : aux * 0.5;
+			p_d->g = (aux * 0.3 > 255)? 255 : aux * 0.3;
+			p_d->b = (aux * 0.2 > 255)? 255 : aux * 0.2;
 			p_d->a = p_s->a;
         }		
     }	
