@@ -1,0 +1,111 @@
+Todas las instrucciones x86
+
+http://x86.renejeschke.de/
+
+Para ver rapido los registros y sus tamaños:
+
+http://cs.lmu.edu/~ray/notes/nasmtutorial/
+
+Algunas instrucciones copadas de gdb:
+
+; todo el fichero de comandos en http://www.delorie.com/gnu/docs/gdb/
+
+1) Break point 
+
+break <nombre funcion>
+b <nombre funcion>
+b +offset ; desde donde estoy una cierta cantidad de lineas adelante
+b numline
+b filename:linenum
+b *address
+b ; siguiente instrucciones
+
+2) Correr:
+
+run o r
+
+3) Mostrar codigo c: Luego de seteado siempre que hagamos ni (nexti) o si(stepi) mostrara la linea que se esta ejecutando.
+
+list o l
+
+l linenum
+    Print lines centered around line number linenum in the current source file.
+
+l function
+    Print lines centered around the beginning of function function.
+
+l
+    Print more lines. If the last lines printed were printed with a list command, this prints lines following the last lines printed; however, if the last line printed was a solitary line printed as part of displaying a stack frame (see section Examining the Stack), this prints lines centered around that line.
+
+3) Ver layout: Muestra un cuadro con todas las instrucciones de asm. 
+
+layout asm
+
+Si quiero dividir la pantalla con codigo en asm por un lado y el codigo de c por el otro:
+
+layout split
+
+Si quiero el codigo de asm como en notacion intel
+
+set disassembly-flavor intel - if your prefer intel notation
+set print asm-demangle - demangles C++ names in assembly view
+
+4) Ver linea asm o c:
+ 
+display/i $pc
+
+5) Ver todos los registros o uno particular:
+
+info registers 
+info registers $registro
+
+6) Ver valor de una direccion: 
+
+x/nf dir  (lo piola es que dir puede ser una direccion relativa: x /1d $rdi+4*$rcx)
+x/nf $registro (si el registro tiene una address)
+
+Donde n es la cantidad de posiciones f el formato y dir la direccion. Puedo usar $registro si el registro contiene una direccion de memoria (registros de 64 en 64 bits o 32 en 32 bits)
+
+Formatos:
+
+b
+    Bytes. 
+h
+    Halfwords (two bytes). 
+w
+    Words (four bytes). This is the initial default. 
+g
+    Giant words (eight bytes). 
+
+7) Ver el contenido de una etiqueta o registro con print o p: 
+
+p /f etiqueta
+p /f $registro 
+
+Donde f es el formato 
+
+Formatos: 
+
+x
+    Regard the bits of the value as an integer, and print the integer in hexadecimal. 
+d
+    Print as integer in signed decimal. 
+u
+    Print as integer in unsigned decimal. 
+o
+    Print as integer in octal. 
+t
+    Print as integer in binary. The letter `t' stands for "two". (2) 
+a
+    Print as an address, both absolute in hexadecimal and as an offset from the nearest preceding symbol. You can use this format used to discover where (in what function) an unknown address is located:
+
+    (gdb) p/a 0x54320
+    $3 = 0x54320 <_initialize_vx+396>
+
+    The command info symbol 0x54320 yields similar results. See section Examining the Symbol Table. 
+c
+    Regard as an integer and print it as a character constant. 
+f
+    Regard the bits of the value as a floating point number and print using typical floating point syntax.
+    
+8) 
