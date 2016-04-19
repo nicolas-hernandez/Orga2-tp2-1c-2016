@@ -1,9 +1,9 @@
 section .data
 DEFAULT REL
 
-factores: DD  0.0, 0.5, 0.3, 0.2
-alfamasc: DB  0XFF, 0, 0, 0, 0XFF, 0, 0, 0, 0XFF, 0, 0, 0 , 0XFF, 0, 0, 0 
-
+factores: DD  0.2, 0.3, 0.5, 0.0 
+alfamasc: DB  0, 0, 0, 0XFF, 0, 0, 0, 0XFF, 0, 0, 0 , 0XFF, 0, 0, 0, 0XFF
+alfainv: DB 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0    
 section .text
 global sepia_asm
 sepia_asm:
@@ -14,11 +14,14 @@ sepia_asm:
 ;r8d int src_row_size
 ;r9d int dst_row_size
 
+;TODO: malentendi el orden de las componentes
+;B G R A
+
 ;Notacion
 ;px = pixel input 
 ;sumax = sumatoria de las componentes de px
 ;px' = pixel output deseado
-;El contenido de los registros XMM se muestra del 
+;El ontenido de los registros XMM se muestra del 
 ;	bit mas significativo al menos significativo
 
 
@@ -30,9 +33,10 @@ sepia_asm:
 	mov ecx, eax
 	sar ecx, 2; ecx/4 me muevo cuatro pixeles por iteracion
 	
-	movdqu xmm7, [alfamasc] ; XMM7 = | 00 | 00 | 00 | FF |...
 
 .ciclo:	
+
+	movdqu xmm7, [alfainv] ; XMM7 = | 00 | 00 | 00 | FF |...
 	pxor xmm6, xmm6	
 
 	movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
@@ -40,27 +44,31 @@ sepia_asm:
 	movdqu xmm5, xmm1; respaldo
 
 	;limpiar alfa?
-;	pandn xmm1, xmm7
-;	pandn xmm2, xmm7
+	pand xmm1, xmm7
+	pand xmm2, xmm7
 		
 		
 	punpcklbw xmm1, xmm6; XMM1 = | p1 | p0 | 
 	punpckhbw xmm2, xmm6; XMM2 = | p3 | p2 |
 	
-	phaddw xmm1, xmm1; XMM1 = |r1+g1|b1+a1|r1+g1|b1+a1|r0+g0|b0+a0|r0+g0|b0+a0|
-	phaddw xmm1, xmm1; XMM1 = |suma1|suma1|suma1|suma1|suma0|suma0|suma0|suma0|
-	phaddw xmm2, xmm2; idem con pixeles 2 y 3
-	phaddw xmm2, xmm2
-
-	; un unpack mas, multiplico de a un pixel
 	movdqu xmm3, xmm1
 	movdqu xmm4, xmm2
-	
-	
 	punpcklbw xmm1, xmm6; XMM1 = |suma0|suma0|suma0|suma0|
 	punpckhbw xmm3, xmm6; XMM3 = |suma1|suma1|suma1|suma1|
 	punpcklbw xmm2, xmm6; XMM2 = |suma2|suma2|suma2|suma2|
 	punpckhbw xmm4, xmm6; XMM4 = |suma3|suma3|suma3|suma3|
+	
+	phaddd xmm1, xmm1; XMM1 = |r1+a1|b1+g1|r1+a1|b1+g1|r0+a0|b0+g0|r0+a0|b0+g0|
+	phaddd xmm1, xmm1; XMM1 = |suma1|suma1|suma1|suma1|suma0|suma0|suma0|suma0|
+	phaddd xmm2, xmm2; idem con pixeles 2 y 3
+	phaddd xmm2, xmm2
+	phaddd xmm3, xmm3; idem con pixeles 2 y 3
+	phaddd xmm3, xmm3; idem con pixeles 2 y 3
+	phaddd xmm4, xmm4; idem con pixeles 2 y 3
+	phaddd xmm4, xmm4; idem con pixeles 2 y 3
+
+	; un unpack mas, multiplico de a un pixel
+
 	cvtdq2ps xmm1, xmm1;  suma0 asFloat
 	cvtdq2ps xmm2, xmm2;  suma2 asFloat
 	cvtdq2ps xmm3, xmm3;  suma1 asFloat
@@ -84,8 +92,9 @@ sepia_asm:
 	
 
 	;restaurar canal alfa
-;	pand xmm5, xmm7
-;	paddb xmm1, xmm5
+	movdqu xmm7, [alfamasc]
+	pand xmm5, xmm7
+	paddb xmm1, xmm5
 
 	;escribir a memoria
 	movdqu [rsi], xmm1
