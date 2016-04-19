@@ -1,5 +1,6 @@
 global cropflip_asm
-
+section .data
+%define MASK_INV 00011011
 section .text
 ;void cropflip_asm(unsigned char *src,
 ;                  unsigned char *dst,
@@ -23,6 +24,9 @@ cropflip_asm:
     push r13
     push r14
     push r15
+    
+    pxor xmm7,xmm7
+	
 	
 	;mov r14b, tamx     <--lo obtengo de la pila
 	;mov cx, r14d
@@ -34,14 +38,12 @@ cropflip_asm:
 	;shr rcx, 2        <--obtengo de a 4 pixeles
 .ciclo:
     movdqu xmm1, [r15] ;p0|p1|p2|p3
-    ;*******
-    ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
-    ;*******
+    pshufd xmm7, xmm1,  MASK_INV ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
     
-    mov r12, [rsi + r12b*r13b - 16]  ;<-- pushea r12
-    ;*******
-    movdqu [r12], xmm1;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
-    ;*******
+    mov r12, [rsi + r12b*r13b - 16]
+    
+    movdqu [r12], xmm1 ;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
+    
     sub r12, 16 ;bajo la pos de la fila para guardar en dst
     add r15, 16 ;adelanto a los proximos 4 pixeles
     loop .ciclo
