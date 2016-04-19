@@ -16,23 +16,35 @@ section .text
 ;r9 = dst_row_size
 cropflip_asm:
     push rbp
-	mov rbp, rsp
+    mov rbp, rsp
 	
+	;mov r14d, tamx     <--lo obtengo de la pila
+	;mov eax, r14d
+	;mov r12d, eax
+	;mov r13d, tamy    <--lo obtengo de la pila
+	;mov r10, offsety  <--lo obtengo de la pila
 	;mov rbx, offsetx  <--lo obtengo de la pila
-	;mov eax, tamx     <--lo obtengo de la pila
-	;shr rcx, 2
-	;mov r10, *vector <--- libero memoria y eso/esto es un bardo despues veo una mejor forma(tal vez copiando en dst directamente)
-	;mov r11, r10
+	;mov r15, rbx
+	;shr rcx, 2        <--obtengo de a 4 pixeles
 .ciclo:
-    movups xmm1, [rdi + rbx]
-    movups [r11],xmm1
-	add rbx, 16    
-	loop .ciclo
-	
-	mov rbx, rsi; + offsetx*offsety
-.ciclo2:
-    mov r11,
-    mov rbx,
-	
-	pop rbp
+    movups xmm1, [rdi + r15] ;p0|p1|p2|p3
+    ;*******
+    ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
+    ;*******
+    
+    mov r12, [rsi + r12d*r13d - 16]  ;<-- pushea r12
+    ;*******
+    ;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
+    ;*******
+    sub r12, 16 ;bajo la pos de la fila para guardar en dst
+    add r15, 16 ;adelanto a los proximos 4 pixeles
+    loop .ciclo
+    
+    
+    mov r12, r14 ;reseteo la pos de la fila
+    sub r13, 16	 ;descuento una fila
+    jge [rdi + r13], r10  ;
+    
+
+    pop rbp
     ret
