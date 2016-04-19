@@ -15,6 +15,10 @@ section .text
 ;rcx = filas
 ;r8 = src_row_size
 ;r9 = dst_row_size
+;[rsp-4*8] = tamx
+;[rsp-3*8] = tamy
+;[rsp-2*8] = offsetx
+;[rsp-1*8] = offsety
 cropflip_asm:
     push rbp
     mov rbp, rsp
@@ -26,16 +30,17 @@ cropflip_asm:
     push r15
     
     pxor xmm7,xmm7
-	
-	
-	;mov r14b, tamx     <--lo obtengo de la pila
-	;mov cx, r14d
-	;mov r12, cx
-	;mov r13b, tamy    <--lo obtengo de la pila
-	;mov r10, [rdi + offsety * 4]  <--lo obtengo de la pila
-	;mov rbx, [rdi + offsetx * 4]  <--lo obtengo de la pila
-	;mov r15, rbx
-	;shr rcx, 2        <--obtengo de a 4 pixeles
+    mov r14b, [rsp - 4*8]	; mov r14b, tamx
+    mov cx, r14
+    mov r12, cx
+    mov r13b, [rsp - 3*8]	; mov r13b, tamy
+    mov bl, [rsp - 2*8] 	; mov rbx, offsetx
+    mov rbx, [rdi + bl * 4]	; pos x desde donde tengo q copiar
+    mov r10b, [rsp - 1*8]	; mov r10, offsety
+    mov r10, [rdi + r10b * 4] 
+    mov r15, rbx
+    shr rcx, 2        		; obtengo de a 4 pixeles
+    
 .ciclo:
     movdqu xmm1, [r15] ;p0|p1|p2|p3
     pshufd xmm7, xmm1,  MASK_INV ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
