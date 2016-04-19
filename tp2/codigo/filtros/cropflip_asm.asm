@@ -47,7 +47,8 @@ cropflip_asm:
     loop .ciclo
     
     
-    mov r12, r14 ;reseteo la pos de la fila
+    mov r12d, r14 ;reseteo la pos de la fila
+    mov eax, r14
     sub r13, 16	 ;descuento una fila
     jge [rdi + r13], r10  ;
     
