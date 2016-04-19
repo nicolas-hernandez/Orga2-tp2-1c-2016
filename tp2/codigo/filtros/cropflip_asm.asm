@@ -33,14 +33,14 @@ cropflip_asm:
 	;mov r15, rbx
 	;shr rcx, 2        <--obtengo de a 4 pixeles
 .ciclo:
-    movups xmm1, [rdi + r15] ;p0|p1|p2|p3
+    movdqu xmm1, [rdi + r15] ;p0|p1|p2|p3
     ;*******
     ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
     ;*******
     
     mov r12, [rsi + r12d*r13d - 16]  ;<-- pushea r12
     ;*******
-    ;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
+    movdqu [r12], xmm1;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
     ;*******
     sub r12, 16 ;bajo la pos de la fila para guardar en dst
     add r15, 16 ;adelanto a los proximos 4 pixeles
