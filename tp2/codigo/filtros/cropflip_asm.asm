@@ -17,6 +17,12 @@ section .text
 cropflip_asm:
     push rbp
     mov rbp, rsp
+    sub rsp, 8
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
 	
 	;mov r14d, tamx     <--lo obtengo de la pila
 	;mov eax, r14d
@@ -45,6 +51,11 @@ cropflip_asm:
     sub r13, 16	 ;descuento una fila
     jge [rdi + r13], r10  ;
     
-
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    add rsp, 8
     pop rbp
     ret
