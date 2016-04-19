@@ -30,16 +30,16 @@ cropflip_asm:
     push r15
     
     pxor xmm7,xmm7
-    mov r14b, [rsp - 4*8]	; mov r14b, tamx
+    mov r14b, [rsp - 4*8]	; mov r14b, tamx (cuantos pixeles en x me piden)
     mov cx, r14
     mov r12, cx
-    mov r13b, [rsp - 3*8]	; mov r13b, tamy
+    mov r13b, [rsp - 3*8]	; mov r13b, tamy (cuantos pixeles en y me piden)
     mov bl, [rsp - 2*8] 	; mov rbx, offsetx
-    mov rbx, [rdi + bl * 4]	; pos x desde donde tengo q copiar
+    mov rbx, [rdi + bl * 4]	; Pos de memoria de x desde donde tengo q copiar
     mov r10b, [rsp - 1*8]	; mov r10, offsety
-    mov r10, [rdi + r10b * 4] 
-    mov r15, rbx
-    shr rcx, 2        		; obtengo de a 4 pixeles
+    mov r10, [rdi + r10b * 4];Pos de memoria de y desde donde tengo q copiar 
+    mov r15, rbx            ; Lo copio en r15 para no perderlo
+    shr rcx, 2        		; Obtengo de a 4 pixeles
     
 .ciclo:
     movdqu xmm1, [r15] ;p0|p1|p2|p3
