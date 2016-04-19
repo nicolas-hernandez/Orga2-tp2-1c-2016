@@ -28,8 +28,8 @@ cropflip_asm:
 	;mov eax, r14d
 	;mov r12d, eax
 	;mov r13d, tamy    <--lo obtengo de la pila
-	;mov r10, [rdi + offsety]  <--lo obtengo de la pila
-	;mov rbx, [rdi + offsetx]  <--lo obtengo de la pila
+	;mov r10, [rdi + offsety * 4]  <--lo obtengo de la pila
+	;mov rbx, [rdi + offsetx * 4]  <--lo obtengo de la pila
 	;mov r15, rbx
 	;shr rcx, 2        <--obtengo de a 4 pixeles
 .ciclo:
