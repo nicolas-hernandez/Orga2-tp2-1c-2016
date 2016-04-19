@@ -24,21 +24,21 @@ cropflip_asm:
     push r14
     push r15
 	
-	;mov r14d, tamx     <--lo obtengo de la pila
-	;mov eax, r14d
-	;mov r12d, eax
-	;mov r13d, tamy    <--lo obtengo de la pila
+	;mov r14b, tamx     <--lo obtengo de la pila
+	;mov cx, r14d
+	;mov r12, cx
+	;mov r13b, tamy    <--lo obtengo de la pila
 	;mov r10, [rdi + offsety * 4]  <--lo obtengo de la pila
 	;mov rbx, [rdi + offsetx * 4]  <--lo obtengo de la pila
 	;mov r15, rbx
 	;shr rcx, 2        <--obtengo de a 4 pixeles
 .ciclo:
-    movdqu xmm1, [rdi + r15] ;p0|p1|p2|p3
+    movdqu xmm1, [r15] ;p0|p1|p2|p3
     ;*******
     ;lo doy vuelta (shuffle) ;p3|p2|p1|p0
     ;*******
     
-    mov r12, [rsi + r12d*r13d - 16]  ;<-- pushea r12
+    mov r12, [rsi + r12b*r13b - 16]  ;<-- pushea r12
     ;*******
     movdqu [r12], xmm1;copio en la matriz en la pos r12 los pixeles de xmm1 directamente
     ;*******
@@ -48,7 +48,8 @@ cropflip_asm:
     
     
     mov r12d, r14 ;reseteo la pos de la fila
-    mov eax, r14
+    mov cx, r14
+    shr rcx, 2
     sub r13, 16	 ;descuento una fila
     jge [rdi + r13], r10  ;
     
