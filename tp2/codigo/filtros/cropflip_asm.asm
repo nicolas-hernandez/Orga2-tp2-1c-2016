@@ -11,10 +11,10 @@ section .text
 ;                  int offsetx, int offsety);
 ;rdi = *src
 ;rsi = *dst
-;rdx = cols
-;rcx = filas
-;r8 = src_row_size
-;r9 = dst_row_size
+;edx = cols
+;ecx = filas
+;r8d = src_row_size
+;r9d = dst_row_size
 ;[rsp-4*8] = tamx
 ;[rsp-3*8] = tamy
 ;[rsp-2*8] = offsetx
@@ -31,14 +31,19 @@ cropflip_asm:
     
     pxor xmm7,xmm7
     mov r14b, [rsp - 4*8]	; mov r14b, tamx (cuantos pixeles en x me piden)
-    mov cx, r14
-    mov r12, cx
+    
     mov r13b, [rsp - 3*8]	; mov r13b, tamy (cuantos pixeles en y me piden)
+
     mov bl, [rsp - 2*8] 	; mov rbx, offsetx
-    mov rbx, [rdi + bl * 4]	; Pos de memoria de x desde donde tengo q copiar
+    lea rbx, [rdi + bl * 4]	; Pos de memoria de x desde donde tengo q copiar
+
     mov r10b, [rsp - 1*8]	; mov r10, offsety
-    mov r10, [rdi + r10b * 4];Pos de memoria de y desde donde tengo q copiar 
-    mov r15, rbx            ; Lo copio en r15 para no perderlo
+    lea rbx, [rbx + r10b * r8d]	; Pos de memoria de y desde donde tengo q copiar
+ 
+    mov r15, rbx            	; Copio rbx en r15 para no perderlo
+
+    mov cx, r14			    ; Guardo en cx la cantidad de pixeles a copiar 
+    mov r12, cx 	
     shr rcx, 2        		; Obtengo de a 4 pixeles
     
 .ciclo:
