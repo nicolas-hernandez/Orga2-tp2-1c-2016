@@ -15,10 +15,10 @@ section .text
 ;ecx = filas
 ;r8d = src_row_size
 ;r9d = dst_row_size
-;[rsp-4*4] = tamx
-;[rsp-3*4] = tamy
-;[rsp-2*4] = offsetx
-;[rsp-1*4] = offsety
+;[rsp+4*4] = tamx
+;[rsp+3*4] = tamy
+;[rsp+2*4] = offsetx
+;[rsp+1*4] = offsety
 cropflip_asm:
     push rbp
     mov rbp, rsp
@@ -36,17 +36,17 @@ cropflip_asm:
     xor r10, r10
     xor rcx, rcx
    
-    mov r14d, [rsp - 4*4]	; mov r14b, tamx (cuantos pixeles en x me piden)
+    mov r14d, [rsp + 4*4]	; mov r14b, tamx (cuantos pixeles en x me piden)
     mov rax, r14
     mul 4
     mov r9, eax             ; Es lo q devuelvo(ancho de fila en bytes)    
     
-    mov r13d, [rsp - 3*4]	; mov r13b, tamy (cuantos pixeles en y me piden)
+    mov r13d, [rsp + 3*4]	; mov r13b, tamy (cuantos pixeles en y me piden)
 
-    mov ebx, [rsp - 2*4] 	; mov rbx, offsetx
+    mov ebx, [rsp + 2*4] 	; mov rbx, offsetx
     lea rbx, [rdi + ebx * 4]	; Pos de memoria de x desde donde tengo q copiar
 
-    mov r10d, [rsp - 1*4]	; mov r10, offsety
+    mov r10d, [rsp + 1*4]	; mov r10, offsety
     lea rbx, [rbx + r10d * r8d]	; Pos de memoria (x,y) desde donde tengo q copiar
  
     mov r15, rbx            	; Copio rbx en r15 para no perderlo
