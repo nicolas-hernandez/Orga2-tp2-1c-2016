@@ -8,8 +8,6 @@ CFLAGS   = $(CFLAGS64)
 BUILD_DIR = build
 BIN = tp2
 
-
-
 FILTROS = cropflip sepia ldr
 
 FILTROS_OBJ = $(addsuffix .o, $(FILTROS)) $(addsuffix _asm.o, $(FILTROS)) $(addsuffix _c.o, $(FILTROS))
@@ -38,5 +36,7 @@ $(BUILD_DIR)/%.o: %.c
 
 clean:
 	rm -fr $(BUILD_DIR)/*
+
+
 
 

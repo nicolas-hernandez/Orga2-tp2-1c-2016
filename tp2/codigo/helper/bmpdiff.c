@@ -214,7 +214,7 @@ int main(int argc, char* argv[]){
     }
 
     // (9) retorno error si encontre una diferencia
-    for (i = opt.epsilon; i < 256; i++) {
+    for (i = opt.epsilon+1; i < 256; i++) {
         if (opt.summary[i] > 0) {
             return -1;
         }
@@ -240,20 +240,22 @@ uint8_t cmp(uint8_t a, uint8_t b, int c, int r, char* channel, options* opt) {
 void print_help(char* name) {
     printf ( "Uso: %s <opciones> <archivo_1> <archivo_2> <epsilon>\n", name );
     printf ( "Ejemplo de uso:\n" );
-    printf ( "    %s lena_a.bmp lena_b.bmp 5\n", name );
+    printf ( "    %s -i -a lena_a.bmp lena_b.bmp 5\n", name );
     printf ( "\n" );
     printf ( "    Verifica pixel a pixel que la diferencia entre lena_a.bmp y  \n" );
-    printf ( "    lena_b.bmp no supere el valor 5. Genera una imágen por canal \n" );
+    printf ( "    lena_b.bmp no supere el valor 5. Con -i genera una imágen por canal \n" );
     printf ( "    a partir de las diferencias. Coloca un pixel blanco donde    \n" );
     printf ( "    haya diferencias y uno negro donde no. Si se usa -a entonces \n" );
     printf ( "    indica en gris el valor de la diferencia, donde negro es sin \n" );
     printf ( "    diferencias y blanco es diferencia en 1.\n" );
     printf ( "\n" );
     printf ( "    -h, --help       Imprime esta ayuda\n" );
-    printf ( "    -a, --value      Valor de la diferencia en la imagen\n" );
+    printf ( "    -a, --value      En vez de marcar en blanco sobre negro las diferencias,\n"
+	         "                     lo hace en escala de grises\n" );
     printf ( "    -v, --verbose    Ejecuta en verbose mostrando las diferencias\n" );
     printf ( "    -s, --summary    Muestra un resumen de diferencias\n" );
-    printf ( "    -i, --image      Genera Imagenes de diferencias\n" );
+    printf ( "    -i, --image      Genera una imagen de diferencias por cada canal\n"
+	         "                     en el directorio destino\n" );
 }
 
 int read_options(int argc, char* argv[], options* opt) {
