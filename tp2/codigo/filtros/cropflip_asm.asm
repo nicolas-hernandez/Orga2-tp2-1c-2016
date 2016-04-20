@@ -63,7 +63,7 @@ cropflip_asm:
     mov cx, r14
     shr rcx, 2
     sub r13, 16	 ;descuento una fila
-    cmp [rdi + r13], r10  ;
+    cmp [rdi + r13], rbx  ;
     jge .ciclo
     
     pop r15
