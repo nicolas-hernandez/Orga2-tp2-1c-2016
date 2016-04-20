@@ -108,6 +108,7 @@ ldr_asm:
 .terminar:
 
 .salir:
+	add rsp, 8
 	pop r15
 	pop r14
 	pop r13
