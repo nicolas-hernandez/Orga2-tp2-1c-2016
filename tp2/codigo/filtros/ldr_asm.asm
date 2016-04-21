@@ -271,6 +271,16 @@ ldr_asm:
 	jl .cincoEnParalelo
 
 ; xmm14  0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+
+; por cada pixel valido  en xmm14 procedo a calcular la formula:
+; primero calculo suma(r+g+b)*Lij como un producto no signado en float (b->w->dw->pf).
+; Luego multiplico por el alpha extendido a float como un producto signado. 
+; Luego realizo la division por MAX como una division signada en float
+; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
+
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+
 	pxor xmm15, xmm15
 	movdqu xmm15, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	pxor xmm13, xmm13
@@ -287,16 +297,8 @@ ldr_asm:
 	pxor xmm1, xmm1
 	punpcklbw xmm0, xmm1 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	punpcklwd xmm0, xmm0 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	cvtdq2ps xmm0, xmm0 ; cast to float
 
-; por cada pixel valido  en xmm14 procedo a calcular la formula:
-; primero calculo suma(r+g+b)*Lij como un producto no signado en float (b->w->dw->pf).
-; Luego multiplico por el alpha extendido a float como un producto signado. 
-; Luego realizo la division por MAX como una division signada en float
-; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
-
-	cmp r9, r15
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-	; procesar sumargb_i,j
 	inc r9
 	inc r8
 	cmp r9, r15
