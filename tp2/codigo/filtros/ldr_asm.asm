@@ -3,7 +3,6 @@ global ldr_asm
 section .data
 DEFAULT REL
 
-%define MAX 4876875
 %define WHITE 255
 %define BLACK 0
 
@@ -11,9 +10,10 @@ DEFAULT REL
 ; En registros: ARGB
 
 ; a3|r3|g3|b3|a2|r2|g2|b2|a1|r1|g1|b1|a0|r0|g0|b0 -> a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
-juntarCanalesAlpha: DB 0x00, 0x01, 0x02, 0x0C, 0x03, 0x04, 0x05, 0x0D, 0x06, 0x07, 0x08, 0x0E, 0x09, 0x0A, 0x0B, 0x0F 
-limpiarCanalesAlpha: DB 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
-salvarUnPixelShifteable: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
+juntarCanalesAlpha: db 0x00, 0x01, 0x02, 0x0C, 0x03, 0x04, 0x05, 0x0D, 0x06, 0x07, 0x08, 0x0E, 0x09, 0x0A, 0x0B, 0x0F 
+limpiarCanalesAlpha: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
+salvarUnPixelShifteable: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
+maxValue: dd 0x004A6A4B ; check this 4876875
 
 section .text
 ;void ldr_asm    (
@@ -278,7 +278,7 @@ ldr_asm:
 
 	pxor xmm15, xmm15
 	movdqu xmm15, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
-	pxor xmm13, xmm13
+	pxor xmm12, xmm12
 	psrldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF
 	pand xmm15, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
 	pxor xmm12, xmm12
@@ -292,7 +292,7 @@ ldr_asm:
 	punpcklwd xmm12, xmm0 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	cvtdq2ps xmm12, xmm12 ; cast to float!
 	pxor xmm1, xmm1
-	movd xmm1, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
+	movd xmm1, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj <- get pixel ij
 	pxor xmm2, xmm2
 	movdqu xmm2, xmm1 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
 	movdqu xmm8, [salvarUnPixelShifteable] ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
@@ -301,16 +301,39 @@ ldr_asm:
 	punpcklbw xmm2, xmm0 ; 0|0|0|0|0|rj|gj|bj
 	punpcklwd xmm2, xmm2 ; 0|rj|gj|bj
 	cvtdq2ps xmm2, xmm2 ; cast to float!
-	mulps xmm12, xmm2 ; 0|0|0|0|0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
+	mulps xmm12, xmm2 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
 	pxor xmm3, xmm3
-	movd xmm3, [rsp + 56] ; 0|0|0|0|0|0|0|alpha
-	cvtdq2ps xmm3, xmm3 ; cast to float!
+	movd xmm3, [rsp + 56] ; 0|0|0|alpha
+	cvtsi2ss xmm3, xmm3 ; cast to float!
 	pxor xmm4, xmm4
-	movdqu xmm4, xmm3 ; 0|0|0|0|0|0|0|alpha
-	pslldq xmm4, 1 ; 0|0|0|0|0|0|alpha|0
-	por xmm4, xmm3 ; 0|0|0|0|0|0|alpha|alpha
-	pslldq xmm4, 1 ; 0|0|0|0|0|alpha|alpha|0
-	por xmm4, xmm3 ; 0|0|0|0|0|alpha|alpha|alpha
+	movdqu xmm4, xmm3 ; 0|0|0|alpha
+	pslldq xmm4, 1 ; 0|0|alpha|0
+	por xmm4, xmm3 ; 0|0|alpha|alpha
+	pslldq xmm4, 1 ; 0|alpha|alpha|0
+	por xmm4, xmm3 ; 0|alpha|alpha|alpha
+	mulps xmm12, xmm4 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
+	pxor xmm5, xmm5
+	movd xmm5, [maxValue] ; 0|0|0|max
+	cvtsi2ss xmm5, xmm5 ; cast to float!
+	pxor xmm0, xmm0 
+	movdqu xmm0, xmm5 ; 0|0|0|max
+	pslldq xmm5, 1 ; 0|0|max|0
+	por xmm5, xmm0 ; 0|0|max|max
+	pslldq xmm5, 1 ; 0|max|max|0
+	por xmm5, xmm0 ; 0|max|max|max
+	divps xmm12, xmm0 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
+	addps xmm12, xmm2 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	
+	/*Converts four or eight packed single-precision floating-point values in the source operand to four or eight signed
+	doubleword integers in the destination operand.
+	When a conversion is inexact, a truncated (round toward zero) value is returned. If a converted result is larger than
+	the maximum signed doubleword integer, the floating-point invalid exception is raised, and if this exception is
+	masked, the indefinite integer value (80000000H) is returned.*/
+	
+	cvttps2dq xmm12, xmm12 ; cast to dw signed 
+	pxor xmm13, xmm13
+	packusdw xmm12, xmm13 ; 0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	packuswb xmm12, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
 
 	inc r9
 	inc r8
