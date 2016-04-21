@@ -88,10 +88,10 @@ ldr_asm:
 	shl r8, 1 ; i = 2 - j = 0
 
 ; devolver la ante-ultima fila tal cual esta. Desde rcx-r8*2 <- paso anterior
-    
-    movdqu xmm6, [juntarCanalesAlpha]
-    movdqu xmm7, [limpiarCanalesAlpha]
-    movdqu xmm8, [salvarUnPixelShifteable]
+
+	movdqu xmm6, [juntarCanalesAlpha]
+	movdqu xmm7, [limpiarCanalesAlpha]
+	movdqu xmm8, [salvarUnPixelShifteable]
 
 .ciclo: ; while(r8 < rcx) == (actual < total) 
 ; if(j < colsToProccess)
@@ -105,6 +105,8 @@ ldr_asm:
 	sub r14, r12
 	sub r14, r12 ; posicion actual - dos filas
 	xor r10, r10 ; cuento hasta 5
+
+	pxor xmm14, xmm14 ; acumulo la suma de los cuadrados de 5 pixeles.
 .cincoEnParalelo: ; Puedo procesar 5 pixeles en paralelo - los pixeles que estan en columnas mayores a colsToProccess no se tendran en cuenta.
 	; me corro -2 posiciones
 	mov r13, r14
@@ -261,10 +263,18 @@ ldr_asm:
 	pslldq xmm13, 1 ; 0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)|0
 	por xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)|suma(00+0r0+0g0+0b0)
 
+	paddusb xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|suma_hasta_r10(00+0r4+0g4+0b4)|suma_hasta_r10(00+0r3+0g3+0b3)|suma_hasta_r10(00+0r2+0g2+0b2)|suma_hasta_r10(00+0r1+0g1+0b1)|suma_hasta_r10(00+0r0+0g0+0b0)
+
 	add r13, r12
 	inc r10
 	cmp r10, 5
 	jl .cincoEnParalelo
+
+; por cada pixel valido  en xmm14 procedo a calcular la formula:
+; primero calculo suma(r+g+b)*Lij como un producto no signado en float (b->w->dw->pf).
+; Luego multiplico por el alpha extendido a float como un producto signado. 
+; Luego realizo la division por MAX como una division signada en float
+; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
 
 .sinFormula:
 ; Tengo que devolver las columnas:
