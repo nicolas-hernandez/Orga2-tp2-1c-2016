@@ -10,9 +10,10 @@ DEFAULT REL
 ; En memoria: BGRA
 ; En registros: ARGB
 
-juntarCanalesAlpha: DB 0x04, 0x05, 0x06, 0x00, 0x07, 0x08, 0x09, 0x01, 0x0A, 0x0B, 0x0C, 0x02, 0x0D, 0x0E, 0x0F, 0x03 
-limpiarCanalesAlpha: DB 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-limpiarCanalAlphaScalar: DB 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+; a3|r3|g3|b3|a2|r2|g2|b2|a1|r1|g1|b1|a0|r0|g0|b0 -> a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
+juntarCanalesAlpha: DB 0x00, 0x01, 0x02, 0x0C, 0x03, 0x04, 0x05, 0x0D, 0x06, 0x07, 0x08, 0x0E, 0x09, 0x0A, 0x0B, 0x0F 
+limpiarCanalesAlpha: DB 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
+salvarUnPixelShifteable: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
 
 section .text
 ;void ldr_asm    (
@@ -90,7 +91,7 @@ ldr_asm:
     
     movdqu xmm6, [juntarCanalesAlpha]
     movdqu xmm7, [limpiarCanalesAlpha]
-    movdqu xmm8, [limpiarCanalAlphaScalar]
+    movdqu xmm8, [salvarUnPixelShifteable]
 
 .ciclo: ; while(r8 < rcx) == (actual < total) 
 ; if(j < colsToProccess)
@@ -105,75 +106,83 @@ ldr_asm:
 	sub r14, r12 ; posicion actual - dos filas
 	xor r10, r10 ; cuento hasta 5
 .cincoEnParalelo: ; Puedo procesar 5 pixeles en paralelo - los pixeles que estan en columnas mayores a colsToProccess no se tendran en cuenta.
-    ; me corro -2 posiciones
-    mov r13, r14
-    sub r13, 2
-    
-    ;              32  16   8   4   0
-    ; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
+	; me corro -2 posiciones
+	mov r13, r14
+	sub r13, 2
+	
+	;              16  12   8   4   0
+	; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
 
 	movdqu xmm0, [rdi + r13*4] ; Li3|Li2|Li1|Li0
-	pshufb xmm0, xmm6 ; r|g|b|r|g|b|r|g|b|r|g|b|a|a|a|a
-	pand xmm0, xmm7 ; r|g|b|r|g|b|r|g|b|r|g|b|0|0|0|0
+	pshufb xmm0, xmm6 ; a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
+	pand xmm0, xmm7 ; 0|0|0|0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
 	
 	movdqu xmm1, [rdi + r13*4 + 4] ; Li4|Li3|Li2|Li1
-    pshufb xmm1, xmm6 ; r|g|b|r|g|b|r|g|b|r|g|b|a|a|a|a
-	pand xmm1, xmm7 ; r|g|b|r|g|b|r|g|b|r|g|b|0|0|0|0
+	pshufb xmm1, xmm6 ; a4|a3|a2|a1|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
+	pand xmm1, xmm7 ; 0|0|0|0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm1
-	psrldq xmm9, 3 ; 0|0|0|r|g|b|r|g|b|r|g|b|r|g|b|0
-	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
-    por xmm0, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
-	
-	movdqu xmm2, [rdi + r13*4 + 8] ; Li5|Li4|Li3|Li2
-	pshufb xmm2, xmm6 ; r|g|b|r|g|b|r|g|b|r|g|b|r|a|a|a
-	pand xmm2, xmm7 ; r|g|b|r|g|b|r|g|b|r|g|b|r|0|0|0
+	pslldq xmm9, 3 ; 0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1|0|0|0
+	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
+	por xmm0, xmm9 ; 0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
 
+	movdqu xmm2, [rdi + r13*4 + 8] ; Li5|Li4|Li3|Li2
+	pshufb xmm2, xmm6 ; a5|a4|a3|a2|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
+	pand xmm2, xmm7 ; 0|0|0|0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
+	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm2
-	psrldq xmm9, 3 ; 0|0|0|r|g|b|r|g|b|r|g|b|r|g|b|0
-	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
-    por xmm1, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
-	
-	movdqu xmm3, [rdi + r13*4 + 16] ; Li6|Li5|Li4|Li3
-	pshufb xmm3, xmm6 ; r|g|b|r|g|b|r|g|b|r|g|b|r|a|a|a
-	pand xmm3, xmm7 ; r|g|b|r|g|b|r|g|b|r|g|b|r|0|0|0
+	pslldq xmm9, 3 ; 0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2|0|0|0
+	pand xmm9, xmm8 ; 0|r5|g5|b5|0|0|0|0|0|0|0|0|0|0|0|0
+	por xmm1, xmm9 ; 0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 
+	movdqu xmm3, [rdi + r13*4 + 12] ; Li6|Li5|Li4|Li3
+	pshufb xmm3, xmm6 ; a6|a5|a4|a3|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
+	pand xmm3, xmm7 ; 0|0|0|0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
+	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm3
-	psrldq xmm9, 3 ; 0|0|0|r|g|b|r|g|b|r|g|b|r|g|b|0
-	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
-    por xmm2, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
+	pslldq xmm9, 3 ; 0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3|0|0|0
+	pand xmm9, xmm8 ; 0|r6|g6|b6|0|0|0|0|0|0|0|0|0|0|0|0
+	por xmm2, xmm9 ; 0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
+
+	movdqu xmm4, [rdi + r13*4 + 16] ; Li7|Li6|Li5|Li4
+	pshufb xmm4, xmm6 ; a7|a6|a5|a4|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
+	pand xmm4, xmm7 ; 0|0|0|0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
 	
-	movdqu xmm4, [rdi + r13*4 + 32] ; Li7|Li6|Li5|Li4
-	pshufb xmm4, xmm6 ; r|g|b|r|g|b|r|g|b|r|g|b|r|a|a|a
-	pand xmm4, xmm7 ; r|g|b|r|g|b|r|g|b|r|g|b|r|0|0|0
-	
-    pxor xmm9, xmm9
+	pxor xmm9, xmm9
 	movdqu xmm9, xmm4
-	psrldq xmm9, 3 ; 0|0|0|r|g|b|r|g|b|r|g|b|r|g|b|0
-	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
-    por xmm3, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
-    
-    pxor xmm9, xmm9
-    movd xmm9, [rdi + r13*4 + 64] ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|a
-	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
-    por xmm4, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
-    
-    ; realizar suma vertical de bytes saturada PADDUSB y acumular en xmm10, luego usar mascara para limpiar de a pixel 
-    ; y unpackear de bytes a words, sumar y luego saturar a byte. almacenar cada suma en otro temporal xmm
-    ; primer pixel
-    ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
-    ; mascara: xmm8
-    ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
+	pslldq xmm9, 3 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|0|0|0
+	pand xmm9, xmm8 ; 0|r7|g7|b7|0|0|0|0|0|0|0|0|0|0|0|0
+	por xmm3, xmm9 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
+
+	pxor xmm9, xmm9
+	movd xmm9, [rdi + r13*4 + 20] ; 0|0|0|0|0|0|0|0|0|0|0|0|a8|r8|g8|b8
+	pslldq xmm9, 12 ; a8|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
+	pand xmm9, xmm8 ; 0|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
+	por xmm4, xmm9 ; 0|r8|g8|b8|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
+
+	; realizar suma vertical de bytes saturada PADDUSB y acumular en xmm10, luego usar mascara para limpiar de a pixel 
+	pxor xmm10, xmm10
+	paddusb xmm10, xmm0
+	paddusb xmm10, xmm1
+	paddusb xmm10, xmm2
+	paddusb xmm10, xmm3
+	paddusb xmm10, xmm4 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+
+	; y unpackear de bytes a words, sumar y luego saturar a byte. almacenar cada suma en otro temporal xmm
+	; primer pixel
+	; 0|r|g|b|r|g|b|r|g|b|r|g|b|r|g|b
+	; mascara: xmm8 shifteada
+	; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
 	; unpack a word punpcklbw
-	; 00|00|00|00|0r|0g|0b|00
+	; 00|00|00|00|00|0r|0g|0b
 	; PHADDW como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
-	; 00+00|00+00|00+00|00+00|00+00|00+00|0r+0g|0b+00
+	; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; PHADDW es en el peor caso 1020 < 32,767
-	; 00+00|00+00|00+00|00+00|00+00|00+00|0r+00|0r+0g+0b+00
+	; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
 	; luego packear saturado con PACKUSWB
 	; repetir para los otros pixeles shifteando la mascara a la izquierda
 	
@@ -186,7 +195,7 @@ ldr_asm:
 ; Tengo que devolver las columnas:
 ; colsToProccess, colsToProccess+1 && edx==1?colsToProccess+2
 
-    inc r8
+	inc r8
 	cmp r8, rcx
 	jne .ciclo
 
