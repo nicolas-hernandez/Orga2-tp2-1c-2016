@@ -94,9 +94,9 @@ ldr_asm:
 	movdqu xmm8, [salvarUnPixelShifteable]
 
 .ciclo: ; while(r8 < rcx) == (actual < total) 
-; if(j < colsToProccess)
-	cmp r9, r15
-	jge .sinFormula ; mayor igual a colsToProccess
+; if(j > 1)
+	cmp r9, 2
+	jl .menorAColDos
 	; estoy en rango.
 	mov r12, r15
 	add r12, 2
@@ -112,7 +112,7 @@ ldr_asm:
 	mov r13, r14
 	sub r13, 2
 	
-	;              16  12   8   4   0
+	;          20  16  12   8   4   0
 	; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
 
 	movdqu xmm0, [rdi + r13*4] ; Li3|Li2|Li1|Li0
@@ -270,20 +270,54 @@ ldr_asm:
 	cmp r10, 5
 	jl .cincoEnParalelo
 
+; xmm14  0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+
 ; por cada pixel valido  en xmm14 procedo a calcular la formula:
 ; primero calculo suma(r+g+b)*Lij como un producto no signado en float (b->w->dw->pf).
 ; Luego multiplico por el alpha extendido a float como un producto signado. 
 ; Luego realizo la division por MAX como una division signada en float
 ; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
 
-.sinFormula:
-; Tengo que devolver las columnas:
-; colsToProccess, colsToProccess+1 && edx==1?colsToProccess+2
-
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	; procesar sumargb_i,j
+	inc r9
 	inc r8
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	; procesar sumargb_i,j+1
+	inc r9
+	inc r8
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	; procesar sumargb_i,j+2
+	inc r9
+	inc r8
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	; procesar sumargb_i,j+3
+	inc r9
+	inc r8
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	; procesar sumargb_i,j+4
+	inc r9
+	inc r8
+	cmp r9, r15
+	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	jmp .seguir
+
+.menorAColDos:
+; Tengo que devolver r9
+
+.mayorIgAColsToProccess:
+; Tengo que devolver las columnas:
+; r9, r9+1 && edx==1?r9+2 <- incrementarlo
+	xor r9, r9 ; reinicio contador columna actual.
+
+.seguir:
 	cmp r8, rcx
 	jne .ciclo
-
 
 .terminar:
 
