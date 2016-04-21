@@ -161,7 +161,21 @@ ldr_asm:
 	pand xmm9, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
     por xmm4, xmm9 ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
     
-    ; realizar suma vertical de bytes saturada, luego sumar hacia la izquierda?? y acumular en xmm10
+    ; realizar suma vertical de bytes saturada PADDUSB y acumular en xmm10, luego usar mascara para limpiar de a pixel 
+    ; y unpackear de bytes a words, sumar y luego saturar a byte. almacenar cada suma en otro temporal xmm
+    ; primer pixel
+    ; r|g|b|r|g|b|r|g|b|r|g|b|r|g|b|0
+    ; mascara: xmm8
+    ; 0|0|0|0|0|0|0|0|0|0|0|0|r|g|b|0
+	; unpack a word punpcklbw
+	; 00|00|00|00|0r|0g|0b|00
+	; PHADDW como los valores son 0r 0g 0b son todos positivos 
+	; y la suma en el peor caso es 510 < 32,767
+	; 00+00|00+00|00+00|00+00|00+00|00+00|0r+0g|0b+00
+	; PHADDW es en el peor caso 1020 < 32,767
+	; 00+00|00+00|00+00|00+00|00+00|00+00|0r+00|0r+0g+0b+00
+	; luego packear saturado con PACKUSWB
+	; repetir para los otros pixeles shifteando la mascara a la izquierda
 	
 	add r13, r12
 	inc r10
