@@ -31,16 +31,11 @@ section .text
 ldr_asm:
 	push rbp
 	mov rbp, rsp
-	xor r10, r10
-	mov r10d, [rsp+16] ; alpha
-	push rbx ; alpha
 	push r12 ;
 	push r13 ;
 	push r14 ;
 	push r15 ;
 	sub rsp, 8 ; alineado
-	xor rbx, rbx
-	mov ebx, r10d ; alpha
 
 	xor r12, r12
 	xor r13, r13
@@ -290,14 +285,32 @@ ldr_asm:
 	por xmm12, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
 	pslldq xmm12, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|0
 	por xmm12, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j
+	pslldq xmm12, 1 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
+	por xmm12, xmm15 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	pxor xmm0, xmm0
-	por xmm0, xmm12 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j
-	pslldq xmm0, 2 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
-	por xmm0, xmm15 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	punpcklbw xmm12, xmm0 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	punpcklwd xmm12, xmm0 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	cvtdq2ps xmm12, xmm12 ; cast to float!
 	pxor xmm1, xmm1
-	punpcklbw xmm0, xmm1 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
-	punpcklwd xmm0, xmm0 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
-	cvtdq2ps xmm0, xmm0 ; cast to float
+	movd xmm1, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
+	pxor xmm2, xmm2
+	movdqu xmm2, xmm1 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
+	movdqu xmm8, [salvarUnPixelShifteable] ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
+	psrldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
+	pand xmm2, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
+	punpcklbw xmm2, xmm0 ; 0|0|0|0|0|rj|gj|bj
+	punpcklwd xmm2, xmm2 ; 0|rj|gj|bj
+	cvtdq2ps xmm2, xmm2 ; cast to float!
+	mulps xmm12, xmm2 ; 0|0|0|0|0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
+	pxor xmm3, xmm3
+	movd xmm3, [rsp + 56] ; 0|0|0|0|0|0|0|alpha
+	cvtdq2ps xmm3, xmm3 ; cast to float!
+	pxor xmm4, xmm4
+	movdqu xmm4, xmm3 ; 0|0|0|0|0|0|0|alpha
+	pslldq xmm4, 1 ; 0|0|0|0|0|0|alpha|0
+	por xmm4, xmm3 ; 0|0|0|0|0|0|alpha|alpha
+	pslldq xmm4, 1 ; 0|0|0|0|0|alpha|alpha|0
+	por xmm4, xmm3 ; 0|0|0|0|0|alpha|alpha|alpha
 
 	inc r9
 	inc r8
@@ -345,6 +358,5 @@ ldr_asm:
 	pop r14
 	pop r13
 	pop r12
-	pop rbx
 	pop rbp
 	ret
