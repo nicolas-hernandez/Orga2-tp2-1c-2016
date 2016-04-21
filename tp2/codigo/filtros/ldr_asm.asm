@@ -163,7 +163,7 @@ ldr_asm:
 	pand xmm9, xmm8 ; 0|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
 	por xmm4, xmm9 ; 0|r8|g8|b8|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
 
-	; realizar suma vertical de bytes saturada PADDUSB y acumular en xmm10, luego usar mascara para limpiar de a pixel 
+	; realizar suma vertical de bytes saturada y acumular en xmm10, 
 	pxor xmm10, xmm10
 	paddusb xmm10, xmm0
 	paddusb xmm10, xmm1
@@ -171,21 +171,96 @@ ldr_asm:
 	paddusb xmm10, xmm3
 	paddusb xmm10, xmm4 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 
-	; y unpackear de bytes a words, sumar y luego saturar a byte. almacenar cada suma en otro temporal xmm
-	; primer pixel
-	; 0|r|g|b|r|g|b|r|g|b|r|g|b|r|g|b
-	; mascara: xmm8 shifteada
-	; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
-	; unpack a word punpcklbw
-	; 00|00|00|00|00|0r|0g|0b
-	; PHADDW como los valores son 0r 0g 0b son todos positivos 
+	; pixel suma 4
+	; mascara: xmm8
+	pxor xmm11, xmm11
+	movdqu xmm11, xmm10 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+	pand xmm11, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
+	pxor xmm12, xmm12
+	; unpack a word 
+	punpckhbw xmm12, xmm11 ; 00|0r|0g|0b|00|00|00|00
+	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
-	; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
-	; PHADDW es en el peor caso 1020 < 32,767
-	; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
-	; luego packear saturado con PACKUSWB
-	; repetir para los otros pixeles shifteando la mascara a la izquierda
-	
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
+	; otra vez: es en el peor caso 1020 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
+	; luego packear saturado.
+	packuswb xmm12, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r+0g+0b)
+	pxor xmm13, xmm13
+	movdqu xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r+0g+0b)
+
+	; pixel suma 3
+	pxor xmm11, xmm11
+	movdqu xmm11, xmm10 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+	pslldq xmm11, 3 ; 0|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0
+	pand xmm11, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
+	pxor xmm12, xmm12
+	; unpack a word 
+	punpckhbw xmm12, xmm11 ; 00|0r|0g|0b|00|00|00|00
+	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
+	; y la suma en el peor caso es 510 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
+	; otra vez: es en el peor caso 1020 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
+	; luego packear saturado.
+	packuswb xmm12, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
+	pslldq xmm13, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|0
+	por xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)
+
+	; pixel suma 2
+	pxor xmm11, xmm11
+	movdqu xmm11, xmm10 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+	pslldq xmm11, 6 ; 0|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0
+	pand xmm11, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
+	pxor xmm12, xmm12
+	; unpack a word 
+	punpckhbw xmm12, xmm11 ; 00|0r|0g|0b|00|00|00|00
+	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
+	; y la suma en el peor caso es 510 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
+	; otra vez: es en el peor caso 1020 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
+	; luego packear saturado.
+	packuswb xmm12, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r2+0g2+0b2)
+	pslldq xmm13, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|0
+	por xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)
+
+	; pixel suma 1
+	pxor xmm11, xmm11
+	movdqu xmm11, xmm10 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+	pslldq xmm11, 9 ; 0|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0|0|0|0
+	pand xmm11, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
+	pxor xmm12, xmm12
+	; unpack a word 
+	punpckhbw xmm12, xmm11 ; 00|0r|0g|0b|00|00|00|00
+	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
+	; y la suma en el peor caso es 510 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
+	; otra vez: es en el peor caso 1020 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
+	; luego packear saturado.
+	packuswb xmm12, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r1+0g1+0b1)
+	pslldq xmm13, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|0
+	por xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)
+
+	; pixel suma 0
+	pxor xmm11, xmm11
+	movdqu xmm11, xmm10 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
+	pslldq xmm11, 12 ; 0|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0|0|0|0|0|0|0
+	pand xmm11, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
+	pxor xmm12, xmm12
+	; unpack a word 
+	punpckhbw xmm12, xmm11 ; 00|0r|0g|0b|00|00|00|00
+	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
+	; y la suma en el peor caso es 510 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
+	; otra vez: es en el peor caso 1020 < 32,767
+	phaddw xmm12, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
+	; luego packear saturado.
+	packuswb xmm12, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r0+0g0+0b0)
+	pslldq xmm13, 1 ; 0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)|0
+	por xmm13, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)|suma(00+0r0+0g0+0b0)
+
 	add r13, r12
 	inc r10
 	cmp r10, 5
