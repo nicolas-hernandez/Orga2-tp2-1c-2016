@@ -74,17 +74,12 @@ ldr_asm:
 	mov eax, r15d
 	mov edx, 2
 	div edx ; divido columnas por dos - resto en edx (from 0 to 1) 
-    xor r11, r11
-    mov r11d, r15d
+	xor r11, r11
+	mov r11d, r15d
 	sub r11d, edx ; edx: 0 or 1
 	sub r11d, 2 ; (columnas-resto)-2 = colsToProccess
 
-; devolver las primeras dos filas tal cual estan. Desde rdi la fila 0 y desde rdi+r8 la fila 1
-; devolver la ultima fila tal cual esta. Desde rcx-r8
-
 	shl r8, 1 ; i = 2 - j = 0
-
-; devolver la ante-ultima fila tal cual esta. Desde rcx-r8*2 <- paso anterior
 
 	movdqu xmm6, [juntarCanalesAlpha]
 	movdqu xmm7, [limpiarCanalesAlpha]
