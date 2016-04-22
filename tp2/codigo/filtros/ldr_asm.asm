@@ -32,12 +32,12 @@ ldr_asm:
 	push rbp
 	mov rbp, rsp
 	push rbx
-	push r12 
-	push r13 
+	push r12
+	push r13
 	push r14
-	push r15    
+	push r15
 
-    xor rbx, rbx    
+	xor rbx, rbx
 	xor r12, r12
 	xor r13, r13
 	xor r14, r14
@@ -47,13 +47,13 @@ ldr_asm:
 	mov r13, [maxValue] ; MAX
 
 	cmp ebx, -255
-	jl .terminar
+	jl .sinCambios
 	cmp ebx, 255
-	jg .terminar
+	jg .sinCambios
 	cmp edx, 4
-	jle .terminar ; si tengo menos de cuatro filas terminar.
+	jle .sinCambios ; si tengo menos de cuatro filas terminar.
 	cmp ecx, 4
-	jle .terminar ; si tengo menos que cuatro columnas terminar.
+	jle .sinCambios ; si tengo menos que cuatro columnas terminar.
 
 	xor r8, r8 ; posicion actual
 	xor r9, r9 ; j = 0
@@ -79,7 +79,7 @@ ldr_asm:
 	sub r11d, edx ; edx: 0 or 1
 	sub r11d, 2 ; (columnas-resto)-2 = colsToProccess
 
-	shl r8, 1 ; i = 2 - j = 0
+	shl r8, 1 ; r8*2 = i = 2 - j = 0
 
 	movdqu xmm6, [juntarCanalesAlpha]
 	movdqu xmm7, [limpiarCanalesAlpha]
@@ -309,7 +309,7 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
-	pxor xmm3, xmm3	
+	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
 	punpcklwd xmm0, xmm0 ; 0|rj|gj|bj
 	cvtdq2ps xmm0, xmm0 ; cast to float!
@@ -351,7 +351,7 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm3, xmm3	
+	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
 	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
@@ -394,7 +394,7 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm3, xmm3	
+	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
 	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
@@ -438,7 +438,7 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm3, xmm3	
+	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
 	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
@@ -485,7 +485,7 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm3, xmm3	
+	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
 	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
@@ -521,7 +521,7 @@ ldr_asm:
 
 .mayorIgAColsToProccess:
 ; Tengo que devolver las columnas:
-; r8, r8+1 && edx==1?r8+2 <- incrementarlo
+; r8, r8+1 && edx==1?r8+2 
 	pxor xmm10, xmm10
 	movd xmm10, [rdi + r8*4]
 	movd [rsi + r8*4], xmm10
@@ -543,7 +543,24 @@ ldr_asm:
 	cmp r8, rcx
 	jne .ciclo
 
-.terminar:
+.sinCambios:
+	xor r8, r8
+	xor r9, r9
+	mov r9, rcx ; columnas*filas
+	shl r15, 1 ; r15*2
+	sub r9, r15 ; ante-ultima fila, posicion 0
+	pxor xmm10, xmm10
+	pxor xmm11, xmm11
+	movdqu xmm10, [rdi + r8*4]
+	movdqu xmm10, [rdi + r9*4]
+	movdqu [rsi + r8*4], xmm10
+	movdqu [rsi + r9*4], xmm11
+	add r8, 4
+	add r9, 4
+	cmp r8, r15 ; cuando complete las dos primeras, tambien completo las dos ultimas.
+	jl .sinCambios
+
+; DONE!!.
 
 .salir:
 	pop r15
