@@ -44,7 +44,7 @@ ldr_asm:
 	xor r15, r15
 	
 	mov ebx, [rbp+16] ; alpha
-	mov r13, [maxValue] ; MAX
+	mov r13d, [maxValue] ; MAX
 
 	cmp ebx, -255
 	jl .sinCambios
@@ -268,8 +268,8 @@ ldr_asm:
 ; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
 
 	pxor xmm2, xmm2
-	movd xmm2, rbx ; 0|0|0|alpha
-	cvtsi2ss xmm2, xmm2 ; cast to float!
+	;movd xmm2, rbx ; 0|0|0|alpha
+	cvtsi2ss xmm2, ebx ; cast to float!
 	movdqu xmm1, xmm2 ; 0|0|0|alpha
 	pslldq xmm1, 1 ; 0|0|alpha|0
 	por xmm1, xmm2 ; 0|0|alpha|alpha
@@ -277,8 +277,8 @@ ldr_asm:
 	por xmm1, xmm2 ; 0|alpha|alpha|alpha
 
 	pxor xmm3, xmm3
-	movd xmm3, r13 ; 0|0|0|max
-	cvtsi2ss xmm2, xmm2 ; cast to float!
+	;movd xmm3, r13 ; 0|0|0|max
+	cvtsi2ss xmm2, r13d ; cast to float!
 	pxor xmm2, xmm2 
 	movdqu xmm2, xmm3 ; 0|0|0|max
 	pslldq xmm2, 1 ; 0|0|max|0
