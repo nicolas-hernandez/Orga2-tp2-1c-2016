@@ -93,12 +93,12 @@ ldr_asm:
 	cmp r9, 2
 	jl .menorAColDos
 	; estoy en rango.
-	mov r12, r15
-	add r12, 2
-	add r12, edx ; columnas totales.
+	mov r11, r15
+	add r11, 2
+	add r11, edx ; columnas totales.
 	mov r14, r8 ; posicion actual
-	sub r14, r12
-	sub r14, r12 ; posicion actual - dos filas
+	sub r14, r11
+	sub r14, r11 ; posicion actual - dos filas
 	xor r10, r10 ; cuento hasta 5
 
 	pxor xmm14, xmm14 ; acumulo la suma de los cuadrados de 5 pixeles.
@@ -273,56 +273,58 @@ ldr_asm:
 ; Luego realizo la division por MAX como una division signada en float
 ; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
 
+	pxor xmm2, xmm2
+	movd xmm2, [rbp + 16] ; 0|0|0|alpha
+	cvtsi2ss xmm2, xmm2 ; cast to float!
+	movdqu xmm1, xmm2 ; 0|0|0|alpha
+	pslldq xmm1, 1 ; 0|0|alpha|0
+	por xmm1, xmm2 ; 0|0|alpha|alpha
+	pslldq xmm1, 1 ; 0|alpha|alpha|0
+	por xmm1, xmm2 ; 0|alpha|alpha|alpha
+
+	pxor xmm3, xmm3
+	movd xmm3, [maxValue] ; 0|0|0|max
+	cvtsi2ss xmm2, xmm2 ; cast to float!
+	pxor xmm2, xmm2 
+	movdqu xmm2, xmm3 ; 0|0|0|max
+	pslldq xmm2, 1 ; 0|0|max|0
+	por xmm2, xmm3 ; 0|0|max|max
+	pslldq xmm4, 1 ; 0|max|max|0
+	por xmm2, xmm3 ; 0|max|max|max
+
+    movdqu xmm9, [salvarUnPixelShifteable] ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
+    psrldq xmm9, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
+
 	cmp r9, r15
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
 	pxor xmm15, xmm15
 	movdqu xmm15, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
-	pxor xmm12, xmm12
 	psrldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF
 	pand xmm15, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
 	pxor xmm12, xmm12
 	por xmm12, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
 	pslldq xmm12, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|0
 	por xmm12, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j
-	pslldq xmm12, 1 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
-	por xmm12, xmm15 ;0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
-	pxor xmm0, xmm0
-	punpcklbw xmm12, xmm0 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
-	punpcklwd xmm12, xmm0 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	pslldq xmm12, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
+	por xmm12, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+    pxor xmm15, xmm15
+	punpcklbw xmm12, xmm15 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
+	punpcklwd xmm12, xmm15 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	cvtdq2ps xmm12, xmm12 ; cast to float!
-	pxor xmm1, xmm1
-	movd xmm1, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj <- get pixel ij
-	pxor xmm2, xmm2
-	movdqu xmm2, xmm1 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
-	movdqu xmm8, [salvarUnPixelShifteable] ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
-	psrldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
-	pand xmm2, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
-	punpcklbw xmm2, xmm0 ; 0|0|0|0|0|rj|gj|bj
-	punpcklwd xmm2, xmm2 ; 0|rj|gj|bj
-	cvtdq2ps xmm2, xmm2 ; cast to float!
-	mulps xmm12, xmm2 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
-	pxor xmm3, xmm3
-	movd xmm3, [rsp + 56] ; 0|0|0|alpha
-	cvtsi2ss xmm3, xmm3 ; cast to float!
-	pxor xmm4, xmm4
-	movdqu xmm4, xmm3 ; 0|0|0|alpha
-	pslldq xmm4, 1 ; 0|0|alpha|0
-	por xmm4, xmm3 ; 0|0|alpha|alpha
-	pslldq xmm4, 1 ; 0|alpha|alpha|0
-	por xmm4, xmm3 ; 0|alpha|alpha|alpha
-	mulps xmm12, xmm4 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
-	pxor xmm5, xmm5
-	movd xmm5, [maxValue] ; 0|0|0|max
-	cvtsi2ss xmm5, xmm5 ; cast to float!
-	pxor xmm0, xmm0 
-	movdqu xmm0, xmm5 ; 0|0|0|max
-	pslldq xmm5, 1 ; 0|0|max|0
-	por xmm5, xmm0 ; 0|0|max|max
-	pslldq xmm5, 1 ; 0|max|max|0
-	por xmm5, xmm0 ; 0|max|max|max
-	divps xmm12, xmm0 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
-	addps xmm12, xmm2 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	pxor xmm15, xmm15
+	movd xmm15, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj <- get pixel ij
+	pxor xmm0, xmm0
+	movdqu xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
+	pand xmm0, xmm9 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
+    pxor xmm3, xmm3	
+    punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
+	punpcklwd xmm0, xmm0 ; 0|rj|gj|bj
+	cvtdq2ps xmm0, xmm0 ; cast to float!
+	mulps xmm12, xmm0 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
+	mulps xmm12, xmm1 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
+	divps xmm12, xmm2 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
+	addps xmm12, xmm0 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 	
 	/*Converts four or eight packed single-precision floating-point values in the source operand to four or eight signed
 	doubleword integers in the destination operand.
@@ -331,9 +333,9 @@ ldr_asm:
 	masked, the indefinite integer value (80000000H) is returned.*/
 	
 	cvttps2dq xmm12, xmm12 ; cast to dw signed 
-	pxor xmm13, xmm13
-	packusdw xmm12, xmm13 ; 0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
-	packuswb xmm12, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
+	pxor xmm3, xmm3
+	packusdw xmm12, xmm3 ; 0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	packuswb xmm12, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
 
 	inc r9
 	inc r8
