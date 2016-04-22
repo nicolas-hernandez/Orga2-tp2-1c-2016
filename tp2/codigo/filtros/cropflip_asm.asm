@@ -14,10 +14,10 @@ section .text
 ;ecx = filas
 ;r8d = src_row_size
 ;r9d = dst_row_size
-;[rsp+4*4] = tamx
-;[rsp+3*4] = tamy
-;[rsp+2*4] = offsetx
-;[rsp+1*4] = offsety
+;[rsp+ 16] = tamx
+;[rsp+ 24] = tamy
+;[rsp+ 32] = offsetx
+;[rsp+ 40] = offsety
 cropflip_asm:
     	push rbp
     	mov rbp, rsp
