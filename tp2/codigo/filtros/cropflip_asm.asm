@@ -1,5 +1,5 @@
 global cropflip_asm
-%define MASK_INV 00011011
+%define MASK_INV 00011011b
 section .text
 ;void cropflip_asm(unsigned char *src,
 ;                  unsigned char *dst,
