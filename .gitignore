@@ -1,6 +1,6 @@
 #Compiled 
 *.o
-tp2
+*build/tp2
 core
 
 #Latex stuff
