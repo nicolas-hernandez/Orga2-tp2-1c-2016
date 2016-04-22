@@ -458,7 +458,7 @@ ldr_asm:
 	por xmm10, xmm14 ; <- respaldo pixel j+3,j+2,j+1,j
 
 	movdqu [rsi + r8*4], xmm10
-	pxor xmm10
+	pxor xmm10, xmm10
 
 	inc r9
 	inc r8
