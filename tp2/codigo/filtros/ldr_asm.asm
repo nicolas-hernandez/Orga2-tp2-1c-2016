@@ -294,6 +294,7 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
+	pxor xmm10, xmm10
 	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	psrldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF
@@ -304,7 +305,7 @@ ldr_asm:
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j
 	pslldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
-    pxor xmm14, xmm14
+	pxor xmm14, xmm14
 	punpcklbw xmm11, xmm14 ; 0|0|0|0|0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	punpcklwd xmm11, xmm14 ; 0|sumargb_i,j|sumargb_i,j|sumargb_i,j
 	cvtdq2ps xmm11, xmm11 ; cast to float!
@@ -313,8 +314,8 @@ ldr_asm:
 	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
-    pxor xmm3, xmm3	
-    punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
+	pxor xmm3, xmm3	
+	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
 	punpcklwd xmm0, xmm0 ; 0|rj|gj|bj
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 	mulps xmm11, xmm0 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
@@ -322,37 +323,192 @@ ldr_asm:
 	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
 	addps xmm11, xmm0 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 	
-	/*Converts four or eight packed single-precision floating-point values in the source operand to four or eight signed
-	doubleword integers in the destination operand.
-	When a conversion is inexact, a truncated (round toward zero) value is returned. If a converted result is larger than
-	the maximum signed doubleword integer, the floating-point invalid exception is raised, and if this exception is
-	masked, the indefinite integer value (80000000H) is returned.*/
-	
 	cvttps2dq xmm11, xmm11 ; cast to dw signed 
 	pxor xmm3, xmm3
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
+	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	movdqu xmm10, xmm14 ; <- respaldo pixel j
 
 	inc r9
 	inc r8
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-	; procesar sumargb_i,j+1
+
+	pxor xmm14, xmm14
+	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	pxor xmm11, xmm11
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1
+	pslldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	pxor xmm14, xmm14
+	punpcklbw xmm11, xmm14 ; 0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	punpcklwd xmm11, xmm14 ; 0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	cvtdq2ps xmm11, xmm11 ; cast to float!
+	pxor xmm14, xmm14
+	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
+	pxor xmm0, xmm0
+	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
+	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
+	pxor xmm3, xmm3	
+	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	cvtdq2ps xmm0, xmm0 ; cast to float!
+	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
+	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
+	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
+	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	
+	cvttps2dq xmm11, xmm11 ; cast to dw signed 
+	pxor xmm3, xmm3
+	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
+	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	pslldq xmm14, 4 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
+	por xmm10, xmm14 ; <- respaldo pixel j+1,j
+
 	inc r9
 	inc r8
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-	; procesar sumargb_i,j+2
+
+	pxor xmm14, xmm14
+	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	pxor xmm11, xmm11
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
+	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	pxor xmm14, xmm14
+	punpcklbw xmm11, xmm14 ; 0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	punpcklwd xmm11, xmm14 ; 0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	cvtdq2ps xmm11, xmm11 ; cast to float!
+	pxor xmm14, xmm14
+	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
+	pxor xmm0, xmm0
+	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
+	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
+	pxor xmm3, xmm3	
+	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	cvtdq2ps xmm0, xmm0 ; cast to float!
+	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
+	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
+	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
+	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	
+	cvttps2dq xmm11, xmm11 ; cast to dw signed 
+	pxor xmm3, xmm3
+	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
+	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	pslldq xmm14, 8 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
+	por xmm10, xmm14 ; <- respaldo pixel j+2,j+1,j
+
 	inc r9
 	inc r8
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-	; procesar sumargb_i,j+3
+
+	pxor xmm14, xmm14
+	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0|0
+	pxor xmm11, xmm11
+	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	psrldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
+	psrldq xmm14, 2 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	pxor xmm14, xmm14
+	punpcklbw xmm11, xmm14 ; 0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	punpcklwd xmm11, xmm14 ; 0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	cvtdq2ps xmm11, xmm11 ; cast to float!
+	pxor xmm14, xmm14
+	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
+	pxor xmm0, xmm0
+	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
+	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
+	pxor xmm3, xmm3	
+	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	cvtdq2ps xmm0, xmm0 ; cast to float!
+	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
+	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
+	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
+	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	
+	cvttps2dq xmm11, xmm11 ; cast to dw signed 
+	pxor xmm3, xmm3
+	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
+	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	pslldq xmm14, 12 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
+	por xmm10, xmm14 ; <- respaldo pixel j+3,j+2,j+1,j
+
+	movdqu [rsi + r8*4], xmm10
+	pxor xmm10
+
 	inc r9
 	inc r8
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-	; procesar sumargb_i,j+4
+
+	pxor xmm14, xmm14
+	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
+	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0|0
+	pxor xmm11, xmm11
+	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	psrldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
+	psrldq xmm14, 2 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
+	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	pxor xmm14, xmm14
+	punpcklbw xmm11, xmm14 ; 0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	punpcklwd xmm11, xmm14 ; 0|sumargb_i,j+1|sumargb_i,j+1|sumargb_i,j+1
+	cvtdq2ps xmm11, xmm11 ; cast to float!
+	pxor xmm14, xmm14
+	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
+	pxor xmm0, xmm0
+	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
+	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
+	pxor xmm3, xmm3	
+	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	cvtdq2ps xmm0, xmm0 ; cast to float!
+	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
+	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
+	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
+	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	
+	cvttps2dq xmm11, xmm11 ; cast to dw signed 
+	pxor xmm3, xmm3
+	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
+	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+
+	movd [rsi + r8*4], xmm14
+
 	inc r9
 	inc r8
 	cmp r9, r11
@@ -361,13 +517,34 @@ ldr_asm:
 
 .menorAColDos:
 ; Tengo que devolver r9
+	pxor xmm10, xmm10
+	movd xmm10, [rdi + r8*4]
+	movd [rsi + r8*4], xmm10
+	inc r8
+	inc r9
+	jmp .seguir
 
 .mayorIgAColsToProccess:
 ; Tengo que devolver las columnas:
-; r9, r9+1 && edx==1?r9+2 <- incrementarlo
+; r8, r8+1 && edx==1?r8+2 <- incrementarlo
+	pxor xmm10, xmm10
+	movd xmm10, [rdi + r8*4]
+	movd [rsi + r8*4], xmm10
+	inc r8
+	movd xmm10, [rdi + r8*4]
+	movd [rsi + r8*4], xmm10
+	cmp edx, 1
+	jne .continuar
+	inc r8 ; columna impar final
+	movd xmm10, [rdi + r8*4]
+	movd [rsi + r8*4], xmm10
+
+.continuar:
 	xor r9, r9 ; reinicio contador columna actual.
 
 .seguir:
+	movdqu xmm8, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
+	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
 	cmp r8, rcx
 	jne .ciclo
 
