@@ -545,7 +545,7 @@ ldr_asm:
 	movdqu xmm8, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
 	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
 	cmp r8, rcx
-	jne .ciclo
+	jl .ciclo
 
 .sinCambios:
 	xor r8, r8
