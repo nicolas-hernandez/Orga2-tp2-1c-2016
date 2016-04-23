@@ -320,10 +320,10 @@ ldr_asm:
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
 	punpcklwd xmm0, xmm0 ; 0|rj|gj|bj
 	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm11, xmm0 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
-	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
-	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
-	addps xmm11, xmm0 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+;	mulps xmm11, xmm0 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
+;	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
+;	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j*rj)/max|(alpha*sumargb_i,j*gj)/max|(alpha*sumargb_i,j*bj)/max
+;	addps xmm11, xmm0 ; 0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 	
 	cvttps2dq xmm11, xmm11 ; cast to dw signed 
 	pxor xmm3, xmm3
@@ -363,10 +363,10 @@ ldr_asm:
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
 	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
-	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
-	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
-	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+;	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
+;	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
+;	divps xmm11, xmm2 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
+;	addps xmm11, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 	
 	cvttps2dq xmm11, xmm11 ; cast to dw signed 
 	pxor xmm3, xmm3
