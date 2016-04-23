@@ -320,8 +320,7 @@ ldr_asm:
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
-;	movdqu xmm10, xmm14 ; <- respaldo pixel j
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 
     movd [rsi + r8*4], xmm14
 
@@ -365,8 +364,6 @@ ldr_asm:
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
 	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-;	pslldq xmm14, 4 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
-;	por xmm10, xmm14 ; <- respaldo pixel j+1,j
 
     movd [rsi + r8*4], xmm14
 
@@ -410,8 +407,6 @@ ldr_asm:
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
 	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-;	pslldq xmm14, 8 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
-;	por xmm10, xmm14 ; <- respaldo pixel j+2,j+1,j
 
     movd [rsi + r8*4], xmm14
 
@@ -456,11 +451,6 @@ ldr_asm:
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
 	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-;	pslldq xmm14, 12 ; 0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max|0|0|0|0
-;	por xmm10, xmm14 ; <- respaldo pixel j+3,j+2,j+1,j
-
-;	movdqu [rsi + r8*4], xmm10
-;	pxor xmm10, xmm10
 
     movd [rsi + r8*4], xmm14
 
