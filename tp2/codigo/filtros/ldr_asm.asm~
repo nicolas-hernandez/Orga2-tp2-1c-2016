@@ -93,6 +93,7 @@ ldr_asm:
 	cmp r9, 2
 	jl .menorAColDos
 	; estoy en rango.
+	xor r12, r12
 	mov r12, r8 ; posicion actual
 	sub r12, r15
 	sub r12, r15 ; posicion actual - dos filas
@@ -106,10 +107,10 @@ ldr_asm:
 	; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
 
 	movdqu xmm0, [rdi + r12*4] ; Li3|Li2|Li1|Li0
-	pshufb xmm0, xmm6 ; a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
+	pshufb xmm0, xmm6 ; 0|0|0|0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
 	
 	movdqu xmm1, [rdi + r12*4 + 4] ; Li4|Li3|Li2|Li1
-	pshufb xmm1, xmm6 ; a4|a3|a2|a1|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
+	pshufb xmm1, xmm6 ; 0|0|0|0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm1
@@ -118,7 +119,7 @@ ldr_asm:
 	por xmm0, xmm9 ; 0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
 
 	movdqu xmm2, [rdi + r12*4 + 8] ; Li5|Li4|Li3|Li2
-	pshufb xmm2, xmm6 ; a5|a4|a3|a2|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
+	pshufb xmm2, xmm6 ; 0|0|0|0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm2
@@ -127,7 +128,7 @@ ldr_asm:
 	por xmm1, xmm9 ; 0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 
 	movdqu xmm3, [rdi + r12*4 + 12] ; Li6|Li5|Li4|Li3
-	pshufb xmm3, xmm6 ; a6|a5|a4|a3|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
+	pshufb xmm3, xmm6 ; 0|0|0|0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm3
@@ -136,7 +137,7 @@ ldr_asm:
 	por xmm2, xmm9 ; 0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
 
 	movdqu xmm4, [rdi + r12*4 + 16] ; Li7|Li6|Li5|Li4
-	pshufb xmm4, xmm6 ; a7|a6|a5|a4|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
+	pshufb xmm4, xmm6 ; 0|0|0|0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm4
@@ -145,7 +146,7 @@ ldr_asm:
 	por xmm3, xmm9 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
 
 	pxor xmm9, xmm9
-	movd xmm9, [rdi + r12*4 + 20] ; 0|0|0|0|0|0|0|0|0|0|0|0|a8|r8|g8|b8
+	movd xmm9, [rdi + r12*4 + 28] ; 0|0|0|0|0|0|0|0|0|0|0|0|a8|r8|g8|b8
 	pslldq xmm9, 12 ; a8|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm9, xmm8 ; 0|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
 	por xmm4, xmm9 ; 0|r8|g8|b8|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
@@ -168,13 +169,15 @@ ldr_asm:
 	punpckhbw xmm10, xmm11 ; 00|0r|0g|0b|00|00|00|00
 	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
+	psrldq xmm10, 8 ; 00|00|00|00|00|0r|0g|0b
+	pxor xmm11, xmm11
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; otra vez: es en el peor caso 1020 < 32,767
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
 	; luego packear saturado.
-	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r+0g+0b)
+	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
 	pxor xmm12, xmm12
-	movdqu xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r+0g+0b)
+	movdqu xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
 
 	; pixel suma 3
 	pxor xmm10, xmm10
@@ -186,11 +189,13 @@ ldr_asm:
 	punpckhbw xmm10, xmm11 ; 00|0r|0g|0b|00|00|00|00
 	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
+	psrldq xmm10, 8 ; 00|00|00|00|00|0r|0g|0b
+	pxor xmm11, xmm11
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; otra vez: es en el peor caso 1020 < 32,767
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
 	; luego packear saturado.
-	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
+	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r3+0g3+0b3)
 	pslldq xmm12, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|0
 	por xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)
 
@@ -204,6 +209,8 @@ ldr_asm:
 	punpckhbw xmm10, xmm11 ; 00|0r|0g|0b|00|00|00|00
 	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
+	psrldq xmm10, 8 ; 00|00|00|00|00|0r|0g|0b
+	pxor xmm11, xmm11
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; otra vez: es en el peor caso 1020 < 32,767
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
@@ -222,6 +229,8 @@ ldr_asm:
 	punpckhbw xmm10, xmm11 ; 00|0r|0g|0b|00|00|00|00
 	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
+	psrldq xmm10, 8 ; 00|00|00|00|00|0r|0g|0b
+	pxor xmm11, xmm11
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; otra vez: es en el peor caso 1020 < 32,767
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
@@ -240,6 +249,8 @@ ldr_asm:
 	punpckhbw xmm10, xmm11 ; 00|0r|0g|0b|00|00|00|00
 	; suma horizontal de a word: como los valores son 0r 0g 0b son todos positivos 
 	; y la suma en el peor caso es 510 < 32,767
+	psrldq xmm10, 8 ; 00|00|00|00|00|0r|0g|0b
+	pxor xmm11, xmm11
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+0r|0g+0b
 	; otra vez: es en el peor caso 1020 < 32,767
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
