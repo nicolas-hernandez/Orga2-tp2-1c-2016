@@ -10,8 +10,8 @@ DEFAULT REL
 ; En registros: ARGB
 
 ; a3|r3|g3|b3|a2|r2|g2|b2|a1|r1|g1|b1|a0|r0|g0|b0 -> a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
-juntarCanalesAlpha: db 0x00, 0x01, 0x02, 0x0C, 0x03, 0x04, 0x05, 0x0D, 0x06, 0x07, 0x08, 0x0E, 0x09, 0x0A, 0x0B, 0x0F 
-limpiarCanalesAlpha: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
+juntarCanalesAlpha: db 0x00, 0x01, 0x02, 0x8C, 0x03, 0x04, 0x05, 0x8D, 0x06, 0x07, 0x08, 0x8E, 0x09, 0x0A, 0x0B, 0x8F 
+;limpiarCanalesAlpha: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
 salvarUnPixelShifteable: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
 maxValue: dd 0x004A6A4B ; check this 4876875
 
@@ -83,7 +83,7 @@ ldr_asm:
 	shl r8, 1 ; r8*2 = i = 2 - j = 0
 
 	movdqu xmm6, [juntarCanalesAlpha]
-	movdqu xmm7, [limpiarCanalesAlpha]
+	;movdqu xmm7, [limpiarCanalesAlpha]
 	movdqu xmm8, [salvarUnPixelShifteable]
 	movdqu xmm15, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF|0
     psrldq xmm15, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
@@ -107,11 +107,11 @@ ldr_asm:
 
 	movdqu xmm0, [rdi + r12*4] ; Li3|Li2|Li1|Li0
 	pshufb xmm0, xmm6 ; a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
-	pand xmm0, xmm7 ; 0|0|0|0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
+	;pand xmm0, xmm7 ; 0|0|0|0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
 	
 	movdqu xmm1, [rdi + r12*4 + 4] ; Li4|Li3|Li2|Li1
 	pshufb xmm1, xmm6 ; a4|a3|a2|a1|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
-	pand xmm1, xmm7 ; 0|0|0|0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
+	;pand xmm1, xmm7 ; 0|0|0|0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm1
@@ -121,7 +121,7 @@ ldr_asm:
 
 	movdqu xmm2, [rdi + r12*4 + 8] ; Li5|Li4|Li3|Li2
 	pshufb xmm2, xmm6 ; a5|a4|a3|a2|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
-	pand xmm2, xmm7 ; 0|0|0|0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
+	;pand xmm2, xmm7 ; 0|0|0|0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm2
@@ -131,7 +131,7 @@ ldr_asm:
 
 	movdqu xmm3, [rdi + r12*4 + 12] ; Li6|Li5|Li4|Li3
 	pshufb xmm3, xmm6 ; a6|a5|a4|a3|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
-	pand xmm3, xmm7 ; 0|0|0|0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
+	;pand xmm3, xmm7 ; 0|0|0|0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm3
@@ -141,7 +141,7 @@ ldr_asm:
 
 	movdqu xmm4, [rdi + r12*4 + 16] ; Li7|Li6|Li5|Li4
 	pshufb xmm4, xmm6 ; a7|a6|a5|a4|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
-	pand xmm4, xmm7 ; 0|0|0|0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
+	;pand xmm4, xmm7 ; 0|0|0|0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
 	
 	pxor xmm9, xmm9
 	movdqu xmm9, xmm4
