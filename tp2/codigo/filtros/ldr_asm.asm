@@ -537,6 +537,7 @@ ldr_asm:
 	inc r8 ; columna impar final
 	movd xmm10, [rdi + r8*4]
 	movd [rsi + r8*4], xmm10
+	inc r8
 
 .continuar:
 	xor r9, r9 ; reinicio contador columna actual.
