@@ -71,9 +71,10 @@ ldr_asm:
 
 	xor rdx, rdx ; parte alta - resto 
 	xor rax, rax ; parte baja - cociente.
+	xor r11, r11
 	mov eax, r15d
-	mov edx, 2
-	div edx ; divido columnas por dos - resto en edx (from 0 to 1) 
+	mov r11, 2
+	div r11d ; divido columnas por dos - resto en edx (from 0 to 1) 
 	xor r11, r11
 	mov r11d, r15d
 	sub r11d, edx ; edx: 0 or 1
