@@ -544,16 +544,17 @@ ldr_asm:
 	mov r9, rcx ; columnas*filas
 	shl r15, 1 ; r15*2
 	sub r9, r15 ; ante-ultima fila, posicion 0
+.devolver:
 	pxor xmm10, xmm10
 	pxor xmm11, xmm11
 	movdqu xmm10, [rdi + r8*4]
-	movdqu xmm10, [rdi + r9*4]
+	movdqu xmm11, [rdi + r9*4]
 	movdqu [rsi + r8*4], xmm10
 	movdqu [rsi + r9*4], xmm11
 	add r8, 4
 	add r9, 4
 	cmp r8, r15 ; cuando complete las dos primeras, tambien completo las dos ultimas.
-	jl .sinCambios
+	jl .devolver
 
 ; DONE!!.
 
