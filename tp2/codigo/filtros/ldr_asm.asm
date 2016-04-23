@@ -278,9 +278,9 @@ ldr_asm:
 	;movd xmm2, rbx ; 0|0|0|alpha
 	cvtsi2ss xmm2, ebx ; cast to float!
 	movdqu xmm1, xmm2 ; 0|0|0|alpha
-	pslldq xmm1, 1 ; 0|0|alpha|0
+	pslldq xmm1, 4 ; 0|0|alpha|0
 	por xmm1, xmm2 ; 0|0|alpha|alpha
-	pslldq xmm1, 1 ; 0|alpha|alpha|0
+	pslldq xmm1, 4 ; 0|alpha|alpha|0
 	por xmm1, xmm2 ; 0|alpha|alpha|alpha
 
 	pxor xmm3, xmm3
@@ -288,9 +288,9 @@ ldr_asm:
 	cvtsi2ss xmm2, r13d ; cast to float!
 	pxor xmm2, xmm2 
 	movdqu xmm2, xmm3 ; 0|0|0|max
-	pslldq xmm2, 1 ; 0|0|max|0
+	pslldq xmm2, 4 ; 0|0|max|0
 	por xmm2, xmm3 ; 0|0|max|max
-	pslldq xmm4, 1 ; 0|max|max|0
+	pslldq xmm4, 4 ; 0|max|max|0
 	por xmm2, xmm3 ; 0|max|max|max
 
 	cmp r9, r11
@@ -330,8 +330,8 @@ ldr_asm:
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
-;	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/gj+max|(alpha*sumargb_i,j*gj)/bj+max|(alpha*sumargb_i,j*bj)/max
 
     movd [rsi + r8*4], xmm14
 
@@ -373,8 +373,8 @@ ldr_asm:
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
-;	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 
     movd [rsi + r8*4], xmm14
 
