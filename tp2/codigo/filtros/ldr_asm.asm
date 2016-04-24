@@ -319,7 +319,7 @@ ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
 	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj|gj|bj
-	punpcklwd xmm0, xmm0 ; 0|rj|gj|bj
+	punpcklwd xmm0, xmm3 ; 0|rj|gj|bj
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 ;	mulps xmm11, xmm0 ; 0|sumargb_i,j*rj|sumargb_i,j*gj|sumargb_i,j*bj
 ;	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j*rj|alpha*sumargb_i,j*gj|alpha*sumargb_i,j*bj <- puede cambiar el signo segun alpha.
@@ -362,7 +362,7 @@ ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm3 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 ;	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
 ;	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
@@ -405,7 +405,7 @@ ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm3 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
 	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
@@ -449,7 +449,7 @@ ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm3 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
 	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
@@ -493,7 +493,7 @@ ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
 	punpcklbw xmm0, xmm3 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm0 ; 0|rj+1|gj+1|bj+1
+	punpcklwd xmm0, xmm3 ; 0|rj+1|gj+1|bj+1
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 	mulps xmm11, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
 	mulps xmm11, xmm1 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
