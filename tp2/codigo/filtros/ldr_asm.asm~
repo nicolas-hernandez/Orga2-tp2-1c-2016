@@ -289,7 +289,7 @@ ldr_asm:
 	movdqu xmm2, xmm3 ; 0|0|0|max
 	pslldq xmm2, 4 ; 0|0|max|0
 	por xmm2, xmm3 ; 0|0|max|max
-	pslldq xmm4, 4 ; 0|max|max|0
+	pslldq xmm2, 4 ; 0|max|max|0
 	por xmm2, xmm3 ; 0|max|max|max
 
 	cmp r9, r11
