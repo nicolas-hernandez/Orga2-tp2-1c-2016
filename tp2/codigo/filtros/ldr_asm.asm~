@@ -277,9 +277,9 @@ ldr_asm:
 	;movd xmm2, rbx ; 0|0|0|alpha
 	cvtsi2ss xmm2, ebx ; cast to float!
 	movdqu xmm1, xmm2 ; 0|0|0|alpha
-	pslldq xmm1, 2 ; 0|0|alpha|0
+	pslldq xmm1, 4 ; 0|0|alpha|0
 	por xmm1, xmm2 ; 0|0|alpha|alpha
-	pslldq xmm1, 2 ; 0|alpha|alpha|0
+	pslldq xmm1, 4 ; 0|alpha|alpha|0
 	por xmm1, xmm2 ; 0|alpha|alpha|alpha
 
 	pxor xmm3, xmm3
@@ -287,9 +287,9 @@ ldr_asm:
 	;movd xmm3, r13 ; 0|0|0|max
 	cvtsi2ss xmm3, r13d ; cast to float! 
 	movdqu xmm2, xmm3 ; 0|0|0|max
-	pslldq xmm2, 2 ; 0|0|max|0
+	pslldq xmm2, 4 ; 0|0|max|0
 	por xmm2, xmm3 ; 0|0|max|max
-	pslldq xmm4, 2 ; 0|max|max|0
+	pslldq xmm4, 4 ; 0|max|max|0
 	por xmm2, xmm3 ; 0|max|max|max
 
 	cmp r9, r11
