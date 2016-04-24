@@ -291,6 +291,8 @@ ldr_asm:
 	por xmm2, xmm3 ; 0|0|max|max
 	pslldq xmm2, 4 ; 0|max|max|0
 	por xmm2, xmm3 ; 0|max|max|max
+	pslldq xmm2, 4 ; max|max|max|0
+	por xmm2, xmm3 ; max|max|max|max
 
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
