@@ -417,8 +417,8 @@ ldr_asm:
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
-;	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
 
     movd [rsi + r8*4], xmm14
 
@@ -461,8 +461,8 @@ ldr_asm:
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
-;	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
 
     movd [rsi + r8*4], xmm14
 
@@ -505,8 +505,8 @@ ldr_asm:
 	packusdw xmm11, xmm3 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
 	packuswb xmm11, xmm3 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
 	pslldq xmm8, 3 ; 0|0|0|0|0|0|0|0|0|0|0|FF||0|0|0
-;	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-;	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
+	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
+	por xmm14, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
 
 	movd [rsi + r8*4], xmm14
 
