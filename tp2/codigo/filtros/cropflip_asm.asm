@@ -49,34 +49,26 @@ cropflip_asm:
 	mov ebx, [rbp + 40]	; offsety
 	mov r15d, r13d 
 
-.preC:
-	mov ecx, r14d
-	shr rcx, 2
-.c:
-	lea rsi, [rsi + 16]
-	loop .c
-	sub r15d, 1	 		    
-	cmp r15d, 0  	        
-	jne .preC
+        mov eax, 4  
+        mul r14d
+        mul r13d
+        lea rsi, [rsi + rax]
+        lea rsi, [rsi - 16]
 
-	lea rsi, [rsi - 16]
-	
-	shl r12, 2
-    	lea rdi, [rdi + r12]
-    	shl ebx, 2
-    	mov ecx, ebx
+    
+        shl r12, 2
+        lea rdi, [rdi + r12]
+        mov ecx, ebx
 
-    	mov r15d, r8d
-    	shr r15, 2
+        mov eax, r8d
+        mul ebx
+        lea rdi, [rdi + rax]
 
-.sumarDir:				;usaria "mul r8d" pero por alguna razon no anda
-    	lea rdi, [rdi + r15]
-    	loop .sumarDir
-
-    	shl r15, 2
-    	mov ecx, r14d
-    	shl rcx, 2
-    	sub r15d, ecx
+        mov r15d, r8d
+        
+        mov ecx, r14d
+        shl rcx, 2
+        sub r15d, ecx
 
 .preCiclo:
     	mov ecx, r14d			 
