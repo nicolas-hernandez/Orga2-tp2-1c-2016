@@ -91,7 +91,6 @@ ldr_asm:
 	cmp r9, 2
 	jl .menorAColDos
 	; estoy en rango.
-	xor r12, r12
 	mov r12, r8 ; posicion actual
 	sub r12, r15
 	sub r12, r15 ; posicion actual - dos filas
@@ -110,7 +109,6 @@ ldr_asm:
 	movdqu xmm1, [rdi + r12*4 + 4] ; Li4|Li3|Li2|Li1
 	pshufb xmm1, xmm6 ; 0|0|0|0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1
 	
-	pxor xmm9, xmm9
 	movdqu xmm9, xmm1
 	pslldq xmm9, 3 ; 0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1|0|0|0
 	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
@@ -119,7 +117,6 @@ ldr_asm:
 	movdqu xmm2, [rdi + r12*4 + 8] ; Li5|Li4|Li3|Li2
 	pshufb xmm2, xmm6 ; 0|0|0|0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2
 	
-	pxor xmm9, xmm9
 	movdqu xmm9, xmm2
 	pslldq xmm9, 3 ; 0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2|0|0|0
 	pand xmm9, xmm8 ; 0|r5|g5|b5|0|0|0|0|0|0|0|0|0|0|0|0
@@ -127,8 +124,7 @@ ldr_asm:
 
 	movdqu xmm3, [rdi + r12*4 + 12] ; Li6|Li5|Li4|Li3
 	pshufb xmm3, xmm6 ; 0|0|0|0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
-	
-	pxor xmm9, xmm9
+
 	movdqu xmm9, xmm3
 	pslldq xmm9, 3 ; 0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3|0|0|0
 	pand xmm9, xmm8 ; 0|r6|g6|b6|0|0|0|0|0|0|0|0|0|0|0|0
@@ -136,14 +132,12 @@ ldr_asm:
 
 	movdqu xmm4, [rdi + r12*4 + 16] ; Li7|Li6|Li5|Li4
 	pshufb xmm4, xmm6 ; 0|0|0|0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4
-	
-	pxor xmm9, xmm9
+
 	movdqu xmm9, xmm4
 	pslldq xmm9, 3 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|0|0|0
 	pand xmm9, xmm8 ; 0|r7|g7|b7|0|0|0|0|0|0|0|0|0|0|0|0
 	por xmm3, xmm9 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3
 
-	pxor xmm9, xmm9
 	movd xmm9, [rdi + r12*4 + 28] ; 0|0|0|0|0|0|0|0|0|0|0|0|a8|r8|g8|b8
 	pslldq xmm9, 12 ; a8|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm9, xmm8 ; 0|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
@@ -159,7 +153,6 @@ ldr_asm:
 
 	; pixel suma 4
 	; mascara: xmm8
-	pxor xmm10, xmm10
 	movdqu xmm10, xmm9 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 	pand xmm10, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
 	pxor xmm11, xmm11
@@ -174,11 +167,9 @@ ldr_asm:
 	phaddw xmm10, xmm11 ; 00+00|00+00|00+00|00+00|00+00|00+00|00+00|00+0r+0g+0b
 	; luego packear saturado.
 	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
-	pxor xmm12, xmm12
 	movdqu xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)
 
 	; pixel suma 3
-	pxor xmm10, xmm10
 	movdqu xmm10, xmm9 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 	pslldq xmm10, 3 ; 0|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0
 	pand xmm10, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
@@ -198,7 +189,6 @@ ldr_asm:
 	por xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)
 
 	; pixel suma 2
-	pxor xmm10, xmm10
 	movdqu xmm10, xmm9 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 	pslldq xmm10, 6 ; 0|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0
 	pand xmm10, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
@@ -218,7 +208,6 @@ ldr_asm:
 	por xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)
 
 	; pixel suma 1
-	pxor xmm10, xmm10
 	movdqu xmm10, xmm9 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 	pslldq xmm10, 9 ; 0|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0|0|0|0
 	pand xmm10, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
@@ -238,7 +227,6 @@ ldr_asm:
 	por xmm12, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|suma(00+0r4+0g4+0b4)|suma(00+0r3+0g3+0b3)|suma(00+0r2+0g2+0b2)|suma(00+0r1+0g1+0b1)
 
 	; pixel suma 0
-	pxor xmm10, xmm10
 	movdqu xmm10, xmm9 ; 0|sum(r4)|sum(g4)|sum(b4)|sum(r3)|sum(g3)|sum(b3)|sum(r2)|sum(g2)|sum(b2)|sum(r1)|sum(g1)|sum(b1)|sum(r0)|sum(g0)|sum(b0)
 	pslldq xmm10, 12 ; 0|sum(r0)|sum(g0)|sum(b0)|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm10, xmm8 ; 0|sum(r)|sum(g)|sum(b)|0|0|0|0|0|0|0|0|0|0|0|0
@@ -273,7 +261,6 @@ ldr_asm:
 ; Por ultimo realizo la suma con Lij como una suma signada de floats y luego saturo hasta byte.
 
 	pxor xmm2, xmm2
-	pxor xmm1, xmm1
 	;movd xmm2, rbx ; 0|0|0|alpha
 	cvtsi2ss xmm2, ebx ; cast to float!
 	movdqu xmm1, xmm2 ; 0|0|0|alpha
@@ -283,7 +270,6 @@ ldr_asm:
 	por xmm1, xmm2 ; 0|alpha|alpha|alpha
 
 	pxor xmm3, xmm3
-	pxor xmm2, xmm2
 	;movd xmm3, r13 ; 0|0|0|max
 	cvtsi2ss xmm3, r13d ; cast to float! 
 	movdqu xmm2, xmm3 ; 0|0|0|max
@@ -297,13 +283,10 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
-	pxor xmm10, xmm10
-	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	psrldq xmm8, 14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
-	pxor xmm11, xmm11
-	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
+	movdqu xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j
 	pslldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|0
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j
 	pslldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j|sumargb_i,j|0
@@ -314,7 +297,6 @@ ldr_asm:
 	cvtdq2ps xmm11, xmm11 ; cast to float!
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj <- get pixel ij
-	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj|gj|bj
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj|gj|bj
 	pxor xmm3, xmm3
@@ -341,12 +323,10 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
-	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	psrldq xmm8, 2 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|FF|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
-	pxor xmm11, xmm11
-	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
+	movdqu xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1
 	pslldq xmm11, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
@@ -357,7 +337,6 @@ ldr_asm:
 	cvtdq2ps xmm11, xmm11 ; cast to float!
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
@@ -384,12 +363,10 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
-	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	psrldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
-	pxor xmm11, xmm11
-	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	movdqu xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
@@ -400,7 +377,6 @@ ldr_asm:
 	cvtdq2ps xmm11, xmm11 ; cast to float!
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
@@ -427,12 +403,10 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
-	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0|0
-	pxor xmm11, xmm11
 	psrld xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
-	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	movdqu xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
@@ -443,7 +417,6 @@ ldr_asm:
 	cvtdq2ps xmm11, xmm11 ; cast to float!
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
@@ -469,13 +442,11 @@ ldr_asm:
 	cmp r9, r11
 	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
 
-	pxor xmm14, xmm14
 	movdqu xmm14, xmm13 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+4|sumargb_i,j+3|sumargb_i,j+2|sumargb_i,j+1|sumargb_i,j
 	pslldq xmm8, 1 ; 0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0|0
 	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0|0|0
-	pxor xmm11, xmm11
 	psrldq xmm14, 2 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
-	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
+	movdqu xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|0
 	por xmm11, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1|sumargb_i,j+1|0
 	psrldq xmm14, 1 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|sumargb_i,j+1
@@ -486,7 +457,6 @@ ldr_asm:
 	cvtdq2ps xmm11, xmm11 ; cast to float!
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	pxor xmm0, xmm0
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
 	pxor xmm3, xmm3
@@ -555,8 +525,6 @@ ldr_asm:
 	shl r15, 1 ; r15*2
 	sub r9, r15 ; ante-ultima fila, posicion 0
 .devolver:
-	pxor xmm10, xmm10
-	pxor xmm11, xmm11
 	movdqu xmm10, [rdi + r8*4]
 	movdqu xmm11, [rdi + r9*4]
 	movdqu [rsi + r8*4], xmm10
