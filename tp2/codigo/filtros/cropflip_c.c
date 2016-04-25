@@ -13,15 +13,19 @@ void cropflip_c    (
 	int offsetx,
 	int offsety)
 {
+	dst_row_size = tamx*4;
 	unsigned char (*src_matrix)[src_row_size] = (unsigned char (*)[src_row_size]) src;
 	unsigned char (*dst_matrix)[dst_row_size] = (unsigned char (*)[dst_row_size]) dst;
 
 	// ejemplo de uso de src_matrix y dst_matrix (copia una parte de la imagen)
 
-	for (int i = 0; i < tamy; i++) {
-		for (int j = 0; j < tamx; j++) {
-			bgra_t *p_d = (bgra_t*) &dst_matrix[i][j * 4];
-            bgra_t *p_s = (bgra_t*) &src_matrix[i][j * 4];
+	for (int i = 0; i < tamy; i++) 
+	{
+		for (int j = 0; j < tamx; j++) 
+		{
+
+			bgra_t *p_d = (bgra_t*) &dst_matrix[(tamy-1)-i][((tamx-1)-j)*4];
+            		bgra_t *p_s = (bgra_t*) &src_matrix[i+offsety][(j+offsetx)*4];
 
 			p_d->b = p_s->b;
 			p_d->g = p_s->g;
@@ -30,6 +34,5 @@ void cropflip_c    (
 
 		}
 	}
-
 
 }
