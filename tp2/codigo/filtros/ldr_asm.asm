@@ -57,17 +57,18 @@ ldr_asm:
 
 	xor r8, r8 ; posicion actual
 	xor r9, r9 ; j = 0
-	mov r8d, ecx ; r8 = columnas
+	mov r8d, ecx ; r8 = cols
 
-	mov r15d, ecx ; r15d = columnas 
+	mov r15d, ecx ; r15d = cols
 	xor rcx, rcx
-	mov r14d, edx ; r14d = filas 
+	mov r14d, edx ; r14d = filas.
+	sub r14d, 2 ; filas-2
 	xor rax, rax ; limpio para usar en multiplicacion.
 	mov eax, r15d
-	mul r14d ; edx:eax = r15d*r14d = columnas*filas.
+	mul r14d ; edx:eax = r15d*r14d = cols*(filas-2).
 	mov ecx, edx
 	shl rdx, 32
-	mov ecx, eax ; ecx = r15d*r14d = columnas*filas. contador loop.
+	mov ecx, eax ; ecx = r15d*r14d = cols*(filas-2). contador loop.
 
 	xor rdx, rdx ; parte alta - resto 
 	xor rax, rax ; parte baja - cociente.
@@ -78,7 +79,7 @@ ldr_asm:
 	xor r11, r11
 	mov r11d, r15d
 	sub r11d, edx ; edx: 0 or 1
-	sub r11d, 2 ; (columnas-resto)-2 = colsToProccess
+	sub r11d, 2 ; (cols-resto)-2 = colsToProccess
 
 	shl r8, 1 ; r8*2 = i = 2 - j = 0
 
@@ -199,11 +200,11 @@ ldr_asm:
 	inc r9
 	inc r8
 	cmp r9, r11
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	je .mayorIgAColsToProccess ; mayor igual a colsToProccess
 	jmp .seguir
 
 .menorAColDos:
-; Tengo que devolver r9
+; Tengo que devolver r8
 	pxor xmm10, xmm10
 	movd xmm10, [rdi + r8*4]
 	movd [rsi + r8*4], xmm10
@@ -228,7 +229,7 @@ ldr_asm:
 
 .continuar:
 	xor r9, r9 ; reinicio contador columna actual.
-    inc r8
+	inc r8
 
 .seguir:
 	movdqu xmm8, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
@@ -239,9 +240,8 @@ ldr_asm:
 .sinCambios:
 	xor r8, r8
 	xor r9, r9
-	mov r9, rcx ; columnas*filas
-	shl r15, 1 ; r15*2
-	sub r9, r15 ; ante-ultima fila, posicion 0
+	mov r9, rcx ; cols*(filas-2)
+	shl r15, 1 ; cols*2
 .devolver:
 	movdqu xmm10, [rdi + r8*4]
 	movdqu xmm11, [rdi + r9*4]

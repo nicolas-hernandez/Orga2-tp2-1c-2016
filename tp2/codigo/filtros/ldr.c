@@ -39,5 +39,3 @@ void ayuda_ldr()
 	         "                         ldr -i c facil.bmp 120\n"
              "                         ldr -i c facil.bmp -- -200\n");
 }
-
-
