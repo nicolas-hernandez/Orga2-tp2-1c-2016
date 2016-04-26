@@ -101,12 +101,8 @@ ldr_asm:
 	xor r10, r10 ; cuento hasta 5
 
 	pxor xmm0, xmm0
-	pxor xmm1, xmm1
-	pxor xmm2, xmm2
-	pxor xmm3, xmm3
-	pxor xmm4, xmm4
 
-.cincoEnParalelo: ; Puedo procesar 5 pixeles en paralelo - los pixeles que estan en columnas mayores a colsToProccess no se tendran en cuenta.
+.cincoHorizontal: ; Puedo procesar 5 pixeles en paralelo - los pixeles que estan en columnas mayores a colsToProccess no se tendran en cuenta.
 
 	;          20  16  12   8   4   0
 	; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
@@ -129,10 +125,9 @@ ldr_asm:
     pslldq xmm13, 8
     psrldq xmm13, 8 ; limpio parte alta
     
-	movdqu xmm12, [rdi + r12*4 + 4] ; Li4|Li3|Li2|Li1
+	movd xmm9, [rdi + r12*4 + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
-	movdqu xmm9, xmm12
-	pslldq xmm9, 3 ; 0|r4|g4|b4|r3|g3|b3|r2|g2|b2|r1|g1|b1|0|0|0
+	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
 	pshufb xmm9, xmm7 ; ordenarCanalesPixelesParesAWord
 	phaddw xmm9, xmm10
@@ -145,148 +140,12 @@ ldr_asm:
 	addps xmm13, xmm9 ; un fp en la parte baja
 	pslldq xmm13, 12
 	psrldq xmm13, 12
-    addps xmm0, xmm13 ; suma de la i fila para el pixel index 0.
-
-    	movdqu xmm9, xmm12
-	pshufb xmm9, xmm6 ; ordenarCanalesPixelesImparesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm12, xmm7 ; ordenarCanalesPixelesParesAWord
-    phaddw xmm12, xmm10
-    pshufb xmm9, xmm11 ; ordenarADoubleWord
-    pshufb xmm12, xmm11 ; ordenarADoubleWord
-    cvtdq2ps xmm9, xmm9
-    cvtdq2ps xmm12, xmm12
-    addps xmm12, xmm9 ; cuatro fp sumados
-    movdqu xmm9, xmm12 ; shifteo dos fp de la parte alta a la parte baja
-    psrldq xmm9, 8
-    addps xmm12, xmm9 ; dos fp en la parte baja 
-    pslldq xmm12, 8
-    psrldq xmm12, 8 ; limpio parte alta
-
-	movdqu xmm13, [rdi + r12*4 + 8] ; Li5|Li4|Li3|Li2
-
-	movdqu xmm9, xmm13
-	pslldq xmm9, 3 ; 0|r5|g5|b5|r4|g4|b4|r3|g3|b3|r2|g2|b2|0|0|0
-	pand xmm9, xmm8 ; 0|r5|g5|b5|0|0|0|0|0|0|0|0|0|0|0|0
-	pshufb xmm9, xmm7 ; ordenarCanalesPixelesParesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm9, xmm11 ; ordenarADoubleWord
-	cvtdq2ps xmm9, xmm9 ; dos fp en la parte alta
-	psrldq xmm9, 8
-	addps xmm12, xmm9 ; dos fp en la parte baja 
-	movdqu xmm9, xmm12
-	psrldq xmm9, 4
-	addps xmm12, xmm9 ; un fp en la parte baja
-	pslldq xmm12, 12
-	psrldq xmm12, 12
-    addps xmm1, xmm12 ; suma de la i fila para el pixel index 1.
-
-	movdqu xmm9, xmm13
-	pshufb xmm9, xmm6 ; ordenarCanalesPixelesImparesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm13, xmm7 ; ordenarCanalesPixelesParesAWord
-    phaddw xmm13, xmm10
-    pshufb xmm9, xmm11 ; ordenarADoubleWord
-    pshufb xmm13, xmm11 ; ordenarADoubleWord
-    cvtdq2ps xmm9, xmm9
-    cvtdq2ps xmm13, xmm13
-    addps xmm13, xmm9 ; cuatro fp sumados
-    movdqu xmm9, xmm13 ; shifteo dos fp de la parte alta a la parte baja
-    psrldq xmm9, 8
-    addps xmm13, xmm9 ; dos fp en la parte baja 
-    pslldq xmm13, 8
-    psrldq xmm13, 8 ; limpio parte alta
-
-	movdqu xmm12, [rdi + r12*4 + 12] ; Li6|Li5|Li4|Li3
-
-	movdqu xmm9, xmm12
-	pslldq xmm9, 3 ; 0|r6|g6|b6|r5|g5|b5|r4|g4|b4|r3|g3|b3|0|0|0
-	pand xmm9, xmm8 ; 0|r6|g6|b6|0|0|0|0|0|0|0|0|0|0|0|0
-	pshufb xmm9, xmm7 ; ordenarCanalesPixelesParesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm9, xmm11 ; ordenarADoubleWord
-	cvtdq2ps xmm9, xmm9 ; dos fp en la parte alta
-	psrldq xmm9, 8
-	addps xmm13, xmm9 ; dos fp en la parte baja 
-	movdqu xmm9, xmm13
-	psrldq xmm9, 4
-	addps xmm13, xmm9 ; un fp en la parte baja
-	pslldq xmm13, 12
-	psrldq xmm13, 12
-    addps xmm2, xmm13 ; suma de la i fila para el pixel index 2.
-
-	movdqu xmm9, xmm12
-	pshufb xmm9, xmm6 ; ordenarCanalesPixelesImparesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm12, xmm7 ; ordenarCanalesPixelesParesAWord
-    phaddw xmm12, xmm10
-    pshufb xmm9, xmm11 ; ordenarADoubleWord
-    pshufb xmm12, xmm11 ; ordenarADoubleWord
-    cvtdq2ps xmm9, xmm9
-    cvtdq2ps xmm12, xmm12
-    addps xmm12, xmm9 ; cuatro fp sumados
-    movdqu xmm9, xmm12 ; shifteo dos fp de la parte alta a la parte baja
-    psrldq xmm9, 8
-    addps xmm12, xmm9 ; dos fp en la parte baja 
-    pslldq xmm12, 8
-    psrldq xmm12, 8 ; limpio parte alta
-
-	movdqu xmm13, [rdi + r12*4 + 16] ; Li7|Li6|Li5|Li4
-
-	movdqu xmm9, xmm13
-	pslldq xmm9, 3 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|0|0|0
-	pand xmm9, xmm8 ; 0|r7|g7|b7|0|0|0|0|0|0|0|0|0|0|0|0
-	pshufb xmm9, xmm7 ; ordenarCanalesPixelesParesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm9, xmm11 ; ordenarADoubleWord
-	cvtdq2ps xmm9, xmm9 ; dos fp en la parte alta
-	psrldq xmm9, 8
-	addps xmm12, xmm9 ; dos fp en la parte baja 
-	movdqu xmm9, xmm12
-	psrldq xmm9, 4
-	addps xmm12, xmm9 ; un fp en la parte baja
-	pslldq xmm12, 12
-	psrldq xmm12, 12
-    addps xmm3, xmm12 ; suma de la i fila para el pixel index 3.
-
-	movdqu xmm9, xmm13
-	pshufb xmm9, xmm6 ; ordenarCanalesPixelesImparesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm13, xmm7 ; ordenarCanalesPixelesParesAWord
-    phaddw xmm13, xmm10
-    pshufb xmm9, xmm11 ; ordenarADoubleWord
-    pshufb xmm13, xmm11 ; ordenarADoubleWord
-    cvtdq2ps xmm9, xmm9
-    cvtdq2ps xmm13, xmm13
-    addps xmm13, xmm9 ; cuatro fp sumados
-    movdqu xmm9, xmm13 ; shifteo dos fp de la parte alta a la parte baja
-    psrldq xmm9, 8
-    addps xmm13, xmm9 ; dos fp en la parte baja 
-    pslldq xmm13, 8
-    psrldq xmm13, 8 ; limpio parte alta
-
-	movd xmm9, [rdi + r12*4 + 28] ; 0|0|0|0|0|0|0|0|0|0|0|0|a8|r8|g8|b8
-
-	pslldq xmm9, 12 ; a8|r8|g8|b8|0|0|0|0|0|0|0|0|0|0|0|0
-	pslldq xmm9, 3 ; 0|r7|g7|b7|r6|g6|b6|r5|g5|b5|r4|g4|b4|0|0|0
-	pand xmm9, xmm8 ; 0|r7|g7|b7|0|0|0|0|0|0|0|0|0|0|0|0
-	pshufb xmm9, xmm7 ; ordenarCanalesPixelesParesAWord
-	phaddw xmm9, xmm10
-	pshufb xmm9, xmm11 ; ordenarADoubleWord
-	cvtdq2ps xmm9, xmm9 ; dos fp en la parte alta
-	psrldq xmm9, 8
-	addps xmm13, xmm9 ; dos fp en la parte baja 
-	movdqu xmm9, xmm13
-	psrldq xmm9, 4
-	addps xmm13, xmm9 ; un fp en la parte baja
-	pslldq xmm13, 12
-	psrldq xmm13, 12
-	addps xmm4, xmm13 ; suma de la i fila para el pixel index 4.
+	addps xmm0, xmm13 ; suma de la i fila para el pixel index 4.
 
 	add r12, r15
 	inc r10
 	cmp r10, 5
-	jl .cincoEnParalelo
+	jl .cincoHorizontal
 
 	pxor xmm13, xmm13
 	cvtsi2ss xmm13, ebx ; cast to float!
@@ -338,134 +197,6 @@ ldr_asm:
 	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj|rj+(alpha*sumargb_i,j*rj)/max|gj+(alpha*sumargb_i,j*gj)/max|bj+(alpha*sumargb_i,j*bj)/max
 
     movd [rsi + r8*4], xmm14
-
-	inc r9
-	inc r8
-	cmp r9, r11
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-
-	movdqu xmm5, xmm1
-	pslldq xmm5, 4
-	por xmm5, xmm1
-	pslldq xmm5, 4
-	por xmm5, xmm1
-	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
-	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm10, xmm10
-	punpcklbw xmm0, xmm10 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm10 ; 0|rj+1|gj+1|bj+1
-	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm5, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
-	mulps xmm5, xmm12 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
-	divps xmm5, xmm13 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
-	addps xmm5, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-	
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	pxor xmm10, xmm10
-	packusdw xmm5, xmm10 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-	packuswb xmm5, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-    movd [rsi + r8*4], xmm14
-
-	inc r9
-	inc r8
-	cmp r9, r11
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-
-	movdqu xmm5, xmm2
-	pslldq xmm5, 4
-	por xmm5, xmm2
-	pslldq xmm5, 4
-	por xmm5, xmm2
-	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
-	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm10, xmm10
-	punpcklbw xmm0, xmm10 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm10 ; 0|rj+1|gj+1|bj+1
-	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm5, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
-	mulps xmm5, xmm12 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
-	divps xmm5, xmm13 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
-	addps xmm5, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-	
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	pxor xmm10, xmm10
-	packusdw xmm5, xmm10 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-	packuswb xmm5, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-    movd [rsi + r8*4], xmm14
-
-	inc r9
-	inc r8
-	cmp r9, r11
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-
-	movdqu xmm5, xmm3
-	pslldq xmm5, 4
-	por xmm5, xmm3
-	pslldq xmm5, 4
-	por xmm5, xmm3
-	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
-	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm10, xmm10
-	punpcklbw xmm0, xmm10 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm10 ; 0|rj+1|gj+1|bj+1
-	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm5, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
-	mulps xmm5, xmm12 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
-	divps xmm5, xmm13 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
-	addps xmm5, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	pxor xmm10, xmm10
-	packusdw xmm5, xmm10 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-	packuswb xmm5, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-    movd [rsi + r8*4], xmm14
-
-	inc r9
-	inc r8
-	cmp r9, r11
-	jge .mayorIgAColsToProccess ; mayor igual a colsToProccess
-
-	movdqu xmm5, xmm4
-	pslldq xmm5, 4
-	por xmm5, xmm4
-	pslldq xmm5, 4
-	por xmm5, xmm4
-	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1 <- get pixel ij+1
-	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1|gj+1|bj+1
-	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1|gj+1|bj+1
-	pxor xmm10, xmm10
-	punpcklbw xmm0, xmm10 ; 0|0|0|0|0|rj+1|gj+1|bj+1
-	punpcklwd xmm0, xmm10 ; 0|rj+1|gj+1|bj+1
-	cvtdq2ps xmm0, xmm0 ; cast to float!
-	mulps xmm5, xmm0 ; 0|sumargb_i,j+1*rj+1|sumargb_i,j+1*gj+1|sumargb_i,j+1*bj+1
-	mulps xmm5, xmm12 ; 0|alpha*sumargb_i,j+1*rj+1|alpha*sumargb_i,j+1*gj+1|alpha*sumargb_i,j+1*bj+1 <- puede cambiar el signo segun alpha.
-	divps xmm5, xmm13 ; 0|(alpha*sumargb_i,j+1*rj+1)/max|(alpha*sumargb_i,j+1*gj+1)/max|(alpha*sumargb_i,j+1*bj+1)/max
-	addps xmm5, xmm0 ; 0|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	pxor xmm10, xmm10
-	packusdw xmm5, xmm10 ; 0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max
-	packuswb xmm5, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|rj+1+(alpha*sumargb_i,j+1*rj+1)/gj+1+max|(alpha*sumargb_i,j+1*gj+1)/bj+1+max|(alpha*sumargb_i,j+1*bj+1)/max <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm8 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|aj+1|rj+1+(alpha*sumargb_i,j+1*rj+1)/max|gj+1+(alpha*sumargb_i,j+1*gj+1)/max|bj+1+(alpha*sumargb_i,j+1*bj+1)/max
-
-	movd [rsi + r8*4], xmm14
 
 	inc r9
 	inc r8
