@@ -106,10 +106,10 @@ ldr_asm:
 
 	pxor xmm0, xmm0
 
-.cincoHorizontal: ; Puedo procesar 5 pixeles en paralelo - los pixeles que estan en columnas mayores a colsToProccess no se tendran en cuenta.
+.cincoHorizontal:
 
-	;          20  16  12   8   4   0
-	; Li7|Li6|Li5|Li4|Li3|Li2|Li1|Li0
+	; 16  12   8   4   0
+	; Li4|Li3|Li2|Li1|Li0
 	pxor xmm10, xmm10
 
 	movdqu xmm13, [rdi + r12*4] ; Li3|Li2|Li1|Li0
