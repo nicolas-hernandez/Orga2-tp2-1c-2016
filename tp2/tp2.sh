@@ -10,6 +10,7 @@ function usage {
     echo "Should be implemented."
 }
 
+#TODO: checkear el contenido de filter y llenar filter args
 
 case $MODE in
     asm)
@@ -38,7 +39,15 @@ esac
 
 cd $BUILD_DIR
 make $BUILD_ARGS
-./$PROGRAM $OPTIONS $FILTER $TEST_PIC $FILTER_ARGS | grep llamada
+let TIMES=100
+typeset -i i TIMES 
+for ((i=1;i<=TIMES;++i)); do
+	./$PROGRAM $OPTIONS $FILTER $TEST_PIC $FILTER_ARGS \
+		| grep llamada >> $LOGFILE
+done
+
+
+#./$PROGRAM $OPTIONS $FILTER $TEST_PIC $FILTER_ARGS | grep llamada
 
 #./$PROGRAM $OPTIONS $FILTER $TEST_PIC $FILTER_ARGS >> $LOGFILE
 
