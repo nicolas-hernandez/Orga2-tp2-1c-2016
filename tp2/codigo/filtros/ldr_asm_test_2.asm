@@ -13,7 +13,7 @@ DEFAULT REL
 punpcklbwAndCleanAlpha: DB 0x00, 0x88, 0x01, 0x89, 0x02, 0x8A, 0x83, 0x8B, 0x04, 0x8C, 0x05, 0x8D, 0x06, 0x8E, 0x87, 0x8F 
 punpckhbwAndCleanAlpha: DB 0x08, 0x81, 0x09, 0x82, 0x0A, 0x83, 0x8B, 0x84, 0x0C, 0x85, 0x0D, 0x86, 0x0E, 0x87, 0x8F, 0x88 
 saveOnePixelShifter: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
-maxValue: DD 0x004A6A4B ; check this 4876875
+maxValue: DD 0x004A6A4B ; check this 4876875 
 
 section .text
 ;void ldr_asm    (
@@ -150,23 +150,11 @@ _ldr_asm:
 
 	pxor xmm13, xmm13
 	movd xmm13, ebx ; ?
-	;cvtsi2ss xmm13, ebx ; cast to float!
 	movdqu xmm12, xmm13 ; 0|0|0|alpha
 	pslldq xmm12, 4 ; 0|0|alpha|0
 	por xmm12, xmm13 ; 0|0|alpha|alpha
 	pslldq xmm12, 4 ; 0|alpha|alpha|0
 	por xmm12, xmm13 ; 0|alpha|alpha|alpha
-
-	pxor xmm14, xmm14
-	movd xmm14, r13d ; ?
-	;cvtsi2ss xmm14, r13d ; cast to float! 
-	movdqu xmm13, xmm14 ; 0|0|0|max
-	pslldq xmm13, 4 ; 0|0|max|0
-	por xmm13, xmm14 ; 0|0|max|max
-	pslldq xmm13, 4 ; 0|max|max|0
-	por xmm13, xmm14 ; 0|max|max|max
-	pslldq xmm13, 4 ; max|max|max|0
-	por xmm13, xmm14 ; max|max|max|max
 
 	movdqu xmm5, xmm0
 	pslldq xmm5, 4
@@ -179,18 +167,38 @@ _ldr_asm:
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
 	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
 	punpcklwd xmm0, xmm11 ; 0|r|g|b
+	;TEST 2: OPERACIONES CON ENTEROS
 	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [−2,147,483,648 to 2,147,483,647]
 	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [−2,147,483,648 to 2,147,483,647]
-    cvtdq2ps xmm5, xmm5 ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
-	cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
-	divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
-	cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
-	addps xmm5, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
-	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
+	; PROBLEM HERE -->;divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
+    mov r10, rdx ; salvo resto
+    xor rdx, rdx
+    xor rax, rax
+    movd eax, xmm5 ; alpha*sumargb*b
+    div r13d ; alpha*sumargb*b/max
+    pxor xmm10, xmm10
+    movd xmm10, eax ; 0|0|0|alpha*sumargb*b
+    pslldq xmm10, 4 ; 0|0|alpha*sumargb*b|0
+    xor rdx, rdx
+    xor rax, rax
+    psrldq xmm5, 4
+    movd eax, xmm5 ; alpha*sumargb*g
+    div r13d ; alpha*sumargb*g/max
+    movd xmm10, eax ; 0|0|alpha*sumargb*b/max|alpha*sumargb*g/max
+    pslldq xmm10, 4 ; 0|alpha*sumargb*b/max|alpha*sumargb*g/max|0
+    xor rdx, rdx
+    xor rax, rax
+    psrldq xmm5, 4
+    movd eax, xmm5 ; alpha*sumargb*r
+    div r13d ; alpha*sumargb*r/max
+    movd xmm10, eax ; 0|0|alpha*sumargb*b/max|alpha*sumargb*g/max|alpha*sumargb*r/max
+    mov rdx, r10 ; recupero resto
+
+	paddd xmm10, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+	packusdw xmm10, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
+	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
 	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+	por xmm14, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 
     movd [rsi + r8*4], xmm14
 

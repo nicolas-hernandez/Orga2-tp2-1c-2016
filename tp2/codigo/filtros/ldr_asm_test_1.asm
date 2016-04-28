@@ -111,8 +111,17 @@ _ldr_asm:
 
 	; 16  12   8   4   0
 	; Li4|Li3|Li2|Li1|Li0
-    ;VERSION STANDARD: Con 2 accesos - acceso extra paa el pixel 5
-    movdqu xmm13, [rdi + r12*4] ; Li3|Li2|Li1|Li0
+    ;TEST 1: Con 5 accesos  - acceso extra paa el pixel 5
+	movd xmm13, [rdi + r12*4] ; 0|0|0|Li0
+	movd xmm10, [rdi + r12*4+4] ; 0|0|0|Li1
+	pslldq xmm10, 4 ; 0|0|Li1|0
+	por xmm13, xmm10 ; 0|0|Li1|Li0
+	movd xmm10, [rdi + r12*4+8] ; 0|0|0|Li2
+	pslldq xmm10, 8 ; 0|Li2|0|0
+	por xmm13, xmm10 ; 0|Li2|Li1|Li0
+	movd xmm10, [rdi + r12*4+12] ; 0|0|0|Li3
+	pslldq xmm10, 12 ; Li3|0|0|0
+	por xmm13, xmm10 ; Li3|Li2|Li1|Li0
 
 	movdqu xmm9, xmm13
 	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
