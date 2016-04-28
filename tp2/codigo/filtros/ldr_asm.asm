@@ -1,4 +1,4 @@
-global ldr_asm
+global _ldr_asm
 
 section .data
 DEFAULT REL
@@ -9,10 +9,10 @@ DEFAULT REL
 ; En memoria: BGRA
 ; En registros: ARGB
 ; a3|r3|g3|b3|a2|r2|g2|b2|a1|r1|g1|b1|a0|r0|g0|b0 -> a3|a2|a1|a0|r3|g3|b3|r2|g2|b2|r1|g1|b1|r0|g0|b0
-ordenarCanalesPixelesParesAWord: DB 0x00, 0x83, 0x01, 0x84, 0x02, 0x85, 0x86, 0x87, 0x08, 0x8B, 0x09, 0x8C, 0x0A, 0x8D, 0x8E, 0x8F 
-ordenarCanalesPixelesImparesAWord: DB 0x04, 0x80, 0x05, 0x81, 0x06, 0x82, 0x83, 0x87, 0x0C, 0x88, 0x0D, 0x89, 0x0E, 0x8A, 0x8B, 0x8F 
-ordenarADoubleWord: DB 0x00, 0x01, 0x88, 0x89, 0x2, 0x03, 0x8A, 0x8B, 0x04, 0x05, 0x8C, 0x8D, 0x06, 0x07, 0x8E, 0x8F
-salvarUnPixelShifteable: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
+; Las siguientes dos mascaras me permiten hacer lo mismo que un unpck pero ademas limpio canales alpha dado que no asumo que sean 0 por default.
+punpcklbwAndCleanAlpha: DB 0x00, 0x88, 0x01, 0x89, 0x02, 0x8A, 0x83, 0x8B, 0x04, 0x8C, 0x05, 0x8D, 0x06, 0x8E, 0x87, 0x8F 
+punpckhbwAndCleanAlpha: DB 0x08, 0x81, 0x09, 0x82, 0x0A, 0x83, 0x8B, 0x84, 0x0C, 0x85, 0x0D, 0x86, 0x0E, 0x87, 0x8F, 0x88 
+saveOnePixelShifter: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
 maxValue: DD 0x004A6A4B ; check this 4876875
 
 section .text
@@ -28,7 +28,11 @@ section .text
 	; r8 posicion actual
 	; r9 contador columnas
 
-ldr_asm:
+	; PARA TENER LA VERSION STANDARD DESCOMENTAR LA LINEA 119, COMENTAR 121 A 130, DESCOMENTAR 
+	; PARA REALIZAR EL TEST 1: 
+	; PARA REALIZAR EL TEST 2: 
+
+_ldr_asm:
 	push rbp
 	mov rbp, rsp
 	push rbx
@@ -83,16 +87,16 @@ ldr_asm:
 
 	shl r8, 1 ; r8*2 = i = 2 - j = 0
 
-	movdqu xmm6, [ordenarCanalesPixelesParesAWord]
-	movdqu xmm7, [ordenarCanalesPixelesImparesAWord]
-	movdqu xmm8, [salvarUnPixelShifteable]
-	movdqu xmm11, [ordenarADoubleWord]
+	movdqu xmm6, [punpcklbwAndCleanAlpha]
+	movdqu xmm7, [punpckhbwAndCleanAlpha]
+	movdqu xmm8, [saveOnePixelShifter]
 	movdqu xmm15, xmm8 ; 0|FF|FF|FF|0|0|0|0|0|0|0|0|0|0|0|0
     psrldq xmm15, 12 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
     movdqu xmm4, xmm8
     psrldq xmm4, 14
-    pslldq xmm4, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|F|0|0|0
-    
+    pslldq xmm4, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0
+
+	pxor xmm11, xmm11
 
 .ciclo: ; while(r8 < rcx) == (actual < total) 
 ; if(j > 1)
@@ -112,40 +116,59 @@ ldr_asm:
 	; 16  12   8   4   0
 	; Li4|Li3|Li2|Li1|Li0
 	pxor xmm10, xmm10
+    ;VERSION STANDARD: Con 2 acceso - acceso extra paa el pixel 5
+    movdqu xmm13, [rdi + r12*4] ; Li3|Li2|Li1|Li0
+    ;TEST 1: Con 5 accesos  - acceso extra paa el pixel 5
+	;movd xmm13, [rdi + r12*4] ; 0|0|0|Li0
+	;movd xmm10, [rdi + r12*4+4] ; 0|0|0|Li1
+	;pslldq xmm10, 4 ; 0|0|Li1|0
+	;por xmm13, xmm10 ; 0|0|Li1|Li0
+	;movd xmm10, [rdi + r12*4+8] ; 0|0|0|Li2
+	;pslldq xmm10, 8 ; 0|Li2|0|0
+	;por xmm13, xmm10 ; 0|Li2|Li1|Li0
+	;movd xmm10, [rdi + r12*4+12] ; 0|0|0|Li3
+	;pslldq xmm10, 12 ; Li3|0|0|0
+	;por xmm13, xmm10 ; Li3|Li2|Li1|Li0
 
-	movdqu xmm13, [rdi + r12*4] ; Li3|Li2|Li1|Li0
 	movdqu xmm9, xmm13
-	pshufb xmm9, xmm6 ; 0|0|0|r2|0|g2|0|b2|0|0|0|r0|0|g0|0|b0
-	phaddw xmm9, xmm10 ; 0|0|0|0|0+r2|g2+b2|0+r0|g0+b0 maximo por dw = 510 = 0x01FE
-	pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r1|0|g1|0|b1
-    phaddw xmm13, xmm10 ; 0|0|0|0|r3|g3+b3|r1|g1+b1 maximo por dw = 510 = 0x01FE
-    pshufb xmm9, xmm11 ; 0|r2|0|g2+b2|0|r0|0|g0+b0
-    pshufb xmm13, xmm11 ; r3|g3+b3|r1|g1+b1
-    cvtdq2ps xmm9, xmm9 ; fp(r2)|fp(g2+b2)|fp(0+r0)|fp(g0+b0)
-    cvtdq2ps xmm13, xmm13 ; fp(r3)|fp(g3+b3)|fp(0+r1)|fp(g1+b1)
-    addps xmm13, xmm9 ; fp(r3+0+r2)|fp(g3+b3+g2+b2)|fp(0+r1+r0)|fp(g1+b1+g0+b0)
+	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
+	phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0 maximo por dw = 510 = 0x01FE
+	pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
+    phaddw xmm13, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 maximo por dw = 510 = 0x01FE
+    punpcklwd xmm9, xmm11 ; r1|g1+b1|r0|g0+b0
+    punpcklwd xmm13, xmm11 ; r3|g3+b3|r2|g2+b2
+    ;TEST 2: OPERACIONES CON ENTEROS
+    cvtdq2ps xmm9, xmm9 ; fp(r1)|fp(g1+b1)|fp(r0)|fp(g0+b0)
+    cvtdq2ps xmm13, xmm13 ; fp(r3)|fp(g3+b3)|fp(r2)|fp(g2+b2)
+    addps xmm13, xmm9 ; fp(r3+r1)|fp(g3+b3+g1+b1)|fp(r2+r0)|fp(g2+b2+g0+b0)
+    ;paddd xmm13, xmm9 ; idem anterior pero enteros
     movdqu xmm9, xmm13
-    psrldq xmm9, 8 ; 0|0|fp(0+r3+0+r2)|fp(g3+b3+g2+b2)
-    addps xmm13, xmm9 ; fp(r3+r2)|fp(g3+b3+g2+b2)|fp(0+r1+0+r0+r3+0+r2)|fp(g1+b1+g0+b0+g3+b3+g2+b2)
-    pslldq xmm13, 8 ; fp(r1+r0+r3+r2)|fp(g1+b1+g0+b0+g3+b3+g2+b2)|0|0
-    psrldq xmm13, 8 ; 0|0|fp(r1+r0+r3+r2)|fp(g1+b1+g0+b0+g3+b3+g2+b2)
-    
+    psrldq xmm9, 8 ; 0|0|fp(r3+r1)|fp(g3+b3+g1+b1)
+    addps xmm13, xmm9 ; fp(r3+r1)|fp(g3+b3+g1+b1)|fp(r2+r0+r3+r1)|fp(g2+b2+g0+b0+g3+b3+g1+b1)
+    ;paddd xmm13, xmm9 ; idem anterior pero enteros
+    pslldq xmm13, 8 ; fp(r2+r0+r3+r1)|fp(g2+b2+g0+b0+g3+b3+g1+b1)|0|0
+    psrldq xmm13, 8 ; 0|0|fp(r2+r0+r3+r1)|fp(g2+b2+g0+b0+g3+b3+g1+b1)
+    ;Acceso extra paa el pixel 5
 	movd xmm9, [rdi + r12*4 + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
 	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
 	pshufb xmm9, xmm7 ; 0|0|0|r4|0|g4|0|b4|0|0|0|0|0|0|0|0
-	phaddw xmm9, xmm10 ; 0|0|0|0|r4|g4+b4|0|0 maximo por dw = 510 = 0x01FE
-	pshufb xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
-	cvtdq2ps xmm9, xmm9 ; fp(r4)|fp(g4+b4)|0|0
+	phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0 maximo por dw = 510 = 0x01FE
+	punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
+    ;TEST 2: OPERACIONES CON ENTEROS
+	;cvtdq2ps xmm9, xmm9 ; fp(r4)|fp(g4+b4)|0|0
 	psrldq xmm9, 8 ; 0|0|fp(r4)|fp(g4+b4)
-	addps xmm13, xmm9 ; 0|0|fp(r1+r0+r3+0+r2+r4)|fp(g1+b1+g0+b0+g3+b3+g2+b2+g4+b4)
+	addps xmm13, xmm9 ; 0|0|fp(r2+r0+r3+r1+r4)|fp(g2+b2+g0+b0+g3+b3+g1+b1+g4+b4)
+	;paddd xmm13, xmm9 ; idem anterior pero enteros
 	movdqu xmm9, xmm13
-	psrldq xmm9, 4 ; 0|0|0|fp(r1+r0+r3+0+r2+r4)
-	addps xmm13, xmm9 ; 0|0|fp(r1+r0+r3+0+r2+r4)|fp(g1+b1+g0+b0+g3+b3+g2+b2+g4+b4+r1+r0+r3+0+r2+r4)
-	pslldq xmm13, 12 ; fp(g1+b1+g0+b0+g3+b3+g2+b2+g4+b4+r1+r0+r3+0+r2+r4)|0|0|0
-	psrldq xmm13, 12 ; 0|0|0|fp(g1+b1+g0+b0+g3+b3+g2+b2+g4+b4+r1+r0+r3+0+r2+r4)
+	psrldq xmm9, 4 ; 0|0|0|fp(r2+r0+r3+r1+r4)
+	addps xmm13, xmm9 ; 0|0|fp(r2+r0+r3+r1+r4)|fp(g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4)
+	;paddd xmm13, xmm9 ; idem anterior pero enteros
+	pslldq xmm13, 12 ; fp(g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4)|0|0|0
+	psrldq xmm13, 12 ; 0|0|0|fp(g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4)
 	addps xmm0, xmm13 ; suma de la i fila para el pixel ij.
+	;paddd xmm0, xmm13 ; idem anterior pero enteros
 
 	add r12, r15
 	inc r10
@@ -179,9 +202,8 @@ ldr_asm:
 	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
-	pxor xmm10, xmm10
-	punpcklbw xmm0, xmm10 ; 0|0|0|0|0|r|g|b
-	punpcklwd xmm0, xmm10 ; 0|r|g|b
+	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
+	punpcklwd xmm0, xmm11 ; 0|r|g|b
 	cvtdq2ps xmm0, xmm0 ; cast to float!
 	mulps xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b
 	mulps xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha.
@@ -189,9 +211,8 @@ ldr_asm:
 	addps xmm5, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 	
 	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	pxor xmm10, xmm10
-	packusdw xmm5, xmm10 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
-	packuswb xmm5, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
+	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
+	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
 	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
 	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 

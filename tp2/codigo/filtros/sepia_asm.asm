@@ -5,7 +5,7 @@ factores: DD  0.2, 0.3, 0.5, 0.0
 alfamasc: DB  0, 0, 0, 0XFF, 0, 0, 0, 0XFF, 0, 0, 0 , 0XFF, 0, 0, 0, 0XFF
 alfainv: DB 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0    
 section .text
-global sepia_asm
+global _sepia_asm
 
 ;Notacion:
 ;px = pixel input 
@@ -14,7 +14,7 @@ global sepia_asm
 ;El contenido de los registros XMM se muestra del 
 ;	bit mas significativo al menos significativo
 
-sepia_asm:
+_sepia_asm:
 	;rdi *src
 	;rsi *dst
 	;edx int cols

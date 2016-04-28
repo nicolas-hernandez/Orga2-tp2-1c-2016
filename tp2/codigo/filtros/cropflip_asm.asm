@@ -1,4 +1,4 @@
-global cropflip_asm
+global _cropflip_asm
 %define MASK_INV 00011011b
 section .text
 ;void cropflip_asm(unsigned char *src,
@@ -18,7 +18,7 @@ section .text
 ;[rsp+ 24] = tamy
 ;[rsp+ 32] = offsetx
 ;[rsp+ 40] = offsety
-cropflip_asm:
+_cropflip_asm:
     	push rbp
     	mov rbp, rsp
     	push rbx
