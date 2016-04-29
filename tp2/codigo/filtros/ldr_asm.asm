@@ -210,7 +210,7 @@ ldr_asm:
 	inc r8
 	movd xmm10, [rdi + r8*pixelSize]
 	movd [rsi + r8*pixelSize], xmm10
-    inc r8	
+    inc r8
 
 	xor r9, r9 ; reinicio contador columna actual.
 

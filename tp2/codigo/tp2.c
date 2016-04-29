@@ -74,7 +74,8 @@ void imprimir_tiempos_ejecucion(unsigned long long int start, unsigned long long
 	//printf("  Comienzo                          : %llu\n", start);
 	//printf("  Fin                               : %llu\n", end);
 	//printf("  # iteraciones                     : %d\n", cant_iteraciones);
-	printf("  # de ciclos insumidos totales     : %llu\n", cant_ciclos);
+	//printf("  # de ciclos insumidos totales     : %llu\n", cant_ciclos);
+	printf("%llu\n", cant_ciclos);
 	//printf("  # de ciclos insumidos por llamada : %.3f\n", (float)cant_ciclos/(float)cant_iteraciones);
 }
 
