@@ -5,6 +5,9 @@ core
 
 #Latex stuff
 *.log
+*.aux
+*.gz
+*.toc
 
 #Ycm stuff
 *.ycm_extra_conf.py
