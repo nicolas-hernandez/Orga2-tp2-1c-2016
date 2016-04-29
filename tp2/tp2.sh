@@ -1,3 +1,5 @@
+#!/bin/bash
+let TIMES=100
 MODE=$1
 FILTER=$2
 PIC=$3
@@ -63,7 +65,6 @@ TEST_PIC=$WORK_DIR/$PIC
 
 cd $BUILD_DIR
 make $BUILD_ARGS
-let TIMES=100
 typeset -i i TIMES 
 for ((i=1;i<=TIMES;++i)); do
 	./$PROGRAM $OPTIONS $FILTER $TEST_PIC $FILTER_ARGS \

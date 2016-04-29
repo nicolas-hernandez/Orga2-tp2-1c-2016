@@ -23,7 +23,8 @@ Uso de tp2.sh:
 	FILTRO: ldr cropflip sepia
 	IMAGEN: path relativo de la imagen ("codigo/img/scarlett.bmp" funca pero "/home/nico/scarlett.bmp" no)
 
-	Ojo, no esta pensado para correrse desde cualquier directorio.
+Ojo, no esta pensado para correrse desde cualquier directorio.
 
-	Los resultados se guardan en codigo/log.txt. El script sobrescribe este archivo.
+Los resultados se guardan en codigo/log.txt. El script sobrescribe este archivo.
 
+Modificando la segunda linea del script, modificas la cantidad de veces que corre,
