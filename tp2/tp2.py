@@ -13,7 +13,8 @@ def compile():
     build_dir = "codigo/"
     cwd = os.getcwd() # get current directory
     os.chdir(build_dir)
-    os.system("make -e CFLAGS64=\"-O3 -Wall -std=c99 -pedantic -m64\" ")
+    os.system("make -e CFLAGS64=\"-O3 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64\" ")
+    #os.system("make")
     os.chdir(cwd)
 
 #    for source in sources:
@@ -33,7 +34,7 @@ def test():
   unittest.main(module='scripts.tptests', exit=False, argv=argv[:1], verbosity=3)
 
 def main():
-    build()
+    #build()
     #test()
     clean()
     

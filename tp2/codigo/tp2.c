@@ -70,12 +70,12 @@ filtro_t* detectar_filtro(configuracion_t *config)
 void imprimir_tiempos_ejecucion(unsigned long long int start, unsigned long long int end, int cant_iteraciones) {
 	unsigned long long int cant_ciclos = end-start;
 
-	printf("Tiempo de ejecución:\n");
-	printf("  Comienzo                          : %llu\n", start);
-	printf("  Fin                               : %llu\n", end);
-	printf("  # iteraciones                     : %d\n", cant_iteraciones);
+	//printf("Tiempo de ejecución:\n");
+	//printf("  Comienzo                          : %llu\n", start);
+	//printf("  Fin                               : %llu\n", end);
+	//printf("  # iteraciones                     : %d\n", cant_iteraciones);
 	printf("  # de ciclos insumidos totales     : %llu\n", cant_ciclos);
-	printf("  # de ciclos insumidos por llamada : %.3f\n", (float)cant_ciclos/(float)cant_iteraciones);
+	//printf("  # de ciclos insumidos por llamada : %.3f\n", (float)cant_ciclos/(float)cant_iteraciones);
 }
 
 void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
