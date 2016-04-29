@@ -3,8 +3,7 @@ global ldr_asm
 section .data
 DEFAULT REL
 
-;%define WHITE 255
-;%define BLACK 0
+%define pixelSize 4
 
 ; En memoria: BGRA
 ; En registros: ARGB
@@ -19,8 +18,8 @@ section .text
 ;void ldr_asm    (
 	;unsigned char *src, rdi
 	;unsigned char *dst, rsi
-	;int filas, edx
-	;int cols, ecx
+	;int cols, edx
+	;int filas, ecx
 	;int src_row_size, r8d -> no se usa
 	;int dst_row_size, r9d -> no se usa
 	;int alpha) rsp-8
@@ -57,11 +56,11 @@ ldr_asm:
 
 	xor r8, r8 ; posicion actual
 	xor r9, r9 ; j = 0
-	mov r8d, ecx ; r8 = cols
+	mov r8d, edx ; r8 = cols
 
-	mov r15d, ecx ; r15d = cols
-	xor rcx, rcx
-	mov r14d, edx ; r14d = filas.
+	mov r15d, edx ; r15d = cols
+	xor rdx, rdx
+	mov r14d, ecx ; r14d = filas.
 	sub r14d, 2 ; filas-2
 	xor rax, rax ; limpio para usar en multiplicacion.
 	mov eax, r15d
@@ -70,16 +69,9 @@ ldr_asm:
 	shl rdx, 32
 	mov ecx, eax ; ecx = r15d*r14d = cols*(filas-2). contador loop.
 
-	xor rdx, rdx ; parte alta - resto 
-	xor rax, rax ; parte baja - cociente.
-	xor r11, r11
-	mov eax, r15d
-	mov r11, 2
-	div r11d ; divido columnas por dos - resto en edx (from 0 to 1) 
 	xor r11, r11
 	mov r11d, r15d
-	sub r11d, edx ; edx: 0 or 1
-	sub r11d, 2 ; (cols-resto)-2 = colsToProccess
+	sub r11d, 2 ; cols-2 = colsToProccess
 
 	shl r8, 1 ; r8*2 = i = 2 - j = 0
 
@@ -112,7 +104,7 @@ ldr_asm:
 	; 16  12   8   4   0
 	; Li4|Li3|Li2|Li1|Li0
     ;VERSION STANDARD: Con 2 accesos - acceso extra paa el pixel 5
-    movdqu xmm13, [rdi + r12*4] ; Li3|Li2|Li1|Li0
+    movdqu xmm13, [rdi + r12*pixelSize] ; Li3|Li2|Li1|Li0
 
 	movdqu xmm9, xmm13
 	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
@@ -127,7 +119,7 @@ ldr_asm:
     paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1  -- maximo por dw = 2040 in []
     pslldq xmm13, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
     psrldq xmm13, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
-	movd xmm9, [rdi + r12*4 + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
+	movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
 	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
 	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
@@ -149,8 +141,7 @@ ldr_asm:
 	jl .cincoHorizontal
 
 	pxor xmm13, xmm13
-	movd xmm13, ebx ; ?
-	;cvtsi2ss xmm13, ebx ; cast to float!
+	movd xmm13, ebx
 	movdqu xmm12, xmm13 ; 0|0|0|alpha
 	pslldq xmm12, 4 ; 0|0|alpha|0
 	por xmm12, xmm13 ; 0|0|alpha|alpha
@@ -158,8 +149,7 @@ ldr_asm:
 	por xmm12, xmm13 ; 0|alpha|alpha|alpha
 
 	pxor xmm14, xmm14
-	movd xmm14, r13d ; ?
-	;cvtsi2ss xmm14, r13d ; cast to float! 
+	movd xmm14, r13d
 	movdqu xmm13, xmm14 ; 0|0|0|max
 	pslldq xmm13, 4 ; 0|0|max|0
 	por xmm13, xmm14 ; 0|0|max|max
@@ -174,7 +164,7 @@ ldr_asm:
 	pslldq xmm5, 4
 	por xmm5, xmm0
 	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*4] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
+	movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
 	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
@@ -192,41 +182,37 @@ ldr_asm:
 	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
 	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 
-    movd [rsi + r8*4], xmm14
+    movd [rsi + r8*pixelSize], xmm14
 
 	inc r9
 	inc r8
 	cmp r9, r11
-	je .mayorIgAColsToProccess ; mayor igual a colsToProccess
+	je .igualAColsToProccess ; mayor igual a colsToProccess
 	jmp .seguir
 
 .menorAColDos:
-; Tengo que devolver r8
 	pxor xmm10, xmm10
-	movd xmm10, [rdi + r8*4]
-	movd [rsi + r8*4], xmm10
+	movd xmm10, [rdi + r8*pixelSize]
+	movd [rsi + r8*pixelSize], xmm10
+	inc r8
+	inc r9
+	pxor xmm10, xmm10
+	movd xmm10, [rdi + r8*pixelSize]
+	movd [rsi + r8*pixelSize], xmm10
 	inc r8
 	inc r9
 	jmp .seguir
 
-.mayorIgAColsToProccess:
-; Tengo que devolver las columnas:
-; r8, r8+1 && edx==1?r8+2 
+.igualAColsToProccess:
 	pxor xmm10, xmm10
-	movd xmm10, [rdi + r8*4]
-	movd [rsi + r8*4], xmm10
+	movd xmm10, [rdi + r8*pixelSize]
+	movd [rsi + r8*pixelSize], xmm10
 	inc r8
-	movd xmm10, [rdi + r8*4]
-	movd [rsi + r8*4], xmm10
-	cmp edx, 1
-	jne .continuar
-	inc r8 ; columna impar final
-	movd xmm10, [rdi + r8*4]
-	movd [rsi + r8*4], xmm10
+	movd xmm10, [rdi + r8*pixelSize]
+	movd [rsi + r8*pixelSize], xmm10
+    inc r8	
 
-.continuar:
 	xor r9, r9 ; reinicio contador columna actual.
-	inc r8
 
 .seguir:
 	movdqu xmm8, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
@@ -240,12 +226,12 @@ ldr_asm:
 	mov r9, rcx ; cols*(filas-2)
 	shl r15, 1 ; cols*2
 .devolver:
-	movdqu xmm10, [rdi + r8*4]
-	movdqu xmm11, [rdi + r9*4]
-	movdqu [rsi + r8*4], xmm10
-	movdqu [rsi + r9*4], xmm11
-	add r8, 4
-	add r9, 4
+	movdqu xmm10, [rdi + r8*pixelSize]
+	movdqu xmm11, [rdi + r9*pixelSize]
+	movdqu [rsi + r8*pixelSize], xmm10
+	movdqu [rsi + r9*pixelSize], xmm11
+	add r8, pixelSize
+	add r9, pixelSize
 	cmp r8, r15 ; cuando complete las dos primeras, tambien completo las dos ultimas.
 	jl .devolver
 
