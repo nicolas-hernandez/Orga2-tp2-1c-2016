@@ -34,9 +34,9 @@ def test():
   unittest.main(module='scripts.tptests', exit=False, argv=argv[:1], verbosity=3)
 
 def main():
-    build()
+    #build()
     #test()
-    #clean()
+    clean()
     
 
 main()
