@@ -1,30 +1,41 @@
 #!/usr/bin/python
 
 import os
+import subprocess
 import getopt
 import sys
 import csv
 from settings import TestSizeParams as Tsp, Filtro
 
 def test(filtro, version): 
-
     cwd = os.getcwd()  # get current directory
-
-    for i in xrange(Tsp.nInst):
-
-        os.chdir(Tsp.buildDir)
-        
-        command = "./tp2 -v" + filtro + "-i" + asm
-        
-        if filtro == Filtro.ldr:
-            command = command + str(Filtro.tamX) + str(Filtro.tamY) + str(Filtro.offsetX) + str(Filtro.offsetY)
-        elif filtro == Filtro.cropflip:
-            command = command + str(Filtro.alpha)
-        
-        command = command + "-t " + str(Filtro.indInst)
-                
-        os.system(command)
-        
+ 
+    os.chdir(Tsp.buildDir)
     
+    #print "dir actual " + os.getcwd()
+    
+    for i in xrange(Tsp.nInst):       
+        for n in range(0, Tsp.cantImg):
+            cmd = ['./tp2', '-v', filtro, '-i' , version,  Tsp.pathSW + Tsp.imgName + str(n) + ".bmp"]
+             
+            if filtro == Filtro.cropflip:
+                cmd.append(str(Filtro.tamX))
+                cmd.append(str(Filtro.tamY))
+                cmd.append(str(Filtro.offsetX))
+                cmd.append(str(Filtro.offsetY)) 
+            elif filtro == Filtro.ldr:
+                cmd.append(str(Filtro.alpha))
+            
+            #print cmd
+            cmd.append('-t')
+            cmd.append(str(Tsp.indInst))
+            output = subprocess.check_output(cmd)
+          
+            print output
+           
     os.chdir(cwd)
     
+if __name__ == "__main__":
+    test()
+else:
+    print("test_sizes_performance.py is being imported into another module")

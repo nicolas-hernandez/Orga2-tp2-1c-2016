@@ -3,13 +3,14 @@
 import os
 import getopt
 import sys
+import scripts.test_sizes_performance as TestSizes 
 from settings import Options, Tests, Filtro
 
-buildDir = "codigo/"
+codeDir = "codigo/"
 
 def build(option):
     cwd = os.getcwd()  # get current directory
-    os.chdir(buildDir)
+    os.chdir(codeDir)
 
     flags = ""
 
@@ -21,17 +22,25 @@ def build(option):
         flags = '-e CFLAGS64="-O3 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
 
     command = "make" + flags
-    os.system(command)
+    os.system(command)  
     os.chdir(cwd)
 
 
 def clean():
     cwd = os.getcwd()  # get current directory
-    os.chdir(buildDir)
+    os.chdir(codeDir)
     os.system("make clean")
     os.chdir(cwd)
 
-# def test(test, version, graficar):
+def tester(test, version, graficar):
+    if test == Tests.sizesLdr or test == Tests.sizesSep or Tests.sizesSep:
+        if test == Test.sizesLdr:
+            TestSizes.test(Filtro.ldr, version)
+        elif test == Test.sizesSep:
+            TestSizes.test(Filtro.sepia, version)
+        else:
+            TestSizes.test(Filtro.cropflip, version)
+
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -g <graficar> \n"
@@ -40,12 +49,12 @@ def main(argv):
     inputfile = ""
     outputfile = ""
     flag = ""
-    # test = ""
-    # version = ""
-    # graficar = False
+    test = ""
+    version = ""
+    graficar = False
 
     try:
-        opts, args = getopt.getopt(argv, "h:f:i:o:t:v:g:", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
+        opts, args = getopt.getopt(argv, "hf:i:o:t:v:g", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
     except getopt.GetoptError:
         printAllInfo()
         sys.exit(2)
@@ -57,6 +66,7 @@ def main(argv):
             printAllInfo()
             Options.printAllInfo()
             Tests.printAllInfo()
+            print "version must be asm or c"
             sys.exit()
         elif opt in ("-i", "--ifile"):
             if arg == "":
@@ -76,14 +86,14 @@ def main(argv):
                            Tests.sizesLdr, Tests.sizesSep, Tests.compareLdrA, Tests.compareLdrB):
                 Tests.printAllInfo()
                 sys.exit(2)
-                # test = arg
+            test = arg
         elif opt in ("-v", "--version"):
             if arg not in ("asm", "c"):
                 print "version must be asm or c"
                 sys.exit(2)
-                # version = arg
-                # elif opt in ("-g"):
-                # graficar = True
+            version = arg
+        elif opt in ("-g"):
+            graficar = True
         else:
             printAllInfo()
             Options.printAllInfo()
@@ -98,7 +108,7 @@ def main(argv):
         clean()
         build(flag)
 
-        #test(test, version, graficar)
+    tester(test, version, graficar)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
