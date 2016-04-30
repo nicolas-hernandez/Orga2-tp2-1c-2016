@@ -34,9 +34,9 @@ def clean():
 
 def tester(test, version, graficar):
     if test == Tests.sizesLdr or test == Tests.sizesSep or Tests.sizesSep:
-        if test == Test.sizesLdr:
+        if test == Tests.sizesLdr:
             TestSizes.test(Filtro.ldr, version)
-        elif test == Test.sizesSep:
+        elif test == Tests.sizesSep:
             TestSizes.test(Filtro.sepia, version)
         else:
             TestSizes.test(Filtro.cropflip, version)
