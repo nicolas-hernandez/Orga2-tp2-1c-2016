@@ -38,8 +38,10 @@ class Filtro:
     ldr = "ldr"
     sepia = "sepia"
 
-class Params:
+class PrunedMeanParams:
     alpha = 0.5
+    
+class TestSizeParams:
     nInst = 500 
     indInst = 1
     
