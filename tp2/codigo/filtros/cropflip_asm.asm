@@ -1,5 +1,5 @@
 global cropflip_asm
-%define MASK_INV 00011011b
+
 section .text
 ;void cropflip_asm(unsigned char *src,
 ;                  unsigned char *dst,
@@ -80,8 +80,6 @@ cropflip_asm:
     
 .ciclo:
         movdqu xmm1, [rdi]      ; p0|p1|p2|p3
-        pshufd xmm7, xmm1,  MASK_INV    ; p3|p2|p1|p0
-        
         movdqu [rsi], xmm1
     
         lea rsi, [rsi + 16]
