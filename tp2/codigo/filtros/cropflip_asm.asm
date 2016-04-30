@@ -19,41 +19,37 @@ section .text
 ;[rsp+ 32] = offsetx
 ;[rsp+ 40] = offsety
 cropflip_asm:
-    	push rbp
-    	mov rbp, rsp
-    	push rbx
-    	push rcx
-    	push r12
-    	push r13
-    	push r14
-    	push r15
+        push rbp
+        mov rbp, rsp
+        push rbx
+        push rcx
+        push r12
+        push r13
+        push r14
+        push r15
 
-    	xor r12, r12
-    	xor r13, r13
-    	xor r14, r14
-    	xor r10, r10
-    	xor rcx, rcx
-    	xor r15, r15
-    	xor rbx, rbx
+        xor r12, r12
+        xor r13, r13
+        xor r14, r14
+        xor r10, r10
+        xor rcx, rcx
+        xor r15, r15
+        xor rbx, rbx
 
-	mov r14d, [rbp + 16]	; tamx                     			
+        mov r14d, [rbp + 16]    ; tamx                                  
+        
+
+        mov r13d, r14d
+        shl r13, 2
+        mov r9d, r13d       ; dst_row_size
+
+        mov r13d, [rbp + 24]    ; tamy
     
-    	mov r13d, r14d
-    	shl r13, 2
-    	mov r9d, r13d		; dst_row_size
-
-    	mov r13d, [rbp + 24]	; tamy
+        mov r12d, [rbp + 32]    ; offsetx               
     
-    	mov r12d, [rbp + 32] 	; offsetx			    
-	
-	mov ebx, [rbp + 40]	; offsety
-	mov r15d, r13d 
+        mov ebx, [rbp + 40] ; offsety
+        mov r15d, r13d 
 
-        mov eax, 4  
-        mul r14d
-        mul r13d
-        lea rsi, [rsi + rax]
-        lea rsi, [rsi - 16]
 
     
         shl r12, 2
@@ -70,31 +66,40 @@ cropflip_asm:
         shl rcx, 2
         sub r15d, ecx
 
+	xor r12, r12
+        mov eax, 4  
+        mul r14d
+	mov r12d, eax
+        mul r13d
+        lea rsi, [rsi + rax]
+
 .preCiclo:
-    	mov ecx, r14d			 
-    	shr rcx, 2        		
+        mov ecx, r14d          
+        shr rcx, 2
+		sub rsi, r12              
     
 .ciclo:
-    	movdqu xmm1, [rdi] 		; p0|p1|p2|p3
-    	pshufd xmm7, xmm1,  MASK_INV 	; p3|p2|p1|p0
+        movdqu xmm1, [rdi]      ; p0|p1|p2|p3
+        pshufd xmm7, xmm1,  MASK_INV    ; p3|p2|p1|p0
         
-    	movdqu [rsi], xmm7 
+        movdqu [rsi], xmm1
     
-    	lea rsi, [rsi - 16]
-    	lea rdi, [rdi + 16]
-    	loop .ciclo
+        lea rsi, [rsi + 16]
+        lea rdi, [rdi + 16]
+        loop .ciclo
     
+		sub rsi, r12
+        lea rdi, [rdi + r15]
+        sub r13d, 1  
+        cmp r13d, 0        
+        jne .preCiclo
+    
+        pop r15
+        pop r14
+        pop r13
+        pop r12
+        pop rcx
+        pop rbx
+        pop rbp
+        ret
 
-    	lea rdi, [rdi + r15]
-    	sub r13d, 1	 
-    	cmp r13d, 0 	   
-    	jne .preCiclo
-    
-    	pop r15
-    	pop r14
-    	pop r13
-    	pop r12
-    	pop rcx
-    	pop rbx
-    	pop rbp
-    	ret
