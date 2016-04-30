@@ -3,7 +3,7 @@
 import os
 import getopt
 import sys
-from settings import Options, Tests
+from settings import Options, Tests, Filtro
 
 def build(option):
     build_dir = "codigo/"

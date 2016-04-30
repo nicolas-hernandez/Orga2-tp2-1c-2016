@@ -32,10 +32,13 @@ class Tests:
         print "sepsz: size sepia test \n"
         print "cmpLdrA: compare ldr asm with c with same nums of read and write ops\n"
         print "cmpLdrB: compare ldr asm integer operations with fp operations\n"
+        
+class Filtro:
+    cropflip = "cropflip"
+    ldr = "ldr"
+    sepia = "sepia"
 
-
-alpha = 0.5
-
-nInst = 500 
-
-indInst = 1
+class Params:
+    alpha = 0.5
+    nInst = 500 
+    indInst = 1

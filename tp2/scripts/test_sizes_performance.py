@@ -3,4 +3,7 @@
 import os
 import getopt
 import sys
-from settings import Options, Tests
+from settings import Params, Filtro
+
+def test(filtro):
+    
