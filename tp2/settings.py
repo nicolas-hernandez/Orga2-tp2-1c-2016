@@ -43,6 +43,7 @@ class Filtro:
     cropflip = "cropflip"
     ldr = "ldr"
     sepia = "sepia"
+    all = "all"
     alpha = 150
     tamX = 20
     tamY = 320
@@ -80,5 +81,6 @@ class TestSizeParams:
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
     tablesPath = "tables/test_sizes_performance/"
+    graphsPath = "graphs/test_sizes_performance/"
 
 
