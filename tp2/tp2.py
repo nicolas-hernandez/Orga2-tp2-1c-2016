@@ -4,6 +4,7 @@ import os
 import getopt
 import sys
 import scripts.test_sizes_performance as test_sizes
+import scripts.graph_sizes_performance as graph_sizes
 from settings import Options, Tests, Filtro
 
 codeDir = "codigo/"
@@ -14,6 +15,7 @@ def build(option):
     os.chdir(codeDir)
 
     flags = ""
+
 
     if option == Options.o1:
         flags = '-e CFLAGS64="-O1 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
@@ -34,7 +36,7 @@ def clean():
     os.chdir(cwd)
 
 
-def tester(test, version, graficar):
+def tester(test, version, graficar, allVersions):
     if test == Tests.sizesLdr or test == Tests.sizesSep or Tests.sizesSep:
         if test == Tests.sizesLdr:
             test_sizes.test(Filtro.ldr, version)
@@ -44,8 +46,15 @@ def tester(test, version, graficar):
             test_sizes.test(Filtro.cropflip, version)
 
         if graficar:
-            print "graficar resultados segun test"
+            if allVersions:
+                version = Tsp.all
 
+            if test == Tests.sizesLdr:
+                graph_sizes.graph(Filtro.ldr, version)
+            elif test == Tests.sizesSep:
+                graph_sizes.graph(Filtro.sepia, version)
+            else:
+                graph_sizes.graph(Filtro.cropflip, version)
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"
@@ -58,9 +67,10 @@ def main(argv):
     test = ""
     version = ""
     graficar = False
+    allVersions = False
 
     try:
-        opts, args = getopt.getopt(argv, "hf:i:o:t:v:g", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
+        opts, args = getopt.getopt(argv, "hf:i:o:t:v:ga", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
     except getopt.GetoptError:
         printAllInfo()
         sys.exit(2)
@@ -73,6 +83,7 @@ def main(argv):
             Options.printAllInfo()
             Tests.printAllInfo()
             print "version must be asm or c"
+            print "-g for plot and -a for all"
             sys.exit()
         elif opt in ("-i", "--ifile"):
             if arg == "":
@@ -100,10 +111,14 @@ def main(argv):
             version = arg
         elif opt in "-g":
             graficar = True
+        elif opt in "-a":
+            allVersions = True
         else:
             printAllInfo()
             Options.printAllInfo()
             Tests.printAllInfo()
+            print "version must be asm or c"
+            print "-g for plot and -a for all"
             sys.exit(2)
 
     print "Input file is ", inputfile
@@ -114,7 +129,7 @@ def main(argv):
         clean()
         build(flag)
 
-    tester(test, version, graficar)
+    tester(test, version, graficar, allVersions)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
