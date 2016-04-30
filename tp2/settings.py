@@ -50,15 +50,35 @@ class Filtro:
     offsetY = 0
 
 
-class PrunedMeanParams:
-    alpha = 0.5
+def prunedMean(coords = [], ords  = []):
+    if len(ords) == 1:
+        return ords[0]
 
+    alpha = 0.5
+    n = len(coords)
+    x0 = n*alpha
+    mean = 0
+    if x0.is_integer():
+        ords.sort()
+        del ords[-x0:]
+        y = sum(ords)
+        mean = y/float(n)
+    else:
+        x1 = int(x0)
+        y1 = sum(ords[:x1-1])/ float(n)
+        y2 = sum(ords[:x1]) / float(n)
+        mean = float(y2-y1)*float(x0-x1) + y1
+
+    return mean
 
 class TestSizeParams:
-    nInst = 1  # 300
+    nInst = 3  # 300
     indInst = 1
-    cantImg = 1  # 14
+    cantImg = 14  # 14
     imgName = "starWars"
     folderOut = "test_sizes_performance"
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
+    tablesPath = "tables/test_sizes_performance/"
+
+

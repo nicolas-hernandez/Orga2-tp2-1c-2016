@@ -48,7 +48,7 @@ def tester(test, version, graficar):
 
 
 def printAllInfo():
-    print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -g <graficar> \n"
+    print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"
 
 
 def main(argv):
@@ -88,11 +88,11 @@ def main(argv):
                 sys.exit(2)
             flag = arg
         elif opt in ("-t", "--test"):
-            if arg not in (Tests.cacheCropflip, Tests.clocksCf, Tests.clocksLdr, Tests.clocksSep, Tests.sizesCf,
-                           Tests.sizesLdr, Tests.sizesSep, Tests.compareLdrA, Tests.compareLdrB):
+            if int(arg) not in (Tests.cacheCropflip, Tests.clocksLdr, Tests.clocksCf, Tests.clocksSep, Tests.sizesLdr,
+                           Tests.sizesCf, Tests.sizesSep, Tests.compareLdrA, Tests.compareLdrB):
                 Tests.printAllInfo()
                 sys.exit(2)
-            test = arg
+            test = int(arg)
         elif opt in ("-v", "--version"):
             if arg not in ("asm", "c"):
                 print "version must be asm or c"
@@ -115,7 +115,6 @@ def main(argv):
         build(flag)
 
     tester(test, version, graficar)
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
