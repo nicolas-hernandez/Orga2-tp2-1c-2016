@@ -76,7 +76,7 @@ cropflip_asm:
 .preCiclo:
         mov ecx, r14d          
         shr rcx, 2
-		sub rsi, r12              
+	sub rsi, r12              
     
 .ciclo:
         movdqu xmm1, [rdi]      ; p0|p1|p2|p3
@@ -88,7 +88,7 @@ cropflip_asm:
         lea rdi, [rdi + 16]
         loop .ciclo
     
-		sub rsi, r12
+	sub rsi, r12
         lea rdi, [rdi + r15]
         sub r13d, 1  
         cmp r13d, 0        
