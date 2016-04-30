@@ -15,9 +15,9 @@ class Tests:
     clocksLdr = "ldrclk"
     clocksCf = "cfclk"
     clocksSep = "sepclk"
-    tamaniosLdr = "ldrsz"
-    tamaniosCf = "cfsz"
-    tamaniosSep = "sepsz"
+    sizesLdr = "ldrsz"
+    sizesCf = "cfsz"
+    sizesSep = "sepsz"
     compareLdrA = "cmpLdrA"
     compareLdrB = "cmpLdrB"
     @staticmethod

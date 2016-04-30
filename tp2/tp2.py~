@@ -77,8 +77,8 @@ def main(argv):
                 sys.exit(2)
             flag = arg
         elif opt in ("-t", "--test"):
-            if arg not in (Tests.cacheCropflip, Tests.clocksCf, Tests.clocksLdr, Tests.clocksSep, Tests.tamaniosCf,
-                           Tests.tamaniosLdr, Tests.tamaniosSep, Tests.compareLdrA, Tests.compareLdrB):
+            if arg not in (Tests.cacheCropflip, Tests.clocksCf, Tests.clocksLdr, Tests.clocksSep, Tests.sizesCf,
+                           Tests.sizesLdr, Tests.sizesSep, Tests.compareLdrA, Tests.compareLdrB):
                 Tests.printAllInfo()
                 sys.exit(2)
                 # test = arg
