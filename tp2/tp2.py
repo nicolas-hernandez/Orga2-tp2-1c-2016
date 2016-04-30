@@ -5,10 +5,11 @@ import getopt
 import sys
 from settings import Options, Tests, Filtro
 
+buildDir = "codigo/"
+
 def build(option):
-    build_dir = "codigo/"
     cwd = os.getcwd()  # get current directory
-    os.chdir(build_dir)
+    os.chdir(buildDir)
 
     flags = ""
 
@@ -25,12 +26,10 @@ def build(option):
 
 
 def clean():
-    build_dir = "codigo/"
     cwd = os.getcwd()  # get current directory
-    os.chdir(build_dir)
+    os.chdir(buildDir)
     os.system("make clean")
     os.chdir(cwd)
-
 
 # def test(test, version, graficar):
 

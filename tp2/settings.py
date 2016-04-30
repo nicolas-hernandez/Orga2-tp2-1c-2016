@@ -37,11 +37,21 @@ class Filtro:
     cropflip = "cropflip"
     ldr = "ldr"
     sepia = "sepia"
+    alpha = 150
+    tamX = 20
+    tamY = 320
+    offsetX = 20
+    offsetY = 0
 
 class PrunedMeanParams:
     alpha = 0.5
     
 class TestSizeParams:
-    nInst = 500 
+    nInst = 300
     indInst = 1
+    cantImg = "13"
+    imgName = "starWars"
+    folderOut = "test_sizes_performance"
+    buildDir = "../codigo"
+    pathSW = buildDir + "/img/SW"
     
