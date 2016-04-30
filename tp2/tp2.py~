@@ -32,9 +32,7 @@ def clean():
     os.chdir(cwd)
 
 
-# def test(test, graficar):
-# import unittest
-# unittest.main(module='scripts.tptests', exit=False, argv=argv[:1], verbosity=3)
+# def test(test, version, graficar):
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -g <graficar> \n"
@@ -44,10 +42,11 @@ def main(argv):
     outputfile = ""
     flag = ""
     # test = ""
+    # version = ""
     # graficar = False
 
     try:
-        opts, args = getopt.getopt(argv, "hfi:o:t:g:", ["help=", "flag=", "ifile=", "ofile=", "test="])
+        opts, args = getopt.getopt(argv, "h:f:i:o:t:v:g:", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
     except getopt.GetoptError:
         printAllInfo()
         sys.exit(2)
@@ -79,6 +78,11 @@ def main(argv):
                 Tests.printAllInfo()
                 sys.exit(2)
                 # test = arg
+        elif opt in ("-v", "--version"):
+            if arg not in ("asm", "c"):
+                print "version must be asm or c"
+                sys.exit(2)
+                # version = arg
                 # elif opt in ("-g"):
                 # graficar = True
         else:
@@ -95,7 +99,7 @@ def main(argv):
         clean()
         build(flag)
 
-        #test(test, graficar)
+        #test(test, version, graficar)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
