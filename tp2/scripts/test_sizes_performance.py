@@ -7,7 +7,7 @@ import sys
 import csv
 from settings import TestSizeParams as Tsp, Filtro
 
-def test(filtro, version): 
+def test(filtro, version):
     cwd = os.getcwd()  # get current directory
  
     os.chdir(Tsp.buildDir)

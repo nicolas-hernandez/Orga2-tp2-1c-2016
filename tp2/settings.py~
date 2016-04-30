@@ -47,9 +47,9 @@ class PrunedMeanParams:
     alpha = 0.5
     
 class TestSizeParams:
-    nInst = 1
+    nInst = 1 #300
     indInst = 1
-    cantImg = 1
+    cantImg = 1 #14
     imgName = "starWars"
     folderOut = "test_sizes_performance"
     buildDir = "codigo/build/"

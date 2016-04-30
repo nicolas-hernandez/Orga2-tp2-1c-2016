@@ -3,10 +3,11 @@
 import os
 import getopt
 import sys
-import scripts.test_sizes_performance as TestSizes 
+import scripts.test_sizes_performance as test_sizes
 from settings import Options, Tests, Filtro
 
 codeDir = "codigo/"
+
 
 def build(option):
     cwd = os.getcwd()  # get current directory
@@ -22,7 +23,7 @@ def build(option):
         flags = '-e CFLAGS64="-O3 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
 
     command = "make" + flags
-    os.system(command)  
+    os.system(command)
     os.chdir(cwd)
 
 
@@ -32,18 +33,23 @@ def clean():
     os.system("make clean")
     os.chdir(cwd)
 
+
 def tester(test, version, graficar):
     if test == Tests.sizesLdr or test == Tests.sizesSep or Tests.sizesSep:
         if test == Tests.sizesLdr:
-            TestSizes.test(Filtro.ldr, version)
+            test_sizes.test(Filtro.ldr, version)
         elif test == Tests.sizesSep:
-            TestSizes.test(Filtro.sepia, version)
+            test_sizes.test(Filtro.sepia, version)
         else:
-            TestSizes.test(Filtro.cropflip, version)
+            test_sizes.test(Filtro.cropflip, version)
+
+        if graficar:
+            print "graficar resultados segun test"
 
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -g <graficar> \n"
+
 
 def main(argv):
     inputfile = ""
@@ -92,7 +98,7 @@ def main(argv):
                 print "version must be asm or c"
                 sys.exit(2)
             version = arg
-        elif opt in ("-g"):
+        elif opt in "-g":
             graficar = True
         else:
             printAllInfo()
@@ -109,6 +115,7 @@ def main(argv):
         build(flag)
 
     tester(test, version, graficar)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
