@@ -1,6 +1,8 @@
 #Compiled 
 *.o
 *build/tp2
+*pyc
+*~
 core
 
 #Latex stuff
