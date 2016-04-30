@@ -1,12 +1,9 @@
 #!/usr/bin/python
-# from scripts.fabricate import *
-# from scripts.settings import *
-# from scripts.utils import listfiles
+
 import os
 import getopt
 import sys
 from settings import Options, Tests
-
 
 def build(option):
     build_dir = "codigo/"
