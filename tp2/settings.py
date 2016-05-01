@@ -37,8 +37,8 @@ class Tests:
         print str(Tests.sizesLdr) + ": size ldr test \n"
         print str(Tests.sizesCf) + ": size cropflip test \n"
         print str(Tests.sizesSep) + ": size sepia test \n"
-        print str(Tests.compareLdrA) + ": compare ldr asm with c with same nums of read and write ops\n"
-        print str(Tests.compareLdrB) + ": compare ldr asm integer operations with fp operations\n"
+        print str(Tests.compareLdrA) + ": compare ldr asm with c with same nums of read and write ops\n doesn't matter what version you put in command line\n"
+        print str(Tests.compareLdrB) + ": compare ldr asm integer operations with fp operations\n doesn't matter what version you put in command line\n"
 
 
 class Filtro:
@@ -79,17 +79,28 @@ class TestSizeParams:
     indInst = 1
     cantImg = 20  # 14
     imgName = "starWars"
-    folderOut = "test_sizes_performance"
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
     tablesPath = "tables/test_sizes_performance/"
     graphsPath = "graphs/test_sizes_performance/"
     
+    
+class TestLdrParams:
+    nInst = 20  # 300
+    indInst = 1
+    imgName = "starWars"
+    buildDir = "codigo/build/"
+    pathSW = "../img/SW/"
+    tablesPath = "tables/test_ldr_performance_"
+    graphsPath = "graphs/test_ldr_performance_"
+    asm_name_o = "ldr_asm_test_o.asm"
+    asm_name_a = "ldr_asm_test_1.asm"
+    asm_name_b = "ldr_asm_test_2.asm" 
+    
 class TestCacheParams:
     nInst = 1
     indInst = 1
     imgName = "starWars"
-    folderOut = "test_cache_performance"
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
     tablesPath = "tables/test_cache_performance/"

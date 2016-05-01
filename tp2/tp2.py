@@ -7,15 +7,25 @@ import scripts.test_sizes_performance as test_sizes
 import scripts.graph_sizes_performance as graph_sizes
 import scripts.test_cache_cf_performance as test_cache
 import scripts.graph_cache_cf_performance as graph_cache
-from settings import Options, Tests, Filtro
+import scripts.test_ldr_performance as test_ldr
+import scripts.graph_ldr_performance as graph_ldr
+from settings import Options, Tests, Filtro, TestLdrParams as Tlp
 
 codeDir = "codigo/"
 
 
-def build(option):
+def build(option, test):
     cwd = os.getcwd()  # get current directory
     os.chdir(codeDir)
-
+    
+    
+    if test == Tests.compareLdrA:
+        os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_o)
+        os.system("sudo mv " + Tlp.asm_name_a + " ldr_asm.asm")
+    elif = test == Tests.compareLdrB:
+        os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_o)
+        os.system("sudo mv " + Tlp.asm_name_b + " ldr_asm.asm")
+        
     flags = ""
 
 
@@ -28,6 +38,15 @@ def build(option):
 
     command = "make" + flags
     os.system(command)
+    
+    
+    if test == Tests.compareLdrA:
+        os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_a)
+        os.system("sudo mv " + Tlp.asm_name_o + " ldr_asm.asm")
+    elif = test == Tests.compareLdrB:
+        os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_b)
+        os.system("sudo mv " + Tlp.asm_name_o + " ldr_asm.asm")
+    
     os.chdir(cwd)
 
 
@@ -50,6 +69,14 @@ def tester(test, version, graficar, allVersions):
     if test == Tests.cacheCropflip:
         test_cache.test(version)
         
+        
+    letter = "A"    
+    if test == Tests.compareLdrA:
+        test_ldr.test(letter)
+    elif test == Tests.compareLdrB:
+        letter = "B"
+        test_ldr.test(letter)
+        
     if graficar:
         if allVersions:
             version = Filtro.allV
@@ -62,6 +89,8 @@ def tester(test, version, graficar, allVersions):
             graph_sizes.graph(Filtro.cropflip, version)
         elif test == Tests.cacheCropflip:
             graph_cache.graph(version)
+        elif test == Tests.compareLdrA or test == Tests.compareLdrB:
+            graph_ldr.graph(letter)
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"
@@ -134,7 +163,7 @@ def main(argv):
 
     if flag != Options.none:
         clean()
-        build(flag)
+        build(flag, test)
 
     tester(test, version, graficar, allVersions)
 

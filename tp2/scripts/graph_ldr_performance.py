@@ -5,43 +5,54 @@
 import os
 import subprocess
 import csv
-from settings import TestSizeParams as Tsp, Filtro, prunedMean
+from settings import TestLdrParams as Tlp, Filtro, prunedMean
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-N = 5
-menMeans = (20, 35, 30, 35, 27)
-menStd = (2, 3, 4, 1, 2)
 
-ind = np.arange(N)  # the x locations for the groups
-width = 0.35       # the width of the bars
+def graph(test):
+    meanAsm = 0
+    meanC = 0
 
-fig, ax = plt.subplots()
-rects1 = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
+    with open(Tlp.tablesPath + test + '/ldr' + ".csv", 'rb') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            if row[0] != 'type code':      
+               if row[0] == "c":
+                  meanC = float(row[1]))
+               elif row[0] == "asm":
+                  meanAsm = float(row[1]))
 
-womenMeans = (25, 32, 34, 20, 25)
-womenStd = (3, 5, 2, 3, 3)
-rects2 = ax.bar(ind + width, womenMeans, width, color='y', yerr=womenStd)
+    ind = np.arange(1)  # the x locations for the groups
+    width = 0.5 # the width of the bars
 
-# add some text for labels, title and axes ticks
-ax.set_ylabel('Scores')
-ax.set_title('Scores by group and gender')
-ax.set_xticks(ind + width)
-ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
+    fig, ax = plt.subplots()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0)) # for both axis use both
+    rects1 = ax.bar(ind, meanAsm, width, color='r')
+    rects2 = ax.bar(ind + width, meanC, width, color='b')
 
-ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('Clocks por insumidos')
+    ax.set_title('Implementacion')
+    ax.set_xticks(ind + width)
+    ax.set_xticklabels(('Asm', 'C'))
 
+    ax.legend((rects1[0], rects2[0]), ('Asm', 'C'))
 
-def autolabel(rects):
-    # attach some text labels
-    for rect in rects:
-        height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                '%d' % int(height),
-                ha='center', va='bottom')
+    def autolabel(rects):
+        # attach some text labels
+        for rect in rects:
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                    '%d' % int(height),
+                    ha='center', va='bottom')
 
-autolabel(rects1)
-autolabel(rects2)
+    autolabel(rects1)
+    autolabel(rects2)
 
-plt.show()
+    if not os.path.isdir(Tlp.graphsPath + test):
+        os.makedirs(Tlp.graphsPath + test)
+
+    fig.savefig(Tlp.graphsPath + test + "/ldr" + ".pdf")
+    plt.close(fig)
