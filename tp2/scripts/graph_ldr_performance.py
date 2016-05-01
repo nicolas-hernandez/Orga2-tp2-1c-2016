@@ -20,9 +20,9 @@ def graph(test):
         for row in reader:
             if row[0] != 'type code':      
                if row[0] == "c":
-                  meanC = float(row[1]))
+                  meanC = float(row[1])
                elif row[0] == "asm":
-                  meanAsm = float(row[1]))
+                  meanAsm = float(row[1])
 
     ind = np.arange(1)  # the x locations for the groups
     width = 0.5 # the width of the bars

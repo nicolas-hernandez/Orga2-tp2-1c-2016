@@ -22,7 +22,7 @@ def build(option, test):
     if test == Tests.compareLdrA:
         os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_o)
         os.system("sudo mv " + Tlp.asm_name_a + " ldr_asm.asm")
-    elif = test == Tests.compareLdrB:
+    elif test == Tests.compareLdrB:
         os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_o)
         os.system("sudo mv " + Tlp.asm_name_b + " ldr_asm.asm")
         
@@ -43,7 +43,7 @@ def build(option, test):
     if test == Tests.compareLdrA:
         os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_a)
         os.system("sudo mv " + Tlp.asm_name_o + " ldr_asm.asm")
-    elif = test == Tests.compareLdrB:
+    elif test == Tests.compareLdrB:
         os.system("sudo mv ldr_asm.asm " + Tlp.asm_name_b)
         os.system("sudo mv " + Tlp.asm_name_o + " ldr_asm.asm")
     
