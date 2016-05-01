@@ -48,7 +48,7 @@ def graph(filtro, version):
     if version == Filtro.allV and len(means2) > 0:
         sub.scatter(ids2, means2, color='red', edgecolor='black', label=Filtro.asm)
         plt.legend(loc='upper right', scatterpoints=1)
-
+        
     plt.axis([0.0, Tsp.cantImg + 5.0, 0.0, max+10000000.0])
     plt.xlabel("$Tama\~{n}o$ $imagen$")
     plt.ylabel("$Cantidad$ $de$ $clocks$ $insumidos$")
