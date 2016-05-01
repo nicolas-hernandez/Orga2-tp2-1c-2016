@@ -237,12 +237,12 @@ ldr_asm:
 	mov r9, rcx ; cols*(filas-2)
 	shl r15, 1 ; cols*2
 .devolver:
-	movdqu xmm10, [rdi + r8*pixelSize]
-	movdqu xmm11, [rdi + r9*pixelSize]
-	movdqu [rsi + r8*pixelSize], xmm10
-	movdqu [rsi + r9*pixelSize], xmm11
-	add r8, pixelSize
-	add r9, pixelSize
+	movd xmm10, [rdi + r8*pixelSize]
+	movd xmm11, [rdi + r9*pixelSize]
+	movd [rsi + r8*pixelSize], xmm10
+	movd [rsi + r9*pixelSize], xmm11
+	inc r8
+	inc r9
 	cmp r8, r15 ; cuando complete las dos primeras, tambien completo las dos ultimas.
 	jl .devolver
 
