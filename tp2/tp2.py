@@ -5,6 +5,8 @@ import getopt
 import sys
 import scripts.test_sizes_performance as test_sizes
 import scripts.graph_sizes_performance as graph_sizes
+import scripts.test_cache_cf_performance as test_cache
+import scripts.graph_cache_cf_performance as graph_cache
 from settings import Options, Tests, Filtro
 
 codeDir = "codigo/"
@@ -37,24 +39,29 @@ def clean():
 
 
 def tester(test, version, graficar, allVersions):
-    if test == Tests.sizesLdr or test == Tests.sizesSep or Tests.sizesSep:
+    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesSep:
         if test == Tests.sizesLdr:
             test_sizes.test(Filtro.ldr, version)
         elif test == Tests.sizesSep:
             test_sizes.test(Filtro.sepia, version)
         else:
             test_sizes.test(Filtro.cropflip, version)
+            
+    if test == Tests.cacheCropflip:
+        test_cache.test(version)
+        
+    if graficar:
+        if allVersions:
+            version = Filtro.allV
 
-        if graficar:
-            if allVersions:
-                version = Filtro.allV
-
-            if test == Tests.sizesLdr:
-                graph_sizes.graph(Filtro.ldr, version)
-            elif test == Tests.sizesSep:
-                graph_sizes.graph(Filtro.sepia, version)
-            else:
-                graph_sizes.graph(Filtro.cropflip, version)
+        if test == Tests.sizesLdr:
+            graph_sizes.graph(Filtro.ldr, version)
+        elif test == Tests.sizesSep:
+            graph_sizes.graph(Filtro.sepia, version)
+        elif test == Tests.sizesCf:
+            graph_sizes.graph(Filtro.cropflip, version)
+        elif test == Tests.cacheCropflip:
+            graph_cache.graph(version)
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"

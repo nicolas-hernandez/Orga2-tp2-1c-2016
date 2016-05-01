@@ -47,9 +47,9 @@ class Filtro:
     sepia = "sepia"
     allV = "all"
     alpha = 150
-    tamX = 20
-    tamY = 320
-    offsetX = 20
+    tamX = 60
+    tamY = 140
+    offsetX = 0
     offsetY = 0
 
 
@@ -84,5 +84,19 @@ class TestSizeParams:
     pathSW = "../img/SW/"
     tablesPath = "tables/test_sizes_performance/"
     graphsPath = "graphs/test_sizes_performance/"
-
+    
+class TestCacheParams:
+    nInst = 50
+    indInst = 1
+    imgName = "starWars"
+    folderOut = "test_cache_performance"
+    buildDir = "codigo/build/"
+    pathSW = "../img/SW/"
+    tablesPath = "tables/test_cache_performance/"
+    graphsPath = "graphs/test_cache_performance/"
+    tamX = 16
+    tamY = 2144
+    offsetX = 0
+    offsetY = 500    
+    stepSize = 16 # until tamX == 2144
 
