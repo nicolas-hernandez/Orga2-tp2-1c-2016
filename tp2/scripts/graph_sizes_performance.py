@@ -18,8 +18,8 @@ def graph(filtro, version):
 
     typeCode = version
 
-    if version == Tsp.all:
-        typeCode = Tsp.c
+    if version == Filtro.allV:
+        typeCode = Filtro.c
 
     with open(Tsp.tablesPath + filtro + typeCode + ".csv", 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -31,8 +31,8 @@ def graph(filtro, version):
                 ids.append(int(row[0]))
                 means.append(float(row[1]))
 
-    if version == Tsp.all:
-        with open(Tsp.tablesPath + filtro + Tsp.asm + ".csv", 'rb') as csvfile:
+    if version == Filtro.allV:
+        with open(Tsp.tablesPath + filtro + Filtro.asm + ".csv", 'rb') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 if row[0] != 'img':
@@ -45,8 +45,8 @@ def graph(filtro, version):
     sub = fig.add_subplot(1, 1, 1)
     if len(means) > 0:
         sub.scatter(ids, means, color='blue', edgecolor='black', label=typeCode)
-    if version == Tsp.all and len(means2) > 0:
-        sub.scatter(ids2, means2, color='red', edgecolor='black', label=Tsp.asm)
+    if version == Filtro.allV and len(means2) > 0:
+        sub.scatter(ids2, means2, color='red', edgecolor='black', label=Filtro.asm)
         plt.legend(loc='upper right', scatterpoints=1)
 
     plt.axis([0.0, Tsp.cantImg + 5.0, 0.0, max+10000000.0])

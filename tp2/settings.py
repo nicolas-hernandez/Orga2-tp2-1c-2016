@@ -43,7 +43,7 @@ class Filtro:
     cropflip = "cropflip"
     ldr = "ldr"
     sepia = "sepia"
-    all = "all"
+    allV = "all"
     alpha = 150
     tamX = 20
     tamY = 320

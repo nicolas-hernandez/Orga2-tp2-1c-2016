@@ -47,7 +47,7 @@ def tester(test, version, graficar, allVersions):
 
         if graficar:
             if allVersions:
-                version = Tsp.all
+                version = Filtro.allV
 
             if test == Tests.sizesLdr:
                 graph_sizes.graph(Filtro.ldr, version)
