@@ -86,7 +86,7 @@ class TestSizeParams:
     graphsPath = "graphs/test_sizes_performance/"
     
 class TestCacheParams:
-    nInst = 50
+    nInst = 1
     indInst = 1
     imgName = "starWars"
     folderOut = "test_cache_performance"
