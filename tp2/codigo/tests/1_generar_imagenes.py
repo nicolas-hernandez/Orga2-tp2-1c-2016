@@ -8,11 +8,11 @@ import sys
 # pocas imagenes base.
 
 
-IMAGENES=["lena.bmp"]
+IMAGENES=["starWars.bmp"]
 
 assure_dirs()
 
-sizes=['200x200', '204x204', '208x208', '256x256', '512x512', '1024x768']
+sizes=['3640x2060', '3440x1960', '3240x1860', '3040x1760', '2840x1660', '2640x1560', '2440x1460', '2240x1360', '2040x1260', '1840x1160', '1640x1060', '1440x960', '1240x860', '1040x760', '840x660', '640x560', '440x360', '240x160', '140x60']
 
 
 for filename in IMAGENES:
