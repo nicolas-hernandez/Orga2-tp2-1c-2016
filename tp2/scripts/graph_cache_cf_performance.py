@@ -53,10 +53,10 @@ def graph(version):
         sub.scatter(sizeX, means2, color='red', edgecolor='black', label=Filtro.asm)
         plt.legend(loc='upper right', scatterpoints=1)
         
-    plt.axis([0.0, maxX+100.0, 0.0, maxY+10000000.0])
-    plt.xlabel("$Relacion$ $x/y$")
+    plt.axis([Tcp.tamX, maxX+100.0, 0.0, maxY+10000000.0])
+    plt.xlabel("$Relacion$ $ancho$ x $" + str(Tcp.tamY) + "$ - $ancho$")
     plt.ylabel("$Cantidad$ $de$ $clocks$ $insumidos$")
-    plt.title("Cantidad de clocks insumidos " + "cropflip" + " " + version + " por x/y")
+    plt.title("Cantidad de clocks insumidos " + "cropflip" + " " + version)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0)) # for both axis use both
 
     if not os.path.isdir(Tcp.graphsPath):
