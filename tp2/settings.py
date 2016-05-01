@@ -15,6 +15,7 @@ class Options:
 
 
 class Tests:
+    nothing = 0
     cacheCropflip = 1
     clocksLdr = 2
     clocksCf = 3
@@ -28,6 +29,7 @@ class Tests:
     @staticmethod
     def printAllInfo():
         print "possible performance test are: \n"
+        print str(Tests.nothing) + ": without test \n"
         print str(Tests.cacheCropflip) + ": cache cropflip test \n"
         print str(Tests.clocksLdr) + ": clocks ldr test \n"
         print str(Tests.clocksCf) + ": clocks cropflip test \n"
@@ -75,7 +77,7 @@ def prunedMean(coords = [], ords  = []):
 class TestSizeParams:
     nInst = 10  # 300
     indInst = 1
-    cantImg = 14  # 14
+    cantImg = 20  # 14
     imgName = "starWars"
     folderOut = "test_sizes_performance"
     buildDir = "codigo/build/"

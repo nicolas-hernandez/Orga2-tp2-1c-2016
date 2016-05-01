@@ -82,7 +82,7 @@ def main(argv):
             printAllInfo()
             Options.printAllInfo()
             Tests.printAllInfo()
-            print "version must be asm or c"
+            print "version must be asm, c or all"
             print "-g for plot and -a for all"
             sys.exit()
         elif opt in ("-i", "--ifile"):
@@ -99,14 +99,14 @@ def main(argv):
                 sys.exit(2)
             flag = arg
         elif opt in ("-t", "--test"):
-            if int(arg) not in (Tests.cacheCropflip, Tests.clocksLdr, Tests.clocksCf, Tests.clocksSep, Tests.sizesLdr,
+            if int(arg) not in (Tests.nothing, Tests.cacheCropflip, Tests.clocksLdr, Tests.clocksCf, Tests.clocksSep, Tests.sizesLdr,
                            Tests.sizesCf, Tests.sizesSep, Tests.compareLdrA, Tests.compareLdrB):
                 Tests.printAllInfo()
                 sys.exit(2)
             test = int(arg)
         elif opt in ("-v", "--version"):
-            if arg not in ("asm", "c"):
-                print "version must be asm or c"
+            if arg not in ("asm", "c", "all"):
+                print "version must be asm, c or all"
                 sys.exit(2)
             version = arg
         elif opt in "-g":
@@ -117,7 +117,7 @@ def main(argv):
             printAllInfo()
             Options.printAllInfo()
             Tests.printAllInfo()
-            print "version must be asm or c"
+            print "version must be asm, c or all"
             print "-g for plot and -a for all"
             sys.exit(2)
 
