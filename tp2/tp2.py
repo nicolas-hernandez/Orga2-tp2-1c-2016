@@ -18,11 +18,11 @@ def build(option):
 
 
     if option == Options.o1:
-        flags = '-e CFLAGS64="-O1 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
+        flags = ' -e CFLAGS64="-O1 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
     elif option == Options.o2:
-        flags = '-e CFLAGS64="-O2 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
+        flags = ' -e CFLAGS64="-O2 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
     elif option == Options.o3:
-        flags = '-e CFLAGS64="-O3 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
+        flags = ' -e CFLAGS64="-O3 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
 
     command = "make" + flags
     os.system(command)
