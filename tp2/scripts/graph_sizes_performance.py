@@ -50,13 +50,13 @@ def graph(filtro, version):
         plt.legend(loc='upper right', scatterpoints=1)
 
     plt.axis([0.0, Tsp.cantImg + 5.0, 0.0, max+10000000.0])
-    plt.xlabel('Tamaño')
+    plt.xlabel('Tama$\~{n}$o imgagen')
     plt.ylabel('Cantidad de clocks insumidos')
     plt.title('Cantidad de clocks insumidos ' + filtro + version)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0)) # for both axis use both
 
-    if not os.path.isdir(Tsp.tablesPath):
-        os.makedirs(Tsp.tablesPath)
+    if not os.path.isdir(Tsp.graphsPath):
+        os.makedirs(Tsp.graphsPath)
 
     fig.savefig(Tsp.graphsPath + filtro + version + ".pdf")
     plt.close(fig)
