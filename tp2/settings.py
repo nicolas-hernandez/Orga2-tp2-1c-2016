@@ -61,7 +61,7 @@ def prunedMean(coords = [], ords  = []):
     mean = 0
     if x0.is_integer():
         ords.sort()
-        del ords[-x0:]
+        del ords[-int(x0):]
         y = sum(ords)
         mean = y/float(n)
     else:
@@ -73,7 +73,7 @@ def prunedMean(coords = [], ords  = []):
     return mean
 
 class TestSizeParams:
-    nInst = 3  # 300
+    nInst = 10  # 300
     indInst = 1
     cantImg = 14  # 14
     imgName = "starWars"
