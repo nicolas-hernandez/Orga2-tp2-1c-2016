@@ -54,7 +54,7 @@ def graph(version):
         plt.legend(loc='upper right', scatterpoints=1)
         
     plt.axis([Tcp.tamX, maxX+100.0, 0.0, maxY+10000000.0])
-    plt.xlabel("$Relacion$ $ancho$ x $" + str(Tcp.tamY) + "$ - $ancho$")
+    plt.xlabel("$Relacion$ $ancho$ x $" + str(Tcp.tamY) + "$ - $ancho$ $/$ $x_{0}$ = $" + str(Tcp.tamX) + "$")
     plt.ylabel("$Cantidad$ $de$ $clocks$ $insumidos$")
     plt.title("Cantidad de clocks insumidos " + "cropflip" + " " + version)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0)) # for both axis use both
