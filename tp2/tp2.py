@@ -57,7 +57,7 @@ def clean():
     os.chdir(cwd)
 
 
-def tester(test, version, graficar, allVersions):
+def tester(test, version, graficar):
     if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesSep:
         if test == Tests.sizesLdr:
             test_sizes.test(Filtro.ldr, version)
@@ -68,8 +68,7 @@ def tester(test, version, graficar, allVersions):
             
     if test == Tests.cacheCropflip:
         test_cache.test(version)
-        
-        
+
     letter = "A"    
     if test == Tests.compareLdrA:
         test_ldr.test(letter)
@@ -78,9 +77,6 @@ def tester(test, version, graficar, allVersions):
         test_ldr.test(letter)
         
     if graficar:
-        if allVersions:
-            version = Filtro.allV
-
         if test == Tests.sizesLdr:
             graph_sizes.graph(Filtro.ldr, version)
         elif test == Tests.sizesSep:
@@ -103,7 +99,6 @@ def main(argv):
     test = ""
     version = ""
     graficar = False
-    allVersions = False
 
     try:
         opts, args = getopt.getopt(argv, "hf:i:o:t:v:ga", ["help=", "flag=", "ifile=", "ofile=", "test=", "version="])
@@ -119,7 +114,7 @@ def main(argv):
             Options.printAllInfo()
             Tests.printAllInfo()
             print "version must be asm, c or all"
-            print "-g for plot and -a for all"
+            print "-g for plot"
             sys.exit()
         elif opt in ("-i", "--ifile"):
             if arg == "":
@@ -147,14 +142,12 @@ def main(argv):
             version = arg
         elif opt in "-g":
             graficar = True
-        elif opt in "-a":
-            allVersions = True
         else:
             printAllInfo()
             Options.printAllInfo()
             Tests.printAllInfo()
             print "version must be asm, c or all"
-            print "-g for plot and -a for all"
+            print "-g for plot"
             sys.exit(2)
 
     print "Input file is ", inputfile
@@ -165,7 +158,7 @@ def main(argv):
         clean()
         build(flag, test)
 
-    tester(test, version, graficar, allVersions)
+    tester(test, version, graficar)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

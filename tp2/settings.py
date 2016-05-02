@@ -98,7 +98,7 @@ class TestLdrParams:
     asm_name_b = "ldr_asm_test_2.asm" 
     
 class TestCacheParams:
-    nInst = 1
+    nInst = 20
     indInst = 1
     imgName = "starWars"
     buildDir = "codigo/build/"

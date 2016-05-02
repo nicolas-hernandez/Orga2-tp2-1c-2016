@@ -9,58 +9,68 @@ from settings import TestSizeParams as Tsp, Filtro, prunedMean
 def test(filtro, version):
     cwd = os.getcwd()  # get current directory
 
-    os.chdir(Tsp.buildDir)
-
-    # print "dir actual " + os.getcwd()
-
     print "filtro " + filtro
     print "version " + version
 
-    means = []
-    ids = []
+    versions = []
 
-    for n in range(0, Tsp.cantImg):
+    if version == Filtro.allV:
+        versions.append(Filtro.asm)
+        versions.append(Filtro.c)
+    else
+        versions.append(version)
+        
+    for v in versions:
+    
+        os.chdir(Tcp.buildDir)
 
-        clocks = []
-        coords = []
+        # print "dir actual " + os.getcwd()
 
-        for i in xrange(Tsp.nInst):
-            # when program ends, cache data that could exists from the stack are invalidated.
-            cmd = ['./tp2', '-v', filtro, '-i', version, Tsp.pathSW + Tsp.imgName + str(n) + ".bmp"]
+        means = []
+        ids = []
 
-            if filtro == Filtro.cropflip:
-                cmd.append(str(Filtro.tamX))
-                cmd.append(str(Filtro.tamY))
-                cmd.append(str(Filtro.offsetX))
-                cmd.append(str(Filtro.offsetY))
-            elif filtro == Filtro.ldr:
-                cmd.append(str(Filtro.alpha))
+        for n in range(0, Tsp.cantImg):
 
-            # print cmd
-            cmd.append('-t')
-            cmd.append(str(Tsp.indInst))
-            output = subprocess.check_output(cmd)
+            clocks = []
+            coords = []
 
-            output = output.strip(' \n\t')
+            for i in xrange(Tsp.nInst):
+                # when program ends, cache data that could exists from the stack are invalidated.
+                cmd = ['./tp2', '-v', filtro, '-i', v, Tsp.pathSW + Tsp.imgName + str(n) + ".bmp"]
 
-            clocks.append(long(output))
-            coords.append(i + 1)
+                if filtro == Filtro.cropflip:
+                    cmd.append(str(Filtro.tamX))
+                    cmd.append(str(Filtro.tamY))
+                    cmd.append(str(Filtro.offsetX))
+                    cmd.append(str(Filtro.offsetY))
+                elif filtro == Filtro.ldr:
+                    cmd.append(str(Filtro.alpha))
 
-        print "img " + Tsp.imgName + str(n) + " has been successfully processed"
+                # print cmd
+                cmd.append('-t')
+                cmd.append(str(Tsp.indInst))
+                output = subprocess.check_output(cmd)
 
-        means.append(float(prunedMean(coords, clocks)))
-        ids.append(n + 1)
+                output = output.strip(' \n\t')
 
-    os.chdir(cwd)
+                clocks.append(long(output))
+                coords.append(i + 1)
 
-    if not os.path.isdir(Tsp.tablesPath):
-        os.makedirs(Tsp.tablesPath)
+            print "img " + Tsp.imgName + str(n) + " has been successfully processed"
 
-    with open(Tsp.tablesPath + filtro + version + ".csv", 'wb') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["img"] + ["mean"])
-        for id, mean in zip(ids, means):
-            writer.writerow([str(id)] + [str(mean)])
+            means.append(float(prunedMean(coords, clocks)))
+            ids.append(n + 1)
+
+        os.chdir(cwd)
+
+        if not os.path.isdir(Tsp.tablesPath):
+            os.makedirs(Tsp.tablesPath)
+
+        with open(Tsp.tablesPath + filtro + v + ".csv", 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["img"] + ["mean"])
+            for id, mean in zip(ids, means):
+                writer.writerow([str(id)] + [str(mean)])
 
 if __name__ == "__main__":
     test()
