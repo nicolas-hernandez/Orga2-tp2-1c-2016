@@ -95,6 +95,20 @@ void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
 		unsigned long long start, end;
 		MEDIR_TIEMPO_START(start)
 		for (int i = 0; i < config->cant_iteraciones; i++) {
+                char *basura = (char*)malloc(sizeof(char)*2048);
+                srand(5);
+                int i = 0;
+                while (i < 2048) {
+                    basura[i] = rand() % 27;            
+                    i++;                
+                }
+                long int suma = 0;
+                i = 0;                
+                while (i < 2048) {
+                    suma += basura[i];   
+                    i++;         
+                }
+                free(basura);
 				aplicador(config);
 		}
 		MEDIR_TIEMPO_STOP(end)
