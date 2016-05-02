@@ -45,7 +45,7 @@ def graph(test, file1, file2, file3):
     sub.bar(x_pos, performance, align='center', color='r', alpha=0.5)
     plt.xticks(x_pos, objects)
     plt.ylabel('$Clocks$ $insumidos$')
-    plt.title('Performance Asm vs. C vs. C flag O3')
+    plt.title('Performance ' + test + ' Asm vs. C vs. C flag O3')
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
      
     if not os.path.isdir(Tcp.graphsPath + test):
