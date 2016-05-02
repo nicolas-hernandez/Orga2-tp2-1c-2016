@@ -77,7 +77,7 @@ def prunedMean(coords = [], ords  = []):
 class TestSizeParams:
     nInst = 10  # 300
     indInst = 1
-    cantImg = 20  # 14
+    cantImg = 21  # 14
     imgName = "starWars"
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
