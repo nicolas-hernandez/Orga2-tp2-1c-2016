@@ -22,7 +22,7 @@ def test(filtro, version):
         
     for v in versions:
     
-        os.chdir(Tcp.buildDir)
+        os.chdir(Tsp.buildDir)
 
         # print "dir actual " + os.getcwd()
 
