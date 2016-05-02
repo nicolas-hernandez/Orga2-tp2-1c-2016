@@ -11,6 +11,8 @@ import scripts.test_ldr_performance_a as test_ldr_a
 import scripts.graph_ldr_performance_a as graph_ldr_a
 import scripts.test_ldr_performance_b as test_ldr_b
 import scripts.graph_ldr_performance_b as graph_ldr_b
+import scripts.test_clocks_performance as test_clocks
+import scripts.graph_clocks_performance as graph_clocks
 from settings import Options, Tests, Filtro, TestLdrParams as Tlp
 
 codeDir = "codigo/"
@@ -57,39 +59,37 @@ def clean():
     os.system("make clean")
     os.chdir(cwd)
 
+def callBuild(flag, test, change):
+    if flag != Options.none:
+        clean()
+        build(flag, test, change)
 
 def tester(test, version, graficar, flag):
-    if test != Tests.compareLdrB:
-        if flag != Options.none:
-            clean()
-            build(flag, test)
+    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Test.sizesCf:
+        callBuild(flag, test, False)
+        test_sizes.test(test, version)
 
-    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesCf:
-        if test == Tests.sizesLdr:
-            test_sizes.test(Filtro.ldr, version)
-        elif test == Tests.sizesSep:
-            test_sizes.test(Filtro.sepia, version)
-        else:
-            test_sizes.test(Filtro.cropflip, version)
-            
+    if test == Tests.clocksLdr or test == Tests.clocksSep or test == Tests.clocksCf:
+        callBuild("o", test, False)
+        test_clocks.test(test, "asm")
+        test_clocks.test(test, "c_o0")
+        callBuild("o3", test, False)
+        test_clocks.test(test, "c_o3")
+
     if test == Tests.cacheCropflip:
+        callBuild(test, flag, False)
         test_cache.test(version)
 
     letter = "A"
     if test == Tests.compareLdrA:
+        callBuild(flag, test, False)
         test_ldr_a.test(letter)
     elif test == Tests.compareLdrB:
-        if flag != Options.none:
-            clean()
-            build(flag, test, False)
-            
+        callBuild(flag, test, False)
         letter = "B_o"
         test_ldr_b.test(letter)
         
-        if flag != Options.none:
-            clean()
-            build(flag, test, True)
-            
+        callBuild(flag, test, True)
         letter = "B_2"
         test_ldr_b.test(letter)
         
@@ -107,6 +107,8 @@ def tester(test, version, graficar, flag):
         elif test == Tests.compareLdrB:
             letter = "B"
             graph_ldr_b.graph(letter)
+        elif test == Tests.clocksLdr or test == Tests.clocksSep or test == Tests.clocksCf:
+            graph_clocks.graph(test, "asm", "c_o0", "c_o3")
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"

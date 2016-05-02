@@ -31,9 +31,9 @@ class Tests:
         print "possible performance test are: \n"
         print str(Tests.nothing) + ": without test \n"
         print str(Tests.cacheCropflip) + ": cache cropflip test \n"
-        print str(Tests.clocksLdr) + ": clocks ldr test \n"
-        print str(Tests.clocksCf) + ": clocks cropflip test \n"
-        print str(Tests.clocksSep) + ": clocks sepia test \n"
+        print str(Tests.clocksLdr) + ": clocks ldr test. flags are ignored \n"
+        print str(Tests.clocksCf) + ": clocks cropflip test. flags are ignored \n"
+        print str(Tests.clocksSep) + ": clocks sepia test. flags are ignored \n"
         print str(Tests.sizesLdr) + ": size ldr test \n"
         print str(Tests.sizesCf) + ": size cropflip test \n"
         print str(Tests.sizesSep) + ": size sepia test \n"
@@ -84,7 +84,15 @@ class TestSizeParams:
     tablesPath = "tables/test_sizes_performance/"
     graphsPath = "graphs/test_sizes_performance/"
     
-    
+class TestClocksParams:
+    nInst = 20  # 300
+    indInst = 1
+    imgName = "starWars"
+    buildDir = "codigo/build/"
+    pathSW = "../img/SW/"
+    tablesPath = "tables/test_clocks_performance_"
+    graphsPath = "graphs/test_clocks_performance_"
+
 class TestLdrParams:
     nInst = 20  # 300
     indInst = 1
