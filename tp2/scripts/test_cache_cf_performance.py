@@ -35,8 +35,10 @@ def test(version):
   
             cmd = ['./tp2', '-v', "cropflip", '-i', version, Tcp.pathSW + Tcp.imgName + ".bmp"]
             
+            '''
             cmdCG = ['valgrind', '--tool={0}'.format('cachegrind'), './tp2', '-v', "cropflip", '-i', version, Tcp.pathSW + Tcp.imgName + ".bmp"]
-
+            '''
+            
             cmd.append(str(Filtro.tamX))
             cmd.append(str(Filtro.tamY))
             cmd.append(str(Filtro.offsetX))
@@ -45,7 +47,8 @@ def test(version):
             # print cmd
             cmd.append('-t')
             cmd.append(str(Tcp.indInst))
-                    
+            
+            '''        
             cmdCG.append(str(Filtro.tamX))
             cmdCG.append(str(Filtro.tamY))
             cmdCG.append(str(Filtro.offsetX))
@@ -54,19 +57,17 @@ def test(version):
             # print cmd
             cmdCG.append('-t')
             cmdCG.append(str(Tcp.indInst))
-
+            '''
+            
             output = subprocess.check_output(cmd)
 
             output = output.strip(' \n\t')
             
             print output
             
-            f = open("cache.txt", "wb")
-            outputCG = subprocess.call(cmdCG, stdout=f)
-            
-            # outputCG = outputCG.strip(' \n\t')
-            
-            # print "CON RUIDO " + outputCG
+            '''
+            subprocess.call(cmdCG)
+            '''         
             
             clocks.append(long(output))
             coords.append(i + 1)
