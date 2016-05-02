@@ -15,8 +15,8 @@ def test(filtro, version):
     versions = []
 
     if version == Filtro.allV:
-        versions.append(Filtro.asm)
-        versions.append(Filtro.c)
+        versions.append("asm")
+        versions.append("c")
     else:
         versions.append(version)
         
