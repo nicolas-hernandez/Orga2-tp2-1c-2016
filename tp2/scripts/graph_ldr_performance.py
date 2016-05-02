@@ -34,7 +34,7 @@ def graph(test):
     sub.bar(x_pos, performance, align='center', color='r', alpha=0.5)
     plt.xticks(x_pos, objects)
     plt.ylabel('$Clocks$ $insumidos$')
-    plt.title('$Performance Asm vs. C$')
+    plt.title('Performance Asm vs. C')
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
      
     if not os.path.isdir(Tlp.graphsPath + test):
