@@ -46,7 +46,7 @@ def graph(filtro, version):
     if len(means) > 0:
         sub.scatter(ids, means, color='blue', edgecolor='black', label=typeCode)
     if version == Filtro.allV and len(means2) > 0:
-        sub.scatter(ids2, means2, color='red', edgecolor='black', label="asm")
+        sub.scatter(ids, means2, color='red', edgecolor='black', label="asm")
         plt.legend(loc='upper right', scatterpoints=1)
         
     plt.axis([0.0, Tsp.cantImg + 5.0, 0.0, max+100000.0])
