@@ -58,7 +58,7 @@ def clean():
 
 
 def tester(test, version, graficar):
-    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesSep:
+    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesCf:
         if test == Tests.sizesLdr:
             test_sizes.test(Filtro.ldr, version)
         elif test == Tests.sizesSep:
