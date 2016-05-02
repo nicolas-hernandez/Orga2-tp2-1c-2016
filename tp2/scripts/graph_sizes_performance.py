@@ -52,7 +52,10 @@ def graph(filtro, version):
     plt.axis([0.0, Tsp.cantImg + 5.0, 0.0, max+100000.0])
     plt.xlabel("$Tama\~{n}o$ $imagen$")
     plt.ylabel("$Cantidad$ $de$ $clocks$ $insumidos$")
-    plt.title("Cantidad de clocks insumidos " + filtro + " " + version + " por imagen")
+    if version == Filtro.allV:
+        plt.title("Cantidad de clocks insumidos " + filtro + " por imagen")
+    else:
+        plt.title("Cantidad de clocks insumidos " + filtro + " " + version + " por imagen")
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0)) # for both axis use both
 
     if not os.path.isdir(Tsp.graphsPath):
