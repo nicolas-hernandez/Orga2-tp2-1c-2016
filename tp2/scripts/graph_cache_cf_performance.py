@@ -21,7 +21,7 @@ def graph(version):
     typeCode = version
 
     if version == Filtro.allV:
-        typeCode = Filtro.c
+        typeCode = "c"
 
     with open(Tcp.tablesPath + "cropflip" + typeCode + ".csv", 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -37,7 +37,7 @@ def graph(version):
                 means.append(float(row[1]))
 
     if version == Filtro.allV:
-        with open(Tcp.tablesPath + "cropflip" + Filtro.asm + ".csv", 'rb') as csvfile:
+        with open(Tcp.tablesPath + "cropflipasm.csv", 'rb') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 if row[0] != 'tamX/tamY':
@@ -51,7 +51,7 @@ def graph(version):
     if len(means) > 0:
         sub.scatter(sizeX, means, color='blue', edgecolor='black', label=typeCode)
     if version == Filtro.allV and len(means2) > 0:
-        sub.scatter(sizeX, means2, color='red', edgecolor='black', label=Filtro.asm)
+        sub.scatter(sizeX, means2, color='red', edgecolor='black', label="asm")
         plt.legend(loc='upper right', scatterpoints=1)
         
     plt.axis([Tcp.tamX, maxX+100.0, 0.0, maxY+100000.0])
