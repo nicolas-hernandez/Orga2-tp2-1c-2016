@@ -27,8 +27,11 @@ def graph(test):
     objects = ('Asm', 'C')
     x_pos = np.arange(len(objects))
     performance = [meanAsm, meanC]
+    
+    fig = plt.figure()
+    sub = fig.add_subplot(1, 1, 1)
      
-    plt.bar(x_pos, performance, align='center', color='r', alpha=0.5)
+    sub.bar(x_pos, performance, align='center', color='r', alpha=0.5)
     plt.xticks(x_pos, objects)
     plt.ylabel('$Clocks$ $insumidos$')
     plt.title('$Performance Asm vs. C$')
