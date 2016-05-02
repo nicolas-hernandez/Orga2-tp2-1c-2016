@@ -7,27 +7,28 @@ import scripts.test_sizes_performance as test_sizes
 import scripts.graph_sizes_performance as graph_sizes
 import scripts.test_cache_cf_performance as test_cache
 import scripts.graph_cache_cf_performance as graph_cache
-import scripts.test_ldr_performance as test_ldr
-import scripts.graph_ldr_performance as graph_ldr
+import scripts.test_ldr_performance_a as test_ldr_a
+import scripts.graph_ldr_performance_a as graph_ldr_a
+import scripts.test_ldr_performance_b as test_ldr_b
+import scripts.graph_ldr_performance_b as graph_ldr_b
 from settings import Options, Tests, Filtro, TestLdrParams as Tlp
 
 codeDir = "codigo/"
 
 
-def build(option, test):
+def build(option, test, change):
     cwd = os.getcwd()  # get current directory
     os.chdir(codeDir)
-    
-    
+
     if test == Tests.compareLdrA:
         os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
         os.system("sudo mv filtros/" + Tlp.asm_name_a + " filtros/ldr_asm.asm")
     elif test == Tests.compareLdrB:
-        os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
-        os.system("sudo mv filtros/" + Tlp.asm_name_b + " filtros/ldr_asm.asm")
-        
-    flags = ""
+        if change:
+            os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
+            os.system("sudo mv filtros/" + Tlp.asm_name_b + " filtros/ldr_asm.asm")
 
+    flags = ""
 
     if option == Options.o1:
         flags = ' -e CFLAGS64="-O1 -g -ggdb -Wall -Wextra -std=c99 -pedantic -m64"'
@@ -38,15 +39,15 @@ def build(option, test):
 
     command = "make" + flags
     os.system(command)
-    
-    
+
     if test == Tests.compareLdrA:
         os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_a)
         os.system("sudo mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
     elif test == Tests.compareLdrB:
-        os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_b)
-        os.system("sudo mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
-    
+        if change:
+            os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_b)
+            os.system("sudo mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
+
     os.chdir(cwd)
 
 
@@ -57,7 +58,12 @@ def clean():
     os.chdir(cwd)
 
 
-def tester(test, version, graficar):
+def tester(test, version, graficar, flag):
+    if test != Tests.compareLdrB:
+        if flag != Options.none:
+            clean()
+            build(flag, test)
+
     if test == Tests.sizesLdr or test == Tests.sizesSep or test == Tests.sizesCf:
         if test == Tests.sizesLdr:
             test_sizes.test(Filtro.ldr, version)
@@ -69,12 +75,23 @@ def tester(test, version, graficar):
     if test == Tests.cacheCropflip:
         test_cache.test(version)
 
-    letter = "A"    
+    letter = "A"
     if test == Tests.compareLdrA:
-        test_ldr.test(letter)
+        test_ldr_a.test(letter)
     elif test == Tests.compareLdrB:
-        letter = "B"
-        test_ldr.test(letter)
+        if flag != Options.none:
+            clean()
+            build(flag, test, False)
+            
+        letter = "B_o"
+        test_ldr_b.test(letter)
+        
+        if flag != Options.none:
+            clean()
+            build(flag, test, True)
+            
+        letter = "B_2"
+        test_ldr_b.test(letter)
         
     if graficar:
         if test == Tests.sizesLdr:
@@ -85,8 +102,11 @@ def tester(test, version, graficar):
             graph_sizes.graph(Filtro.cropflip, version)
         elif test == Tests.cacheCropflip:
             graph_cache.graph(version)
-        elif test == Tests.compareLdrA or test == Tests.compareLdrB:
-            graph_ldr.graph(letter)
+        elif test == Tests.compareLdrA:
+            graph_ldr_a.graph(letter)
+        elif test == Tests.compareLdrB:
+            letter = "B"
+            graph_ldr_b.graph(letter)
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"
@@ -154,11 +174,7 @@ def main(argv):
     print "Output file is ", outputfile
     print "Flag is ", flag
 
-    if flag != Options.none:
-        clean()
-        build(flag, test)
-
-    tester(test, version, graficar)
+    tester(test, version, graficar, flag)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
