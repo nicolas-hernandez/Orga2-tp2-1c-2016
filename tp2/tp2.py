@@ -65,16 +65,34 @@ def callBuild(flag, test, change):
         build(flag, test, change)
 
 def tester(test, version, graficar, flag):
-    if test == Tests.sizesLdr or test == Tests.sizesSep or test == Test.sizesCf:
+    if test == Tests.sizesLdr:
         callBuild(flag, test, False)
-        test_sizes.test(test, version)
+        test_sizes.test(Filtro.ldr, version)
+    elif test == Tests.sizesSep:
+        callBuild(flag, test, False)
+        test_sizes.test(Filtro.sepia, version)
+    elif test == Tests.sizesCf:
+        callBuild(flag, test, False)
+        test_sizes.test(Filtro.cropflip, version)
 
-    if test == Tests.clocksLdr or test == Tests.clocksSep or test == Tests.clocksCf:
-        callBuild("o", test, False)
-        test_clocks.test(test, "asm")
-        test_clocks.test(test, "c_o0")
-        callBuild("o3", test, False)
-        test_clocks.test(test, "c_o3")
+    if test == Tests.clocksLdr:
+        callBuild(Options.o, test, False)
+        test_clocks.test(Filtro.ldr, "asm")
+        test_clocks.test(Filtro.ldr, "c_o0")
+        callBuild(Options.o3, test, False)
+        test_clocks.test(Filtro.ldr, "c_o3")
+    elif test == Tests.clocksSep:
+        callBuild(Options.o, test, False)
+        test_clocks.test(Filtro.sepia, "asm")
+        test_clocks.test(Filtro.sepia, "c_o0")
+        callBuild(Options.o3, test, False)
+        test_clocks.test(Filtro.sepia, "c_o3")
+    elif test == Tests.clocksCf:
+        callBuild(Options.o, test, False)
+        test_clocks.test(Filtro.cropflip, "asm")
+        test_clocks.test(Filtro.cropflip, "c_o0")
+        callBuild(Options.o3, test, False)
+        test_clocks.test(Filtro.cropflip, "c_o3")
 
     if test == Tests.cacheCropflip:
         callBuild(test, flag, False)
@@ -107,8 +125,12 @@ def tester(test, version, graficar, flag):
         elif test == Tests.compareLdrB:
             letter = "B"
             graph_ldr_b.graph(letter)
-        elif test == Tests.clocksLdr or test == Tests.clocksSep or test == Tests.clocksCf:
-            graph_clocks.graph(test, "asm", "c_o0", "c_o3")
+        elif test == Tests.clocksLdr:
+            graph_clocks.graph(Filtro.ldr, "asm", "c_o0", "c_o3")
+        elif test == Tests.clocksSep:
+            graph_clocks.graph(Filtro.sepia, "asm", "c_o0", "c_o3")
+        elif test == Tests.clocksCf:
+            graph_clocks.graph(Filtro.cropflip, "asm", "c_o0", "c_o3")
 
 def printAllInfo():
     print "tp2.py -h <help> -f <flag> -i <inputfile> -o <outputfile> -t <test> -v <version> -g <graficar> \n"

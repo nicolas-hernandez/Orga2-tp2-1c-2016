@@ -27,7 +27,7 @@ def graph(test, file1, file2, file3):
         for row in reader:
             if row[0] != 'type code':      
                if row[0] == file2:
-                  meanC_o3 = float(row[1])
+                  meanC_o0 = float(row[1])
     with open(Tcp.tablesPath + test + '/' + file3 + ".csv", 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:

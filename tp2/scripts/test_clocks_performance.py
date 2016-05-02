@@ -15,9 +15,9 @@ def test(test, version): # test would be A or B.
 
     typeCodes = []
 
-    if version == "c_o0" or version == "c_o3"
+    if version == "c_o0" or version == "c_o3":
         typeCodes.append("c")
-    elif 
+    else:
         typeCodes.append("asm")
 
     means = []
