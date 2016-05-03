@@ -1,3 +1,10 @@
-Este trabajo practico consiste en dos parte: 
-Una primera parte donde utilizando el modelo de procesamiento SIMD aplicamos distintos filtros sobre imagenes. Estos filtros son implementado en dos tipos de lenguaje: lenguajc y assembler.
-La tecnica de SIMD nos permite aplicar una misma funcion sobre varios datos en forma vectorizada
+Las tecnologias actuales de video en tiempo real y filtros de imágen son posibles desde hace unos años gracias a la eficiencia del código usado en sus implementaciones. Sería imposible una implementación de un reproductor streaming puramente en un lenguaje de programación de uso común como C, debido a la enorme cantidad de computos requerida.\\
+
+Para solucionar este inconveniente se requería el procesamiento de información en paralelo y esto fue posible gracias a las instrucciones SIMD (single instruction multiple data) diseñadas y desarrolladas por intel, que son un subconjunto de las instrucciones bien conocidas assembler que utiliza esta arquitectura, las cuales permiten operar con varios datos a la vez, facilitando el calculo de pixeles a la hora de procesar una imagen de video y realizar operaciones de punto flotante, muy importantes en la creación de gráficos por computadora para el calculo de fisicas, iluminación, etc.\\
+Tambien tiene aplicación en el procesamiento de filtros de imágen, obteniendo con los mismos, resultados notables frente a implementaciones con otros lenguajes usuales como el mencionado C.
+
+\subsection{Motivaciones}
+
+En el siguiente informe haremos uso del set instrucciones de SIMD para implementar tres filtros, a saber: Sepia, Cropflip y Low Dynamic Range, los cuales serán explicados y desarrollados en el mismo. Propondremos además una variante de la implementación de cada filtro en lenguaje C.\\
+
+Luego abordaremos sus caracteristicas particulares y propondremos casos de estudio en base a los mismos para intentar responder a preguntas como: Qué implementación es mejor?. Primero se analizarán las metodologias para llevarlos a cabo y luego se darán a conocer los resultados obtenidos. Por último, en base a lo mostrado, obtendremos las conclusiones pertinentes.

@@ -19,6 +19,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{charter}   % tipografia
 \usepackage{graphicx}
+\usepackage{subfig}
 %\usepackage{makeidx}
 \usepackage{paralist} %itemize inline
 
@@ -115,7 +116,7 @@ En el presente trabajo se describe la problemática de ...
 %\normalsize
 \newpage
 
-\section{Objetivos generales}
+\section{Introducción}
 \input{introduccion.tex}
 
 \section{Desarrollo}
@@ -126,11 +127,11 @@ En el presente trabajo se describe la problemática de ...
 \subsection{Aumentando resoluciones}
 \input{testSizes.tex}
 
-\subsection{Performance: cropflip vs. cache}
-\input{testCache.tex}
-
 \subsection{Performance: implementaciones y filtros}
 \input{testTiempos.tex}
+
+\subsection{Performance: cropflip vs. cache}
+\input{testCache.tex}
 
 \subsection{Performance: versiones de ldr}
 \input{testLdr.tex}
