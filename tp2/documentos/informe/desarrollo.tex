@@ -35,12 +35,14 @@ Este filtro es una unión de dos filtros: crop y vertical-flip. Al aplicarlo sob
 
 El recuadro obtenido se devuelve espejadolo verticalmente. Para ello rearma las filas en orden inverso.\\
 
+\newpage
+
 \begin{figure}
   \centering
   \subfloat[Original]{\includegraphics[width=0.4\textwidth]{imagenes/lena32.jpg}\label{fig:f1}}
   \hfill
   \subfloat[Cropflip]{\includegraphics[width=0.4\textwidth]{imagenes/lena32cropflip.jpg}\label{fig:f2}}
-  \caption{Corte: 320$x$200 $offset x: 100$ y $offset y: 0$}
+  \caption{Corte: 320x200 $offset x: 100$ y $offset y: 0$}
 \end{figure}
 
 Si bien es el código más sencillo de implementar, incluso de manera eficiente, requiere algún tipo de explicación.
@@ -70,21 +72,21 @@ Debido a que no disponemos de paralelismo, no nos es posible enviar desde la fue
 
 \begin{codesnippet}
 \begin{verbatim}
-	for (int i = 0; i < tamy; i++) 
-	{
-		for (int j = 0; j < tamx; j++) 
-		{
+    for (int i = 0; i < tamy; i++) 
+    {
+        for (int j = 0; j < tamx; j++) 
+        {
 
-			bgra_t *p_d = (bgra_t*) &dst_matrix[(tamy-1)-i][j*4];
-            		bgra_t *p_s = (bgra_t*) &src_matrix[i+offsety][(j+offsetx)*4];
+            bgra_t *p_d = (bgra_t*) &dst_matrix[(tamy-1)-i][j*4];
+            bgra_t *p_s = (bgra_t*) &src_matrix[i+offsety][(j+offsetx)*4];
 
-			p_d->b = p_s->b;
-			p_d->g = p_s->g;
-			p_d->r = p_s->r;
-			p_d->a = p_s->a;
+            p_d->b = p_s->b;
+            p_d->g = p_s->g;
+            p_d->r = p_s->r;
+            p_d->a = p_s->a;
 
-		}
-	}
+        }
+    }
 \end{verbatim}
 \end{codesnippet}
 
@@ -105,6 +107,8 @@ $suma_{i,j} = I_{i,j}^{R} + I_{i,j}^{G} + I_{i,j}^{B}$
 
 El efecto logrado es que realza más el canal verde (? soy daltonico y malo pa los colores). 
 
+\newpage
+
 \begin{figure}
   \centering
   \subfloat[Original]{\includegraphics[width=0.4\textwidth]{imagenes/lena32.jpg}\label{fig:f3}}
@@ -112,7 +116,7 @@ El efecto logrado es que realza más el canal verde (? soy daltonico y malo pa l
   \subfloat[Sepia]{\includegraphics[width=0.4\textwidth]{imagenes/lena32sepia.jpg}\label{fig:f4}}
 \end{figure}
 
-Si bien es una operación sencilla, los tiempos de cómputo se ven comprometidos para imágenes muy grandes debido a la cantidad de operaciones en punto flotante: En una imágen de 512$x$512 pixeles tenemos 512$x$512$x$3 = 786432 operaciones de punto flotante. Lo cual puede suponer un desafio si no se dispone de tecnologias como SIMD.
+Si bien es una operación sencilla, los tiempos de cómputo se ven comprometidos para imágenes muy grandes debido a la cantidad de operaciones en punto flotante: En una imágen de 512x512 pixeles tenemos 512x512x3 = 786432 operaciones de punto flotante. Lo cual puede suponer un desafio si no se dispone de tecnologias como SIMD.
 
 \subsubsection{Assembler SIMD}
 
@@ -124,60 +128,60 @@ Al final se restaura el canal alfa junto con el nuevo pixel calculado y se devue
 
 \begin{codesnippet}
 \begin{verbatim}
-		movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
-		movdqu xmm2, xmm1 ; XMM1 = XMM2
-		movdqu xmm5, xmm1; respaldo XMM5 = XMM1
+        movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
+        movdqu xmm2, xmm1 ; XMM1 = XMM2
+        movdqu xmm5, xmm1; respaldo XMM5 = XMM1
 
-		;limpiar alfa
-		pand xmm1, xmm7; XMM1 = | 0 | r3 | g3 | b3 |...
-		pand xmm2, xmm7; idem
-			
-			
-		punpcklbw xmm1, xmm6; XMM1 = | p1 | p0 | con alfa limpio
-		punpckhbw xmm2, xmm6; XMM2 = | p3 | p2 | con alfa limpio
-		
-		movdqu xmm3, xmm1
-		movdqu xmm4, xmm2
-		punpcklbw xmm1, xmm6; XMM1 = | 0 | r0 | g0 | b0 |
-		punpckhbw xmm3, xmm6; XMM3 = | 0 | r1 | g1 | b1 |
-		punpcklbw xmm2, xmm6; XMM2 = | 0 | r2 | g2 | b2 |
-		punpckhbw xmm4, xmm6; XMM4 = | 0 | r3 | g3 | b3 |
-		
-		phaddd xmm1, xmm1; XMM1 = | r0 | g0 + b0 | r0 | g0 + b0 |
-		phaddd xmm1, xmm1; XMM1 = | suma0 | suma0 | suma0 | suma0 | 
-		phaddd xmm2, xmm2; idem con pixeles 1, 2 y 3
-		phaddd xmm2, xmm2
-		phaddd xmm3, xmm3 
-		phaddd xmm3, xmm3
-		phaddd xmm4, xmm4
-		phaddd xmm4, xmm4
+        limpiar alfa
+        pand xmm1, xmm7; XMM1 = | 0 | r3 | g3 | b3 |...
+        pand xmm2, xmm7; idem
+        
+        
+        punpcklbw xmm1, xmm6; XMM1 = | p1 | p0 | con alfa limpio
+        punpckhbw xmm2, xmm6; XMM2 = | p3 | p2 | con alfa limpio
+        
+        movdqu xmm3, xmm1
+        movdqu xmm4, xmm2
+        punpcklbw xmm1, xmm6; XMM1 = | 0 | r0 | g0 | b0 |
+        punpckhbw xmm3, xmm6; XMM3 = | 0 | r1 | g1 | b1 |
+        punpcklbw xmm2, xmm6; XMM2 = | 0 | r2 | g2 | b2 |
+        punpckhbw xmm4, xmm6; XMM4 = | 0 | r3 | g3 | b3 |
+        
+        phaddd xmm1, xmm1; XMM1 = | r0 | g0 + b0 | r0 | g0 + b0 |
+        phaddd xmm1, xmm1; XMM1 = | suma0 | suma0 | suma0 | suma0 | 
+        phaddd xmm2, xmm2; idem con pixeles 1, 2 y 3
+        phaddd xmm2, xmm2
+        phaddd xmm3, xmm3 
+        phaddd xmm3, xmm3
+        phaddd xmm4, xmm4
+        phaddd xmm4, xmm4
 
-		; un unpack mas, multiplico de a un pixel
+        ; un unpack mas, multiplico de a un pixel
 
-		cvtdq2ps xmm1, xmm1;  suma0 asFloat
-		cvtdq2ps xmm2, xmm2;  suma2 asFloat
-		cvtdq2ps xmm3, xmm3;  suma1 asFloat
-		cvtdq2ps xmm4, xmm4;  suma3 asFloat
+        cvtdq2ps xmm1, xmm1;  suma0 asFloat
+        cvtdq2ps xmm2, xmm2;  suma2 asFloat
+        cvtdq2ps xmm3, xmm3;  suma1 asFloat
+        cvtdq2ps xmm4, xmm4;  suma3 asFloat
 
-		movups xmm0, [factores]
+        movups xmm0, [factores]
 
-		mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.3|suma0*0.5|  
-		mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.3|suma2*0.5|  
-		mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.3|suma1*0.5|   
-		mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.3|suma3*0.5|   
+        mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.3|suma0*0.5|  
+        mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.3|suma2*0.5|  
+        mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.3|suma1*0.5|   
+        mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.3|suma3*0.5|   
 
-		cvttps2dq xmm1, xmm1; |0|suma0*0.2 asInt|suma0*0.3 asInt|suma0*0.5 asInt|
-		cvttps2dq xmm2, xmm2
-		cvttps2dq xmm3, xmm3
-		cvttps2dq xmm4, xmm4
+        cvttps2dq xmm1, xmm1; |0|suma0*0.2 asInt|suma0*0.3 asInt|suma0*0.5 asInt|
+        cvttps2dq xmm2, xmm2
+        cvttps2dq xmm3, xmm3
+        cvttps2dq xmm4, xmm4
 
-		packusdw xmm1, xmm3; 
-		packusdw xmm2, xmm4;
-		packuswb xmm1, xmm2; XMM1 = | p3' | p2' | p1'| p0'|
+        packusdw xmm1, xmm3; 
+        packusdw xmm2, xmm4;
+        packuswb xmm1, xmm2; XMM1 = | p3' | p2' | p1'| p0'|
 
-		;restaurar canal alfa
-		pand xmm5, xmm8
-		paddb xmm1, xmm5
+        ; restaurar canal alfa
+        pand xmm5, xmm8
+        paddb xmm1, xmm5
 \end{verbatim}
 \end{codesnippet}
 
@@ -194,13 +198,13 @@ Como sucede en $cropflip$, no disponemos de paralelimo, con lo que solo disponem
         {
             bgra_t *p_d = (bgra_t*) &dst_matrix[i][j * 4];
             bgra_t *p_s = (bgra_t*) &src_matrix[i][j * 4];
-            aux = (int) p_s->r + (int) p_s->g + (int) p_s->b;	
-				p_d->r = (aux * 0.5 > 255)? 255 : aux * 0.5;
-				p_d->g = (aux * 0.3 > 255)? 255 : aux * 0.3;
-				p_d->b = (aux * 0.2 > 255)? 255 : aux * 0.2;
-				p_d->a = p_s->a;
-        }		
-    }	
+            aux = (int) p_s->r + (int) p_s->g + (int) p_s->b;
+            p_d->r = (aux * 0.5 > 255)? 255 : aux * 0.5;
+            p_d->g = (aux * 0.3 > 255)? 255 : aux * 0.3;
+            p_d->b = (aux * 0.2 > 255)? 255 : aux * 0.2;
+            p_d->a = p_s->a;
+        }
+    }
 
 \end{verbatim}
 \end{codesnippet}
@@ -238,6 +242,8 @@ $I_{i-1,j-2}^{K}$ + $I_{i,j-1}^{K}$ + $I_{i-1,j}^{K}$ + $I_{i-1,j+1}^{K}$ + $I_{
 $I_{i-2,j-2}^{K}$ + $I_{i-2,j-1}^{K}$ + $I_{i-2,j}^{K}$ + $I_{i-2,j+1}^{K}$ + $I_{i-2,j+2}^{K}$ +\\
 \end{center}
 
+\newpage
+
 \begin{figure}
   \centering
   \subfloat[Original]{\includegraphics[width=0.4\textwidth]{imagenes/lena32.jpg}\label{fig:f5}}
@@ -272,100 +278,110 @@ Debido a que la suma que buscamos es de cinco pixeles, se obtiene el 5to pixel e
 \begin{verbatim}
 .cincoHorizontal:
 
-	; 16  12   8   4   0
-	; Li4|Li3|Li2|Li1|Li0
+    ; 16  12   8   4   0
+    ; Li4|Li3|Li2|Li1|Li0
     ;VERSION STANDARD: Con 2 accesos - acceso extra paa el pixel 5
     movdqu xmm13, [rdi + r12*pixelSize] ; Li3|Li2|Li1|Li0
 
-	movdqu xmm9, xmm13
-	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
-	phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0 -- maximo por w = 510 in []
-	pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
-    phaddw xmm13, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 -- maximo por w = 510 in []
+    movdqu xmm9, xmm13
+    pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
+    phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0 
+    pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
+    phaddw xmm13, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 
     punpcklwd xmm9, xmm11 ; r1|g1+b1|r0|g0+b0
     punpcklwd xmm13, xmm11 ; r3|g3+b3|r2|g2+b2
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0 -- maximo por dw = 1020 in []
+    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0 
     movdqu xmm9, xmm13
     psrldq xmm9, 8 ; 0|0|r3+r1|g3+b3+g1+b1
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1  -- maximo por dw = 2040 in []
+    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1 
     pslldq xmm13, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
     psrldq xmm13, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
-	movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
+    movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
-	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
-	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
-	pshufb xmm9, xmm7 ; 0|0|0|r4|0|g4|0|b4|0|0|0|0|0|0|0|0
-	phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0 -- maximo por w = 510 in []
-	punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
-	psrldq xmm9, 8 ; 0|0|r4|g4+b4
-	paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4 -- maximo por dw = 2550 in []
-	movdqu xmm9, xmm13
-	psrldq xmm9, 4 ; 0|0|0|r2+r0+r3+r1+r4
-	paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4 -- maximo por dw = 3825 in []
-	pslldq xmm13, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
-	psrldq xmm13, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
-	paddd xmm0, xmm13 ; suma de la i fila para el pixel ij.
+    pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
+    pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
+    pshufb xmm9, xmm7 ; 0|0|0|r4|0|g4|0|b4|0|0|0|0|0|0|0|0
+    phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0 -- maximo por w = 510 in []
+    punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
+    psrldq xmm9, 8 ; 0|0|r4|g4+b4
+    paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4 
+    movdqu xmm9, xmm13
+    psrldq xmm9, 4 ; 0|0|0|r2+r0+r3+r1+r4
+    paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4 
+    pslldq xmm13, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
+    psrldq xmm13, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
+    paddd xmm0, xmm13 ; suma de la i fila para el pixel ij.
 
-	add r12, r15
-	inc r10
-	cmp r10, 5
-	jl .cincoHorizontal
+    add r12, r15
+    inc r10
+    cmp r10, 5
+    jl .cincoHorizontal
+    
 \end{verbatim}
 \end{codesnippet}
 
-Una vez obtenida la suma, que al final tendrá un tamaño de 32 bits, se procede a realizar la fórmula de ldr. 
+Una vez obtenida la suma, que al final tendrá un tamaño de 32 bits, se procede a realizar la fórmula de $ldr$. 
 El primer paso es armar la un registro con el valor de $alfa$ en sus primeras tres posiciones menos significativas que es donde se encontraran los valores de los canales. Asi mismo, se crea un registro con el divisor $max$ en las cuatro posiciones debido a que con el realizaremos la division.\\
 
 Se crea un registro con la suma replicada en las tres posiciones menos significativas y se procede a calcular la fórmula, para lo cual tenemos la siguiente consideración:\\
  
-Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de 32 bits (el máximo es $75x255x255x255$ o $75x255x255x-255 = +-1,243,603,125$ $\in$ $[-2,147,483,648$ a $2,147,483,647]$, no se convierte a punto flotante si no hasta la division, por lo tanto será la única operacion de punto flotante del algoritmo, aunque vale mencionar que si por cada pixel, exceptuando las primeras y últimas dos filas y columnas se aplica esta fórmula en total habrá 3$x$(filas-2)$x$(columnas-2) operaciones de punto flotante. Para una imágen de 512$x$512 supone 780300 divisiones de punto flotante, que se asemeja bastante a la cantidad de operaciones de punto flotante de $sepia$.
+Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de 32 bits (el máximo es 75x255x255x255 o 75x255x255x-255 = +-1,243,603,125 $\in$ $[$-2,147,483,648 a 2,147,483,647$]$, no se convierte a punto flotante si no hasta la division, por lo tanto será la única operacion de punto flotante del algoritmo, aunque vale mencionar que si por cada pixel, exceptuando las primeras y últimas dos filas y columnas se aplica esta fórmula en total habrá 3x(filas-2)x(columnas-2) operaciones de punto flotante. Para una imágen de 512$x$512 supone 780300 divisiones de punto flotante, que se asemeja bastante a la cantidad de operaciones de punto flotante de $sepia$.
 
 
 \begin{codesnippet}
 \begin{verbatim}
+    
+    pxor xmm13, xmm13
+    movd xmm13, ebx
+    movdqu xmm12, xmm13 ; 0|0|0|alpha
+    pslldq xmm12, 4 ; 0|0|alpha|0
+    por xmm12, xmm13 ; 0|0|alpha|alpha
+    pslldq xmm12, 4 ; 0|alpha|alpha|0
+    por xmm12, xmm13 ; 0|alpha|alpha|alpha
 
-	pxor xmm13, xmm13
-	movd xmm13, ebx
-	movdqu xmm12, xmm13 ; 0|0|0|alpha
-	pslldq xmm12, 4 ; 0|0|alpha|0
-	por xmm12, xmm13 ; 0|0|alpha|alpha
-	pslldq xmm12, 4 ; 0|alpha|alpha|0
-	por xmm12, xmm13 ; 0|alpha|alpha|alpha
+    pxor xmm14, xmm14
+    movd xmm14, r13d
+    movdqu xmm13, xmm14 ; 0|0|0|max
+    pslldq xmm13, 4 ; 0|0|max|0
+    por xmm13, xmm14 ; 0|0|max|max
+    pslldq xmm13, 4 ; 0|max|max|0
+    por xmm13, xmm14 ; 0|max|max|max
+    pslldq xmm13, 4 ; max|max|max|0
+    por xmm13, xmm14 ; max|max|max|max
 
-	pxor xmm14, xmm14
-	movd xmm14, r13d
-	movdqu xmm13, xmm14 ; 0|0|0|max
-	pslldq xmm13, 4 ; 0|0|max|0
-	por xmm13, xmm14 ; 0|0|max|max
-	pslldq xmm13, 4 ; 0|max|max|0
-	por xmm13, xmm14 ; 0|max|max|max
-	pslldq xmm13, 4 ; max|max|max|0
-	por xmm13, xmm14 ; max|max|max|max
-
-	movdqu xmm5, xmm0 0|0|0|0
-	pslldq xmm5, 4 0|0|sumargb|0
-	por xmm5, xmm0 0|0|sumargb|sumargb
-	pslldq xmm5, 4 0|sumargb|sumargb|0
-	por xmm5, xmm0 0|sumargb|sumargb|sumargb
-	pxor xmm14, xmm14
-	movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
-	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
-	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
-	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
-	punpcklwd xmm0, xmm11 ; 0|r|g|b
-	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [-2,147,483,648 to 2,147,483,647]
-	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [-2,147,483,648 to 2,147,483,647]
-    cvtdq2ps xmm5, xmm5 ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
-	cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
-	divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
-	cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
-	addps xmm5, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
-	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
-	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
-	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
-	
+    movdqu xmm5, xmm0 0|0|0|0
+    pslldq xmm5, 4 0|0|sumargb|0
+    por xmm5, xmm0 0|0|sumargb|sumargb
+    pslldq xmm5, 4 0|sumargb|sumargb|0
+    por xmm5, xmm0 0|sumargb|sumargb|sumargb
+    pxor xmm14, xmm14
+    movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
+    movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
+    pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
+    punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
+    punpcklwd xmm0, xmm11 ; 0|r|g|b
+    ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b
+    pmulld xmm5, xmm0 
+    ; puede cambiar el signo segun alpha
+    ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b 
+    pmulld xmm5, xmm12 
+     ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
+    cvtdq2ps xmm5, xmm5
+    cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
+    divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
+    cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
+    ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+    addps xmm5, xmm0 
+    cvttps2dq xmm5, xmm5 ; cast to dw signed 
+    ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
+    packusdw xmm5, xmm11 
+    packuswb xmm5, xmm11 
+    ; tengo los canales calculados saturados a byte.
+    ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max 
+    pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
+    ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+    por xmm14, xmm5 
+    
 \end{verbatim}
 \end{codesnippet}
 
@@ -375,7 +391,7 @@ Como ya hemos explicado, C carece de paralelismo en las operaciones, por lo tant
 
 \begin{codesnippet}
 \begin{verbatim}
-
+                
                 int i = 0;
                 int indexSquare = c - ((cols*2)+2);
                 int sumargb = 0;
@@ -443,7 +459,9 @@ Además, escogeremos una implementación en particular para llevar a cabo alguno
 
 Evaluaremos con los distintos tests el rendimiento de cada implementación. El mejor o peor rendimiento de las implementaciones se basa en la toma de tiempos de ejecución. Como los tiempos de ejecución son relativamente pequeños, en general, se utilizará uno de los contadores de performance que posee el procesador. \\
 
-La imágen elegida para los tests será la siguiente: se sube!!.
+La imágen elegida para los tests será la siguiente:.
+
+\newpage
 
 \begin{figure}
   \begin{center}
@@ -478,13 +496,13 @@ La imágen elegida para los tests será la siguiente: se sube!!.
 \end{figure}
 
 
-INSERTE DATOS DEL PROCESADOR CON COMENTARIO AQUI $\rightarrow$
+El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con Cache L2 de 2MB.
 
 Para que la cache no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la cache L2 antes de cada corrida. Sabiendo que la cache es de 2MB el algoritmo siguiente debería garantizar que la cache se ocupará con información que no altere los resultados de los tests. \\
 
 \begin{codesnippet}
 \begin{verbatim}
-
+                
                 char *basura = (char*)malloc(sizeof(char)*2048);
                 srand(5);
                 int i = 0;
@@ -498,8 +516,9 @@ Para que la cache no influya en cada corrida se implementó un algoritmo sencill
                     suma += basura[i];   
                     i++;         
                 }
+                //llamada test
                 free(basura);
-
+                
 \end{verbatim}
 \end{codesnippet}
 
@@ -574,11 +593,11 @@ $b)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de codigo p
 
 \begin{codesnippet}
 \begin{verbatim}
-
-	;TEST 2: OPERACIONES CON ENTEROS
-	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [-2,147,483,648 to 2,147,483,647]
-	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [-2,147,483,648 to 2,147,483,647]
-	; PROBLEM HERE -->;divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
+                
+    ;TEST 2: OPERACIONES CON ENTEROS
+    pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b
+    ; puede cambiar el signo segun alpha
+    pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b 
     mov r10, rdx ; salvo resto
     xor rdx, rdx
     xor rax, rax
@@ -601,7 +620,7 @@ $b)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de codigo p
     div r13d ; alpha*sumargb*r/max
     movd xmm10, eax ; 0|0|alpha*sumargb*b/max|alpha*sumargb*g/max|alpha*sumargb*r/max
     mov rdx, r10 ; recupero resto
-    
+                
 \end{verbatim}
 \end{codesnippet}
 

@@ -1,4 +1,3 @@
-
 #include "../tp2.h"
 
 void cropflip_c    (

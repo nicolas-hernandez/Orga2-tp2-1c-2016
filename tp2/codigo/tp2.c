@@ -108,8 +108,8 @@ void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
                     suma += basura[i];   
                     i++;         
                 }
-                free(basura);
 				aplicador(config);
+				free(basura);
 		}
 		MEDIR_TIEMPO_STOP(end)
 		imagenes_guardar(config);
