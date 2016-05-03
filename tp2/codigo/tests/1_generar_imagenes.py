@@ -17,13 +17,14 @@ sizes=['3740x2060', '3640x1960', '3540x1860', '3440x1760', '3340x1660', '3240x15
 
 for filename in IMAGENES:
 	print(filename)
-
+    i = 0
 	for size in sizes:
 		sys.stdout.write("  " + size)
 		name = filename.split('.')
 		file_in  = DATADIR + "/" + filename
-		file_out = TESTINDIR + "/" + name[0] + "." + size + "." + name[1]
+		file_out = TESTINDIR + "/" + name[0] + "." + i + "." + name[1]
 		resize = "convert -resize " + size + "! " + file_in + " " + file_out
 		subprocess.call(resize, shell=True)
+        i+=1
 
 print("")
