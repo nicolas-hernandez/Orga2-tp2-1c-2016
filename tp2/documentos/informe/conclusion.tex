@@ -1,0 +1,8 @@
+Como pudimos comprobar, la importancia de SIMD para resolver este tipo de problematicas significativa. 
+Pudo observarse que los tiempos para un algoritmo convencional son muy elevados llegando a requerir aproximadamente 4 veces mas de tiempo para realizar la misma tarea $($es decir que con assembler se obtiene una eficiencia del 400$ \% )$\\
+
+Pudimos observar detalles particulares a cada implementacion. En especial, obtuvimos que para el filtro $ldr$ no era conveniente operar con enteros, pero esto parece estar mas asociado al tipo de implementacion y los cambios requeridos para lograr divisiones con enteros. Por ejemplo, si se hubiese realizado este mismo test sobre $sepia$ muy probablemente hubiese arrojado otros resultados debido a que operariamos de enteros sin perder paralelismo.\\
+
+Otro resultado que pudimos observar tambien con el filtro $ldr$ es que los accesos a memoria no suponen un problema, dado que traer de a 4 o traer de a 1 es igual dado que la cache utiliza principio de vecinidad espacial y pedir 1 trae varios pixeles contiguos. La diferencia radica en poder realizar operaciones de forma paralela, siendo nuevamente este el punto fuerte de SIMD. \\
+
+
