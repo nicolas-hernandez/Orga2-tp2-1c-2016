@@ -453,6 +453,30 @@ La imágen elegida para los tests será la siguiente: se sube!!.
   \end{center}
 \end{figure}
 
+\begin{figure}
+  \begin{center}
+	\includegraphics[scale=0.10]{imagenes/starWarsldr.jpg}
+	\caption{$ldr$ $\alpha = 255$}
+	\label{starwarsldr}
+  \end{center}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+	\includegraphics[scale=0.10]{imagenes/starWarssepia.jpg}
+	\caption{$sepia$}
+	\label{starwarssepia}
+  \end{center}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+	\includegraphics[scale=0.10]{imagenes/starWarscropflip.jpg}
+	\caption{$cropflip$ 1240 1160 600 1000}
+	\label{starwarscropflip}
+  \end{center}
+\end{figure}
+
 
 INSERTE DATOS DEL PROCESADOR CON COMENTARIO AQUI $\rightarrow$
 
@@ -496,16 +520,17 @@ ESTO VA LUEGO DE REALIZADO EL TEST:
 Parámetros del test: 
 Cantidad de iteraciones por filtro 10. Aumentos 100x100.
 ALFA 100, CORTE: 140 60 0 0
+Arranchamos en 1740x60 y vamos aumentando hasta 3840x2160
 
-Según nuestra hipótesis, con un aumento de forma cuadratica en el tamaño de las imágenes se obtiene una curva casi cuadratica, pero dado q las imagenes utilizadas poseen más altura que ancho, la curva resultante es más amplia. \\
+Según nuestra hipótesis, con un aumento de forma cuadratica en el tamaño de las imágenes se obtiene una curva casi cuadratica, pero dado q las imagenes utilizadas poseen más anchura que altura, la curva resultante es más planchada, esto es bueno dado que quiere decir que utiliza mejor el echo de los accesos por vecinidad espacial, ergo, un mejor hitrate. \\
 
 Luego, en base a esto, planteamos (para el filtro de LDR), que con un aumento solo en el ancho de la imágen, la curva resultante deberia ser una recta. \\
 
 Tambien planteamos que si invertimos el tamaño, haciendo que sea 2160x3840 y generamos los aumentos, el test deberia dar mas cuadratico. \\
 
-Esto se podria expresar matematicamente diciendo que $curva =a*x^2$ con $a>1$ cuando es mas ancha que alta y $a<1$ cuando es mas alta que ancha. \\
+Esto se podria expresar matematicamente diciendo que $curva =a*x^2$ con $a>1$ cuando es mas alta que ancha y $a<1$ cuando es mas ancha que alta. \\
 
-Por último observar que en cache se mantiene constante. \\
+Por último observar que en cache se mantiene constante, osea no sufre el efecto de cache miss. Salvo por los primeros casitos para las imagenes mas chicas, no se que pasa aca. \\
 
 \subsubsection{Performance: implementaciones y filtros}
 
@@ -533,8 +558,9 @@ ESTO VA LUEGO DE REALIZADO EL TEST:
 
 Parámetros del test: 
 Cantidad de iteraciones por filtro-version 20.
+empieza con un corte de 16x2144 y va restando al alto 16 y sumando al ancho la misma cantidad hasta llegar a 2144x16.
 
-Concluimos que salvo por las imagenes mas chicas que no se que goma pasa ahi, el test es constante. Por lo cual la cache no parece ser un factor relevamente en este caso como suponiamos. (HABRIA QUE CORRER ESTE TEST UNA VEZ MAS. AUNQUE YO YA PROBE INCLUSO CON DOS VARIACIONES DEL FLUSHEADOR Y DIO IGUAL)
+Concluimos el test es constante. Por lo cual la cache no parece ser un factor relevamente en este caso como suponiamos. (HABRIA QUE CORRER ESTE TEST UNA VEZ MAS. AUNQUE YO YA PROBE INCLUSO CON DOS VARIACIONES DEL FLUSHEADOR Y DIO IGUAL)
 
 
 \subsubsection{Performance: versiones de ldr}
