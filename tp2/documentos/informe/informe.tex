@@ -116,16 +116,31 @@ En el presente trabajo se describe la problemática de ...
 \newpage
 
 \section{Objetivos generales}
+\input{introduccion.tex}
 
-El objetivo de este Trabajo Práctico es ...
+\section{Desarrollo}
+\input{desarrollo.tex}
 
+\section{Tests}
 
-\section{Contexto}
+\subsection{Aumentando resoluciones}
+\input{testSizes.tex}
+
+\subsection{Performance: cropflip vs. cache}
+\input{testCache.tex}
+
+\subsection{Performance: implementaciones y filtros}
+\input{testTiempos.tex}
+
+\subsection{Performance: versiones de ldr}
+\input{testLdr.tex}
+
+%usar cosas de aca:
 
 \begin{figure}
   \begin{center}
-	\includegraphics[scale=0.66]{imagenes/logouba.jpg}
-	\caption{Descripcion de la figura}
+	%\includegraphics[scale=0.66]{imagenes/logouba.jpg}
+	%\caption{Descripcion de la figura}
 	\label{nombreparareferenciar}
   \end{center}
 \end{figure}
@@ -133,8 +148,6 @@ El objetivo de este Trabajo Práctico es ...
 
 \paragraph{\textbf{Titulo del parrafo} } Bla bla bla bla.
 Esto se muestra en la figura~\ref{nombreparareferenciar}.
-
-
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -148,12 +161,8 @@ struct Pepe {
 \end{verbatim}
 \end{codesnippet}
 
-
-\section{Enunciado y solucion} 
-%\input{enunciado}
-
-\section{Conclusiones y trabajo futuro}
-
+\section{Conclusiones}
+\input{conclusion.tex}
 
 \end{document}
 
