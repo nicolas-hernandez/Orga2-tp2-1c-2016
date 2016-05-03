@@ -47,7 +47,7 @@ class Filtro:
     sepia = "sepia"
     allV = "all"
     alpha = 150
-    tamX = 60
+    tamX = 40
     tamY = 140
     offsetX = 0
     offsetY = 0
@@ -77,7 +77,7 @@ def prunedMean(coords = [], ords  = []):
 class TestSizeParams:
     nInst = 10  # 300
     indInst = 1
-    cantImg = 21  # 14
+    cantImg = 38  # 14
     imgName = "starWars"
     buildDir = "codigo/build/"
     pathSW = "../img/SW/"
