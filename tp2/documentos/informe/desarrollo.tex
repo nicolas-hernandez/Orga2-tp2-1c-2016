@@ -526,12 +526,11 @@ Según nuestra hipótesis, con un aumento de forma cuadratica en el tamaño de l
 
 Luego se plantea que con dejar fijo un tamaño y aumentar el otro el resultado seria un aumento lineal de tiempos. Elegimos dejar fija la altura y aumentar el ancho desde 40x2160 a 3840x2160 y el resultado es que si, efectivamente el aumento es lineal. 
 
-CROPFLIP
+CROPFLIP:
 CORTE: 60 140 0 0 (habria que probar metiendo un offsetY grande)
 
-Por último observar que en cropflip se mantiene constante, es decir no cumple con lo esperado, (aunque si respeta que assembler es mejor que c). Salvo por los primeros casitos para las imagenes mas chicas, no se que pasa aca. Podemos pensar esto como que 
-el hecho de cortar siempre lo mismo \\
-Faltaria que corras el test en la facu de aumentar solo el ancho. El corte va a ser mas chico: 40x140 (-20 de ancho dado que la imagen mas chica tiene 40 de ancho). Hay que ver si arroja resultados relevantes. Tambien se puede meter un offset en la altura dado que es fija. 
+Por último observar que en cropflip se mantiene constante, es decir no cumple con lo esperado, (aunque si respeta que assembler es mejor que c). Salvo por los primeros casitos para las imagenes mas chicas, no se que pasa aca. Hay que correr este test nuevamente ahora que se flushea la cache y ver que sucede \\
+Faltaria que corras el test en la facu de aumentar solo el ancho para cropflip. El corte va a ser mas chico: 40x140 (-20 de ancho dado que la imagen mas chica tiene 40 de ancho). Hay que ver si arroja resultados relevantes. Tambien se puede meter un offset en la altura dado que es fija. 
 
 \subsubsection{Performance: implementaciones y filtros}
 
