@@ -3,6 +3,6 @@ Pudo observarse que los tiempos para un algoritmo en un lenguaje convencional co
 
 Pudimos observar detalles particulares a cada implementacion. En especial, obtuvimos que para el filtro $ldr$ no era conveniente operar con enteros, pero esto parece estar mas asociado al tipo de implementacion y los cambios requeridos para lograr divisiones con enteros. Por ejemplo, si se hubiese realizado este mismo test sobre $sepia$ muy probablemente hubiese arrojado otros resultados debido a que operariamos con enteros sin perder paralelismo.\\
 
-Otro resultado que pudimos observar, tambien con el filtro $ldr$, es que los accesos a memoria no suponen una perdida de rendimiento, dado que traer de a cuatro o traer de a un pixel es igual, debido a que la cache utiliza principio de vecinidad espacial y pedir al pedir un pixel la cache trae varios pixeles contiguos. La diferencia radica principalmente en poder realizar operaciones de forma paralela, siendo nuevamente este el punto fuerte de SIMD. \\
+Otro resultado que pudimos observar, tambien con el filtro $ldr$, es que los accesos a memoria no suponen una perdida de rendimiento, dado que traer de a cuatro o traer de a un pixel es igual, debido a que la cache utiliza principio de vecinidad espacial y al leer un pixel la cache trae varios pixeles contiguos. La diferencia radica principalmente en poder realizar operaciones de forma paralela, siendo nuevamente este el punto fuerte de SIMD. \\
 
 
