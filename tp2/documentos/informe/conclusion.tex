@@ -1,5 +1,5 @@
 Como pudimos comprobar, la importancia de SIMD para resolver este tipo de problematicas es muy significativa. 
-Pudo observarse que los tiempos para un algoritmo convencional son muy elevados llegando a requerir aproximadamente 4 veces mas de tiempo para realizar la misma tarea $($es decir que con assembler se obtiene una eficiencia del 400$ \% )$\\
+Pudo observarse que los tiempos para un algoritmo en un lenguage convencional como C son muy elevados llegando a requerir aproximadamente 4 veces mas de tiempo para realizar la misma tarea $($es decir que con assembler se obtiene una eficiencia del 400$ \% )$\\
 
 Pudimos observar detalles particulares a cada implementacion. En especial, obtuvimos que para el filtro $ldr$ no era conveniente operar con enteros, pero esto parece estar mas asociado al tipo de implementacion y los cambios requeridos para lograr divisiones con enteros. Por ejemplo, si se hubiese realizado este mismo test sobre $sepia$ muy probablemente hubiese arrojado otros resultados debido a que operariamos de enteros sin perder paralelismo.\\
 
