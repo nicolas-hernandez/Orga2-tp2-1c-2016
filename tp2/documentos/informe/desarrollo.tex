@@ -514,23 +514,24 @@ Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro 
 
 El resultado esperado es que para todos los filtros en ambas versiones el tiempo sea creciente a medida que el tamaño crece. Además, que la version en $asm$ se mantenga por encima de $C$ siempre. \\ 
 
-
-ESTO VA LUEGO DE REALIZADO EL TEST:
+ESTO VA LUEGO DE REALIZADO EL TEST: HAY QUE DESARROLLAR!
 
 Parámetros del test: 
 Cantidad de iteraciones por filtro 10. Aumentos 100x100.
-ALFA 100, CORTE: 140 60 0 0
+ALFA 150
 Arranchamos en 1740x60 y vamos aumentando hasta 3840x2160
 
-Según nuestra hipótesis, con un aumento de forma cuadratica en el tamaño de las imágenes se obtiene una curva casi cuadratica, pero dado q las imagenes utilizadas poseen más anchura que altura, la curva resultante es más planchada, esto es bueno dado que quiere decir que utiliza mejor el echo de los accesos por vecinidad espacial, ergo, un mejor hitrate. \\
+LDR Y SEPIA: 
+Según nuestra hipótesis, con un aumento de forma cuadratica en el tamaño de las imágenes se obtiene una curva casi cuadratica, la curva resultante es muy parecida a una cuadratica pero con un menor crecimiento, en un principio supusimos que esto tenia que ver con que la imagen era mas ancha que alta, asi que invertimos el tamaño de la imagen original de 3840x2160 a 2160x3840 y generamos los mismos aumentos pero invertidos. El resultado obtenido es identico al original, por lo cual no tiene sentido mostrar un grafico. Suponemos entonces que el factor de anchura o altura de la imagen en estos dos filtros no influye si aumentan los dos en iguales proporciones. \\
 
-Luego, en base a esto, planteamos (para el filtro de LDR), que con un aumento solo en el ancho de la imágen, la curva resultante deberia ser una recta. \\
+Luego se plantea que con dejar fijo un tamaño y aumentar el otro el resultado seria un aumento lineal de tiempos. Elegimos dejar fija la altura y aumentar el ancho desde 40x2160 a 3840x2160 y el resultado es que si, efectivamente el aumento es lineal. 
 
-Tambien planteamos que si invertimos el tamaño, haciendo que sea 2160x3840 y generamos los aumentos, el test deberia dar mas cuadratico. \\
+CROPFLIP
+CORTE: 60 140 0 0 (habria que probar metiendo un offsetY grande)
 
-Esto se podria expresar matematicamente diciendo que $curva =a*x^2$ con $a>1$ cuando es mas alta que ancha y $a<1$ cuando es mas ancha que alta. \\
-
-Por último observar que en cache se mantiene constante, osea no sufre el efecto de cache miss. Salvo por los primeros casitos para las imagenes mas chicas, no se que pasa aca. \\
+Por último observar que en cropflip se mantiene constante, es decir no cumple con lo esperado, (aunque si respeta que assembler es mejor que c). Salvo por los primeros casitos para las imagenes mas chicas, no se que pasa aca. Podemos pensar esto como que 
+el hecho de cortar siempre lo mismo \\
+Faltaria que corras el test en la facu de aumentar solo el ancho. El corte va a ser mas chico: 40x140 (-20 de ancho dado que la imagen mas chica tiene 40 de ancho). Hay que ver si arroja resultados relevantes. Tambien se puede meter un offset en la altura dado que es fija. 
 
 \subsubsection{Performance: implementaciones y filtros}
 
@@ -539,7 +540,7 @@ Para esto correremos todos los filtros comparando sus versiones de $assembler$, 
 
 El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de ciclos que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C$ con optimización. \\
 
-ESTO VA LUEGO DE REALIZADO EL TEST:
+ESTO VA LUEGO DE REALIZADO EL TEST: HAY QUE DESARROLLAR!
 
 Parámetros del test: 
 Cantidad de iteraciones por filtro-version 20.
@@ -554,11 +555,11 @@ Si el corte realizado es muy ancho que alto, por principio de vecinidad espacial
 Llevaremos a cabo entonces, un test para comprobar si este hecho tiene relevancia, esperando que, verdaderamente sea un factor influyente.
 Lo que haremos, como se comentó anteriormente, será limpiar la cache en cada corrida, para que así cada test no se vea afectado por el anterior. Luego esperariamos ver que cuanto más alto que ancho sea el corte peor rendimiento tendrá el algoritmo debido a que como los datos no se encuentran cacheados, tendrá más accesos a memoria ram. \\
 
-ESTO VA LUEGO DE REALIZADO EL TEST:
+ESTO VA LUEGO DE REALIZADO EL TEST: HAY QUE DESARROLLAR!
 
 Parámetros del test: 
 Cantidad de iteraciones por filtro-version 20.
-empieza con un corte de 16x2144 y va restando al alto 16 y sumando al ancho la misma cantidad hasta llegar a 2144x16.
+empieza con un corte de 16x2144 y va restando al alto 16 y sumando al ancho la misma cantidad hasta llegar a 2144x16. tiene offsetX = 0 y offsetY = 500.
 
 Concluimos el test es constante. Por lo cual la cache no parece ser un factor relevamente en este caso como suponiamos. (HABRIA QUE CORRER ESTE TEST UNA VEZ MAS. AUNQUE YO YA PROBE INCLUSO CON DOS VARIACIONES DEL FLUSHEADOR Y DIO IGUAL)
 
@@ -609,7 +610,7 @@ ESTO VA LUEGO DE REALIZADO EL TEST:
 
 Parámetros del test: 
 Cantidad de iteraciones por filtro-version 20.
-ALFA 100
+ALFA 150
 
 $a)$ Gana $assembler$. Claramente los accesos no suponen un problema. La diferencia esta en el procesamiento paralelo.
 
