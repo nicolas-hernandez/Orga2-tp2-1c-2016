@@ -23,12 +23,12 @@ def build(option, test, change):
     os.chdir(codeDir)
 
     if test == Tests.compareLdrA:
-        os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
-        os.system("sudo mv filtros/" + Tlp.asm_name_a + " filtros/ldr_asm.asm")
+        os.system("mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
+        os.system("mv filtros/" + Tlp.asm_name_a + " filtros/ldr_asm.asm")
     elif test == Tests.compareLdrB:
         if change:
-            os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
-            os.system("sudo mv filtros/" + Tlp.asm_name_b + " filtros/ldr_asm.asm")
+            os.system("mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_o)
+            os.system("mv filtros/" + Tlp.asm_name_b + " filtros/ldr_asm.asm")
 
     flags = ""
 
@@ -43,12 +43,12 @@ def build(option, test, change):
     os.system(command)
 
     if test == Tests.compareLdrA:
-        os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_a)
-        os.system("sudo mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
+        os.system("mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_a)
+        os.system("mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
     elif test == Tests.compareLdrB:
         if change:
-            os.system("sudo mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_b)
-            os.system("sudo mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
+            os.system("mv filtros/ldr_asm.asm filtros/" + Tlp.asm_name_b)
+            os.system("mv filtros/" + Tlp.asm_name_o + " filtros/ldr_asm.asm")
 
     os.chdir(cwd)
 
