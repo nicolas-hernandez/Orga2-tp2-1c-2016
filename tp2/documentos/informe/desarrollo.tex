@@ -212,7 +212,7 @@ Como sucede en $cropflip$, no disponemos de paralelimo, con lo que solo disponem
 
 \subsection{LDR: Low Dynamic Range}
 
-El filtro LDR es el que más operaciones lleva a cabo de los tres.
+El filtro $ldr$ es el que más operaciones lleva a cabo de los tres.
 Toma una imágen y aplica un efecto que modifica la imagen según su iluminación. El filtro toma el valor de un pixel y le añade un porcentaje $\alpha$ de el de sus vecinos.\\
 
 De esta manera, dado un porcentaje positivo, los pixeles rodeados por pixeles claros se vuelven
@@ -256,7 +256,7 @@ $I_{i-2,j-2}^{K}$ + $I_{i-2,j-1}^{K}$ + $I_{i-2,j}^{K}$ + $I_{i-2,j+1}^{K}$ + $I
 Para reducir errores de redondeo, la division debe será la última operación en realizarse.
 El resultado final será saturado de ahi $max$ y $min$ en la primer fórmula.
 
-Además, dado que en los bordes no es posible calcular ldr por la ausencia de vecinos, se devolverá
+Además, dado que en los bordes no es posible calcular $ldr$ por la ausencia de vecinos, se devolverá
 el valor original. Es decir:
 
 \begin{center}
@@ -448,7 +448,7 @@ Como ya hemos explicado, C carece de paralelismo en las operaciones, por lo tant
 
 En general, al aplicar filtros sobre imagenes, la performance puede verse afectada por varios motivos, como por ejemplo el scheduler del sistema, que puede generar caidas en el tiempo debido a que debe realizar operaciones de mayor prioridad antes de poder retornar al algoritmo. Otras cuestiones pueden estar relacionadas con el acceso a memoria.\\
 
-Como bien se sabe, la mayoria de los procesadores poseen una memoria integrada que es la más rápida luego de los registros, conocida como memoria cache, y que se subdivide en dos niveles: L1 (a su vez subdividida en datos e instrucciones) y L2 para datos. 
+Como bien se sabe, la mayoria de los procesadores poseen una memoria integrada que es la más rápida luego de los registros, conocida como memoria caché, y que se subdivide en dos niveles: L1 (a su vez subdividida en datos e instrucciones) y L2 para datos. 
 La idea de la misma es tener $"$a mano$"$ datos que sean pedidos al sistema, trayendo consigo además los contiguos en un bloque de memoria (principio de vecinidad espacial), de manera tal que al consultar por el mismo nuevamente o algún contiguo, se obtenga mucho más rápido desde esta memoria. Pero cuando los mismos no se encuentran, el procesador tiene que buscarlos en la memoria ram, siendo este proceso la causa en la caida de performance que más suele afectar a los algoritmos.\\ 
 
 Este y algunos motivos más serán de estudio en este informe. Para ello introduciremos cada una de las hipótesis que se plantearán en base a lo que cada implementación en particular genere y propondremos un test a realizar, explicando la metodologia para llevarlo a cabo y los resultados obtenidos con las conclusiones que correspondan.\\
@@ -496,9 +496,9 @@ La imágen elegida para los tests será la siguiente:.
 \end{figure}
 
 
-El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con Cache L2 de 2MB.
+El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con caché L2 de 2MB.
 
-Para que la cache no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la cache L2 antes de cada corrida. Sabiendo que la cache es de 2MB el algoritmo siguiente debería garantizar que la cache se ocupará con información que no altere los resultados de los tests. \\
+Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 2MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -531,34 +531,35 @@ Para que la cache no influya en cada corrida se implementó un algoritmo sencill
 
 Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C$) cuando se varia el tamaño de ~\ref{starwars}.\\
 
-El resultado esperado es que para todos los filtros en ambas versiones el tiempo sea creciente a medida que el tamaño crece. Además, que la version en $asm$ se mantenga por encima de $C$ siempre. \\ 
+El resultado esperado es que para todos los filtros en ambas versiones el tiempo sea creciente a medida que el tamaño crece y si el aumento es cuadratico en el tamaño, también lo sea en el tiempo. \\
+Además, que la version en implementada en $asm$ se mantenga por encima de $C$ siempre. \\ 
 
 
 
 \subsubsection{Performance: implementaciones y filtros}
 
-La meta principal del informe es comprobar que $asm$ es mejor que la implementación de $C$
+La meta principal del informe es comprobar que $asm$ es mejor que la implementación en $C$
 Para esto correremos todos los filtros comparando sus versiones de $assembler$, $C$ y además incluiremos $C$ con flags de optimización, en particular $O3$ para ver que tan bien puede optimizar el compilador. \\
 
-El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de ciclos que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C$ con optimización. \\
+El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de ciclos de reloj que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C$ con optimización. \\
 
 
 
-\subsubsection{Performance: cropflip vs. cache}
+\subsubsection{Performance: $cropflip$ vs. caché}
 
-El filtro cropflip parece poseer una particularidad. Utiliza accesos a memoria aleatorios que en principio deberian afectar el rendimiento en cuanto a si los datos pedidos estan cacheados o no. 
+El filtro $cropflip$ parece poseer una particularidad. Utiliza accesos a memoria aleatorios que en principio deberian afectar el rendimiento en cuanto a si los datos pedidos estan cacheados o no. 
 Si el corte realizado es muy ancho que alto, por principio de vecinidad espacial, el algoritmo debería tener un buen rendimiento, no así, cuando el corte es mas alto que ancho. \\
 
 Llevaremos a cabo entonces, un test para comprobar si este hecho tiene relevancia, esperando que, verdaderamente sea un factor influyente.
-Lo que haremos, como se comentó anteriormente, será limpiar la cache en cada corrida, para que así cada test no se vea afectado por el anterior. Luego esperariamos ver que cuanto más alto que ancho sea el corte peor rendimiento tendrá el algoritmo debido a que como los datos no se encuentran cacheados, tendrá más accesos a memoria ram. \\
+Lo que haremos, como se comentó anteriormente, será limpiar la caché en cada corrida, para que así cada test no se vea afectado por el anterior. Luego esperariamos ver que cuanto más alto que ancho sea el corte peor rendimiento tendrá el algoritmo debido a que como los datos no se encuentran cacheados, tendrá más accesos a memoria ram. \\
 
-\subsubsection{Performance: versiones de ldr}
+\subsubsection{Performance: versiones de $ldr$}
 
-Elegimos el filtro $LDR$ para analizar dos teorias relacionadas a SIMD. 
+Elegimos el filtro $ldr$ para analizar dos teorias relacionadas a SIMD. 
 
-$a)$ Si igualamos la cantidad de accesos de la version de $assembler$ a la de $C$ aún asi la version de $assembler$ será más óptima.
+$A)$ Si igualamos la cantidad de accesos de la version de $assembler$ a la de $C$ aún asi la version de $assembler$ será más óptima.
 
-$b)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de codigo por operaciones con enteros: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
+$B)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de codigo por operaciones con enteros: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
 
 
 \begin{codesnippet}
