@@ -8,23 +8,9 @@ Estaria bueno ir poniendo aca tips, notas y comandos que queremos que
 el resto del grupo vea; por ejemplo uso de ciertos scripts para generar
 graficos, uso/sintaxis de paquetes de latex o cosas por el estilo.
 
+Si tienen quilombo con instalar el bochs:
+(les dice que falta gtk.h)
+sudo apt-get install libgtk2.0-dev
+(les dice algo de un "sanity test")
+sudo apt-get install g++
 
-Uso de tp2.sh:
-
-	./tp2.sh MODO FILTRO IMAGEN [opcionesFiltro]
-
-	MODO:
-		asm: corre el make comun y la implementacion asm
-		c0: corre el make con el flag -O0 (sin ninguna optimizacion) y luego el tp2 con "-i c"
-		c1: corre el make con el flag -O1 (el default de gcc)
-		c2: corre el make con el flag -O2 (las optimizaciones del nivel anterior y algunas mas)
-		c3: corre el make con el flag -O3 (todas las optimizaciones. creo)
-	
-	FILTRO: ldr cropflip sepia
-	IMAGEN: path relativo de la imagen ("codigo/img/scarlett.bmp" funca pero "/home/nico/scarlett.bmp" no)
-
-Ojo, no esta pensado para correrse desde cualquier directorio.
-
-Los resultados se guardan en codigo/log.txt. El script sobrescribe este archivo.
-
-Modificando la segunda linea del script, modificas la cantidad de veces que corre,
