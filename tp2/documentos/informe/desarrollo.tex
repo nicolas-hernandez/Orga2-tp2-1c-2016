@@ -64,11 +64,11 @@ Tomando entonces de a 4 pixeles, desde el inicio del rectangulo determinado por 
 \end{verbatim}
 \end{codesnippet}
 
-Como puede observarse, mediante un ciclo podemos con la ayuda de un registro xmm transportar desde la fuente hasta el destino, 4 pixeles simultaneamente. Esto supondría en principio una ventaja sobre la siguiente implementación.
+Como puede observarse, mediante un ciclo podemos con la ayuda de un registro xmm transportar desde la fuente hasta el destino, 4 pixeles simultaneamente, que corresponde en total a la fila de la imágen.
 
 \subsubsection{C}
 
-Debido a que no disponemos de paralelismo, no nos es posible enviar desde la fuente al destino 4 pixeles simultaneamente. Por lo tanto cada pixel se opera unitariamente. Igualemente se puede llevar a cabo con la ayuda de dos simples ciclos anidados.
+En principio, C compilado sin flags de optimización (es decir compilado con $O0$, modo default) el código final se resuelve puramente con instrucciones de assembler. Por lo tanto cada pixel se opera unitariamente. 
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -120,7 +120,7 @@ Si bien es una operación sencilla, los tiempos de cómputo se ven comprometidos
 
 \subsubsection{Assembler SIMD}
 
-Al igual que en el primer filtro, se aprovecha el paralelismo de SIMD y en particular la eficiencia del cálculo en punto flotante.\\
+Al igual que en el primer filtro, se aprovecha el paralelismo de SIMD para el cálculo en punto flotante.\\
 
 Para operar la imágen se procesa de a 4 pixeles. Luego cada pixel se lleva a un registro $xmm$ extendiendo sus canales a 32 bits. Como no se asume que el alfa sea cero se utiliza una máscara para borrarlo previemente. Luego se realiza la suma de los canales para cada pixel y por último se convierte cada una a punto flotante 32 bits y se realizan los 3 productos para cada suma que corresponden a los nuevos canales $r$, $g$ y $b$ mediante el uso de operaciones de punto flotante.\\
 
@@ -187,7 +187,7 @@ Al final se restaura el canal alfa junto con el nuevo pixel calculado y se devue
 
 \subsubsection{C}
 
-Como sucede en $cropflip$, no disponemos de paralelimo, con lo que solo disponemos de la ayuda de ciclos anidados y accesos y operaciones unitarias.
+Como sucede en $cropflip$, sin flags de optimización el codigo compilado con $O0$ no dispone de las ventajas de SIMD.
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -213,7 +213,7 @@ Como sucede en $cropflip$, no disponemos de paralelimo, con lo que solo disponem
 \subsection{LDR: Low Dynamic Range}
 
 El filtro $ldr$ es el que más operaciones lleva a cabo de los tres.
-Toma una imágen y aplica un efecto que modifica la imagen según su iluminación. El filtro toma el valor de un pixel y le añade un porcentaje $\alpha$ de el de sus vecinos.\\
+Toma una imágen y aplica un efecto que modifica la imagen según su iluminación. El filtro toma el valor de un pixel y le añade un porcentaje $\alpha$ del de sus vecinos.\\
 
 De esta manera, dado un porcentaje positivo, los pixeles rodeados por pixeles claros se vuelven
 aún más claros, mientras que los rodeados por pixeles oscuros se mantienen igual. La intensidad
@@ -232,7 +232,7 @@ $$sumargb_{i,j} = suma_{i,j}^{r} + suma_{i,j}^{g} + suma_{i,j}^{b}$$
 $$max = 5*5*255*3*255$$
 \end{center}
 
-y finalmente $suma_{i,j}^{K}$ corresponde a:
+255 y 0 corresponden a valores de saturación y finalmente $suma_{i,j}^{K}$ corresponde a:
 
 \begin{center}
 $I_{i+2,j-2}^{K}$ + $I_{i+2,j-1}^{K}$ + $I_{i+2,j}^{K}$ + $I_{i+2,j+1}^{K}$ + $I_{i+2,j+2}^{K}$ +\\
@@ -387,7 +387,7 @@ Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de
 
 \subsubsection{C}
 
-Como ya hemos explicado, C carece de paralelismo en las operaciones, por lo tanto tendremos que lidiar de la manera tradicional, obteniendo cada pixel y operando unitariamente. Al final el agoritmo es similar pero con más accesos a memoria para lectura y escritura.
+Como ya hemos explicado, C compilado en modo default, carece de paralelismo en las operaciones y por lo tanto $ldr$ se resolverá obteniendo cada pixel y operando unitariamente. Al final el agoritmo es similar pero con más accesos a memoria para lectura y escritura y operaciones de punto flotante unitarias.
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -446,7 +446,7 @@ Como ya hemos explicado, C carece de paralelismo en las operaciones, por lo tant
 
 \subsection{Análisis experimental}
 
-En general, al aplicar filtros sobre imagenes, la performance puede verse afectada por varios motivos, como por ejemplo el scheduler del sistema, que puede generar caidas en el tiempo debido a que debe realizar operaciones de mayor prioridad antes de poder retornar al algoritmo. Otras cuestiones pueden estar relacionadas con el acceso a memoria.\\
+En general, al aplicar filtros sobre imagenes, la performance puede verse afectada por varios motivos, como por ejemplo el scheduler del sistema, que puede generar caidas en el tiempo debido a que debe realizar operaciones de mayor prioridad antes de poder retornar al algoritmo.\\
 
 Como bien se sabe, la mayoria de los procesadores poseen una memoria integrada que es la más rápida luego de los registros, conocida como memoria caché, y que se subdivide en dos niveles: L1 (a su vez subdividida en datos e instrucciones) y L2 para datos. 
 La idea de la misma es tener $"$a mano$"$ datos que sean pedidos al sistema, trayendo consigo además los contiguos en un bloque de memoria (principio de vecinidad espacial), de manera tal que al consultar por el mismo nuevamente o algún contiguo, se obtenga mucho más rápido desde esta memoria. Pero cuando los mismos no se encuentran, el procesador tiene que buscarlos en la memoria ram, siendo este proceso la causa en la caida de performance que más suele afectar a los algoritmos.\\ 
@@ -458,6 +458,8 @@ Además, escogeremos una implementación en particular para llevar a cabo alguno
 \subsubsection{Metodologias}
 
 Evaluaremos con los distintos tests el rendimiento de cada implementación. El mejor o peor rendimiento de las implementaciones se basa en la toma de tiempos de ejecución. Como los tiempos de ejecución son relativamente pequeños, en general, se utilizará uno de los contadores de performance que posee el procesador. \\
+Para las mediciones realizadas tomaremos una media $\alpha$-podada 0.5 sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Luego tomaremos la varianza muestral, podando los datos con el mismo $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
+De esta manera podremos saber que si la dispersion de los datos es muy grande, para dos curvas aparentemente distanciadas en promedio, tal vez no haya diferencias sigificativas.
 
 La imágen elegida para los tests será la siguiente:.
 
@@ -465,36 +467,11 @@ La imágen elegida para los tests será la siguiente:.
 
 \begin{figure}
   \begin{center}
-	\includegraphics[scale=0.10]{imagenes/starWars.jpg}
+	\includegraphics[scale=.5]{imagenes/starWars.jpg}
 	\caption{La última de Star Wars}
 	\label{starwars}
   \end{center}
 \end{figure}
-
-\begin{figure}
-  \begin{center}
-	\includegraphics[scale=0.10]{imagenes/starWarsldr.jpg}
-	\caption{$ldr$ $\alpha = 255$}
-	\label{starwarsldr}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-	\includegraphics[scale=0.10]{imagenes/starWarssepia.jpg}
-	\caption{$sepia$}
-	\label{starwarssepia}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-	\includegraphics[scale=0.10]{imagenes/starWarscropflip.jpg}
-	\caption{$cropflip$ 1240 1160 600 1000}
-	\label{starwarscropflip}
-  \end{center}
-\end{figure}
-
 
 El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con caché L2 de 2MB.
 
@@ -527,9 +504,9 @@ Para que la caché no influya en cada corrida se implementó un algoritmo sencil
 \subsection{Hipótesis}
 
 
-\subsubsection{Aumentando resoluciones}
+\subsubsection{Comportamiento: Aumentando resoluciones}
 
-Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C$) cuando se varia el tamaño de ~\ref{starwars}.\\
+Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C$) cuando se varia el tamaño de ~\ref{starwars}. Es decir, analizaremos el comportamiento de los algoritmos frente a variaciones de tamaño\\
 
 El resultado esperado es que para todos los filtros en ambas versiones el tiempo sea creciente a medida que el tamaño crece y si el aumento es cuadratico en el tamaño, también lo sea en el tiempo. \\
 Además, que la version en implementada en $asm$ se mantenga por encima de $C$ siempre. \\ 

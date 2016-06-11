@@ -52,7 +52,6 @@ def build(option, test, change):
 
     os.chdir(cwd)
 
-
 def clean():
     cwd = os.getcwd()  # get current directory
     os.chdir(codeDir)
