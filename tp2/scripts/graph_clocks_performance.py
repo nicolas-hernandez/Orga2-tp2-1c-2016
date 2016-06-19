@@ -5,51 +5,59 @@
 import os
 import subprocess
 import csv
-from settings import TestClocksParams as Tcp, Filtro, prunedMean
+from settings import TestClocksParams as Tcp, Filtro
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 
 
-def graph(test, file1, file2, file3):
-    meanAsm = 0
-    meanC_o0 = 0
-    meanC_o3 = 0
+def graph(filtro, file1, file2, file3):
+	meanAsm = 0
+	meanC_oi = 0
+	meanC_o3 = 0
+	errorAsm = 0
+	errorC_oi = 0
+	errorC_o3 = 0
 
-    with open(Tcp.tablesPath + test + '/' + file1 + ".csv", 'rb') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            if row[0] != 'type code':      
-               if row[0] == file1:
-                  meanAsm = float(row[1])
-    with open(Tcp.tablesPath + test + '/' + file2 + ".csv", 'rb') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            if row[0] != 'type code':      
-               if row[0] == file2:
-                  meanC_o0 = float(row[1])
-    with open(Tcp.tablesPath + test + '/' + file3 + ".csv", 'rb') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            if row[0] != 'type code':      
-               if row[0] == file3:
-                  meanC_o3 = float(row[1])
+	with open(Tcp.tablesPath + filtro + file1 + ".csv", 'rb') as csvfile:
+		reader = csv.reader(csvfile, delimiter=',')
+		for row in reader:		
+			if row[0] == 'asm':
+				meanAsm = float(row[1])
+				errorAsm = float(row[2])
+	with open(Tcp.tablesPath + filtro + file2 + ".csv", 'rb') as csvfile:
+		reader = csv.reader(csvfile, delimiter=',')
+		for row in reader:		
+			if row[0] == 'c':
+				meanC_oi = float(row[1])
+				errorC_oi = float(row[2]) 
+	with open(Tcp.tablesPath + filtro + file3 + ".csv", 'rb') as csvfile:
+		reader = csv.reader(csvfile, delimiter=',')
+		for row in reader:	
+			if row[0] == 'c':
+				meanC_o3 = float(row[1])
+				errorC_o3 = float(row[2])	
 
-    objects = ('Asm', 'C', 'C flag O3')
-    x_pos = np.arange(len(objects))
-    performance = [meanAsm, meanC_o0, meanC_o3]
-    
-    fig = plt.figure()
-    sub = fig.add_subplot(1, 1, 1)
-     
-    sub.bar(x_pos, performance, align='center', color='r', alpha=0.5)
-    plt.xticks(x_pos, objects)
-    plt.ylabel('$Clocks$ $insumidos$')
-    plt.title('Performance ' + test + ' Asm vs. C vs. C flag O3')
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-     
-    if not os.path.isdir(Tcp.graphsPath + test):
-        os.makedirs(Tcp.graphsPath + test)
+	avgAsm = int((meanC_oi / float(meanAsm))*100)
+	avgO3 = int((meanC_oi / float(meanC_o3))*100)
 
-    fig.savefig(Tcp.graphsPath + test + "/" + test + ".pdf")
-    plt.close(fig)
+	objects = ('Asm: ' + str(avgAsm) + '%' , 'C flag O3: ' + str(avgO3) + '%', 'C flag O1')
+	x_pos = np.arange(len(objects))
+	performance = [meanAsm, meanC_o3, meanC_oi]
+	errors = [errorAsm, errorC_o3, errorC_oi]
+	
+	fig = plt.figure()
+	sub = fig.add_subplot(1, 1, 1)
+	 
+	sub.bar(x_pos, performance, align='center', color='r', alpha=0.5, yerr=errors)
+	#sub.errorbar(x_pos, performance, yerr=errors, fmt='o')	
+	plt.xticks(x_pos, objects)
+	plt.ylabel('$Clocks/Pixel$ $insumidos$')
+	plt.title(filtro + ' Asm vs. C flag O3 vs. C flag O1')
+	plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+	 
+	if not os.path.isdir(Tcp.graphsPath):
+		os.makedirs(Tcp.graphsPath)
+
+	fig.savefig(Tcp.graphsPath + filtro + 'Clocks' + ".pdf")
+	plt.close(fig)
