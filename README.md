@@ -15,6 +15,7 @@ sudo apt-get install libgtk2.0-dev
 sudo apt-get install g++
 
 correr en frio cropflip:
+    ir a la carpeta tp2/codigo/tests y correr python 1_generar_imaganes.py esto te deja imagenes en data/imagenes_a_testear copialas a tp2/codigo/img
     dejar en tp2.c: int fria = 1;
 	correr desde el directorio tp2 el script tp2.py: python tp2.py -t 2 -v all (aca la version no interesa porque compara c-O1 vs. c-O3 vs. asm)
 	correr python tp2.py -t 5 -v all (compara asm con c-O1)
