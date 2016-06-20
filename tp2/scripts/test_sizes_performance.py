@@ -64,6 +64,9 @@ def test(filtro, version, cacheMode):
 				clocks.append(long(output)/float(size)) 
 				coords.append(i + 1)
 
+			width += decrement
+			height += decrement
+
 			print "img " + Tsp.imgName + str(n) + " has been successfully processed"
 
 			data.append(prunedMeanAndSampleVariance(coords, clocks))

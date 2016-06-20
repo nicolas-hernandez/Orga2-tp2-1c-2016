@@ -96,8 +96,8 @@ def prunedMeanAndSampleVariance(coords = [], ords	= []):
 	 return (mean, total)
 
 class ImageDetails:
-	 width = 1224
-	 height = 1224
+	 width = 24
+	 height = 24
 	 decrement = 16
 
 class TestSizeParams:
