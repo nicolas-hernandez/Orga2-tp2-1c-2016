@@ -1,6 +1,7 @@
 #Compiled 
 *.o
-*build/tp2
+tp2
+bmpdiff
 *pyc
 *~
 starWars*.bmp
