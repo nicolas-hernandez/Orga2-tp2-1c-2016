@@ -128,60 +128,102 @@ Al final se restaura el canal alfa junto con el nuevo pixel calculado y se devue
 
 \begin{codesnippet}
 \begin{verbatim}
-        movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
-        movdqu xmm2, xmm1 ; XMM1 = XMM2
-        movdqu xmm5, xmm1; respaldo XMM5 = XMM1
+factores: DD  0.2, 0.3, 0.5, 0.0 
+alfamasc: DB  0, 0, 0, 0XFF, 0, 0, 0, 0XFF, 0, 0, 0 , 0XFF, 0, 0, 0, 0XFF
+alfainv: DB 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0    
+section .text
 
-        limpiar alfa
-        pand xmm1, xmm7; XMM1 = | 0 | r3 | g3 | b3 |...
-        pand xmm2, xmm7; idem
-        
-        
-        punpcklbw xmm1, xmm6; XMM1 = | p1 | p0 | con alfa limpio
-        punpckhbw xmm2, xmm6; XMM2 = | p3 | p2 | con alfa limpio
-        
-        movdqu xmm3, xmm1
-        movdqu xmm4, xmm2
-        punpcklbw xmm1, xmm6; XMM1 = | 0 | r0 | g0 | b0 |
-        punpckhbw xmm3, xmm6; XMM3 = | 0 | r1 | g1 | b1 |
-        punpcklbw xmm2, xmm6; XMM2 = | 0 | r2 | g2 | b2 |
-        punpckhbw xmm4, xmm6; XMM4 = | 0 | r3 | g3 | b3 |
-        
-        phaddd xmm1, xmm1; XMM1 = | r0 | g0 + b0 | r0 | g0 + b0 |
-        phaddd xmm1, xmm1; XMM1 = | suma0 | suma0 | suma0 | suma0 | 
-        phaddd xmm2, xmm2; idem con pixeles 1, 2 y 3
-        phaddd xmm2, xmm2
-        phaddd xmm3, xmm3 
-        phaddd xmm3, xmm3
-        phaddd xmm4, xmm4
-        phaddd xmm4, xmm4
+;Notacion:
+;px = pixel input 
+;sumax = sumatoria de las componentes de px
+;px' = pixel output deseado
+;El contenido de los registros XMM se muestra del 
+;	bit mas significativo al menos significativo
 
-        ; un unpack mas, multiplico de a un pixel
+_sepia_asm:
+	;rdi *src
+	;rsi *dst
+	;edx int cols
+	;ecx int filas
+	;r8d int src_row_size
+	;r9d int dst_row_size
 
-        cvtdq2ps xmm1, xmm1;  suma0 asFloat
-        cvtdq2ps xmm2, xmm2;  suma2 asFloat
-        cvtdq2ps xmm3, xmm3;  suma1 asFloat
-        cvtdq2ps xmm4, xmm4;  suma3 asFloat
+	push rbp
+	mov rbp, rsp
+	
+	mov eax, edx
+	mul ecx
+	mov ecx, eax
+	sar ecx, 2; ecx/4 me muevo cuatro pixeles por iteracion
 
-        movups xmm0, [factores]
+ 	movdqu xmm7, [alfainv] ; XMM7 = | 00 | FF | FF | FF |...
+	movdqu xmm8, [alfamasc]; XMM8 = | FF | 00 | 00 | 00 |...
+	movups xmm0, [factores]
+	pxor xmm6, xmm6	
 
-        mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.3|suma0*0.5|  
-        mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.3|suma2*0.5|  
-        mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.3|suma1*0.5|   
-        mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.3|suma3*0.5|   
+	.ciclo:	
+		movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
+		movdqu xmm2, xmm1 ; XMM1 = XMM2
+		movdqu xmm5, xmm1; respaldo XMM5 = XMM1
 
-        cvttps2dq xmm1, xmm1; |0|suma0*0.2 asInt|suma0*0.3 asInt|suma0*0.5 asInt|
-        cvttps2dq xmm2, xmm2
-        cvttps2dq xmm3, xmm3
-        cvttps2dq xmm4, xmm4
+		;limpiar alfa
+		pand xmm1, xmm7; XMM1 = | 0 | r3 | g3 | b3 |...
+		pand xmm2, xmm7; idem
+			
+			
+		punpcklbw xmm1, xmm6; XMM1 = | p1 | p0 | con alfa limpio
+		punpckhbw xmm2, xmm6; XMM2 = | p3 | p2 | con alfa limpio
+		
+		movdqu xmm3, xmm1
+		movdqu xmm4, xmm2
+		punpcklbw xmm1, xmm6; XMM1 = | 0 | r0 | g0 | b0 |
+		punpckhbw xmm3, xmm6; XMM3 = | 0 | r1 | g1 | b1 |
+		punpcklbw xmm2, xmm6; XMM2 = | 0 | r2 | g2 | b2 |
+		punpckhbw xmm4, xmm6; XMM4 = | 0 | r3 | g3 | b3 |
+		
+		phaddd xmm1, xmm1; XMM1 = | r0 | g0 + b0 | r0 | g0 + b0 |
+		phaddd xmm1, xmm1; XMM1 = | suma0 | suma0 | suma0 | suma0 | 
+		phaddd xmm2, xmm2; idem con pixeles 1, 2 y 3
+		phaddd xmm2, xmm2
+		phaddd xmm3, xmm3 
+		phaddd xmm3, xmm3
+		phaddd xmm4, xmm4
+		phaddd xmm4, xmm4
 
-        packusdw xmm1, xmm3; 
-        packusdw xmm2, xmm4;
-        packuswb xmm1, xmm2; XMM1 = | p3' | p2' | p1'| p0'|
+		; un unpack mas, multiplico de a un pixel
 
-        ; restaurar canal alfa
-        pand xmm5, xmm8
-        paddb xmm1, xmm5
+		cvtdq2ps xmm1, xmm1;  suma0 asFloat
+		cvtdq2ps xmm2, xmm2;  suma2 asFloat
+		cvtdq2ps xmm3, xmm3;  suma1 asFloat
+		cvtdq2ps xmm4, xmm4;  suma3 asFloat
+
+		; xmmm0 tiene la mascara con los valores 0.2 0.3 0.5 0.0
+		mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.3|suma0*0.5|  
+		mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.3|suma2*0.5|  
+		mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.3|suma1*0.5|   
+		mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.3|suma3*0.5|   
+
+		cvttps2dq xmm1, xmm1; |0|suma0*0.2 asInt|suma0*0.3 asInt|suma0*0.5 asInt|
+		cvttps2dq xmm2, xmm2
+		cvttps2dq xmm3, xmm3
+		cvttps2dq xmm4, xmm4
+
+		packusdw xmm1, xmm3; 
+		packusdw xmm2, xmm4;
+		packuswb xmm1, xmm2; XMM1 = | p3' | p2' | p1'| p0'|
+
+		;restaurar canal alfa
+		pand xmm5, xmm8
+		paddb xmm1, xmm5
+
+		;escribir a memoria
+		movdqu [rsi], xmm1
+
+		add rdi, 16	
+		add rsi, 16
+		dec ecx
+		cmp ecx, 0
+		jg .ciclo
 \end{verbatim}
 \end{codesnippet}
 
@@ -278,44 +320,44 @@ Debido a que la suma que buscamos es de cinco pixeles, se obtiene el 5to pixel e
 \begin{verbatim}
 .cincoHorizontal:
 
-    ; 16  12   8   4   0
-    ; Li4|Li3|Li2|Li1|Li0
-    ;VERSION STANDARD: Con 2 accesos - acceso extra paa el pixel 5
-    movdqu xmm13, [rdi + r12*pixelSize] ; Li3|Li2|Li1|Li0
+	; 16  12   8   4   0
+	; Li4|Li3|Li2|Li1|Li0
+    ;VERSION STANDARD: Con 2 accesos - acceso extra para el pixel 5
+    movdqu xmm1, [rdi + r12*pixelSize] ; Li3|Li2|Li1|Li0
 
-    movdqu xmm9, xmm13
-    pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
-    phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0 
-    pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
-    phaddw xmm13, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 
+	movdqu xmm9, xmm1
+	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
+	phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0
+	pshufb xmm1, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
+    phaddw xmm1, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2
     punpcklwd xmm9, xmm11 ; r1|g1+b1|r0|g0+b0
-    punpcklwd xmm13, xmm11 ; r3|g3+b3|r2|g2+b2
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0 
-    movdqu xmm9, xmm13
+    punpcklwd xmm1, xmm11 ; r3|g3+b3|r2|g2+b2
+    paddd xmm1, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0
+    movdqu xmm9, xmm1
     psrldq xmm9, 8 ; 0|0|r3+r1|g3+b3+g1+b1
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1 
-    pslldq xmm13, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
-    psrldq xmm13, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
-    movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
+    paddd xmm1, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
+    pslldq xmm1, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
+    psrldq xmm1, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
+	movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
-    pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
-    pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
-    pshufb xmm9, xmm7 ; 0|0|0|r4|0|g4|0|b4|0|0|0|0|0|0|0|0
-    phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0 -- maximo por w = 510 in []
-    punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
-    psrldq xmm9, 8 ; 0|0|r4|g4+b4
-    paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4 
-    movdqu xmm9, xmm13
-    psrldq xmm9, 4 ; 0|0|0|r2+r0+r3+r1+r4
-    paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4 
-    pslldq xmm13, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
-    psrldq xmm13, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
-    paddd xmm0, xmm13 ; suma de la i fila para el pixel ij.
+	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
+	pand xmm9, xmm8 ; 0|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
+	pshufb xmm9, xmm7 ; 0|0|0|r4|0|g4|0|b4|0|0|0|0|0|0|0|0
+	phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0
+	punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
+	psrldq xmm9, 8 ; 0|0|r4|g4+b4
+	paddd xmm1, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4
+	movdqu xmm9, xmm1
+	psrldq xmm9, 4 ; 0|0|0|r2+r0+r3+r1+r4
+	paddd xmm1, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
+	pslldq xmm1, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
+	psrldq xmm1, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
+	paddd xmm0, xmm1 ; suma hasta la i-esima fila para el pixel ij.
 
-    add r12, r15
-    inc r10
-    cmp r10, 5
-    jl .cincoHorizontal
+	add r12, r15
+	inc r10
+	cmp r10, 5
+	jl .cincoHorizontal
     
 \end{verbatim}
 \end{codesnippet}
@@ -330,57 +372,148 @@ Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de
 
 \begin{codesnippet}
 \begin{verbatim}
+
+punpcklbwAndCleanAlpha: DB 0x00, 0x88, 0x01, 0x89, 0x02, 0x8A, 0x83, 0x8B, 0x04, 0x8C, 0x05, 0x8D, 0x06, 0x8E, 0x87, 0x8F 
+punpckhbwAndCleanAlpha: DB 0x08, 0x81, 0x09, 0x82, 0x0A, 0x83, 0x8B, 0x84, 0x0C, 0x85, 0x0D, 0x86, 0x0E, 0x87, 0x8F, 0x88 
+saveOnePixelShifter: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00
+repeatDw: DB 0x00, 0x01, 0x02, 0x03, 0x00, 0x01, 0x02, 0x03, 0x00, 0x01, 0x02, 0x03, 0x00, 0x01, 0x02, 0x03
+maxValue: DD 0x004A6A4B ; check this 4876875
+
+section .text
+;void _ldr_asm    (
+	;unsigned char *src, rdi
+	;unsigned char *dst, rsi
+	;int cols, edx
+	;int filas, ecx
+	;int src_row_size, r8d -> no se usa
+	;int dst_row_size, r9d -> no se usa
+	;int alpha) rsp-8
+
+	; r8 posicion actual
+	; r9 contador columnas
+
+_ldr_asm:
+	push rbp
+	mov rbp, rsp
+	push rbx
+	push r12
+	push r13
+	push r14
+	push r15
+
+	xor rbx, rbx
+	xor r12, r12
+	xor r13, r13
+	xor r14, r14
+	xor r15, r15
+	
+	mov ebx, [rbp+16] ; alpha
+	mov r13d, [maxValue] ; MAX
+
+	cmp ebx, -255
+	jl .sinCambios
+	cmp ebx, 255
+	jg .sinCambios
+	cmp edx, 4
+	jle .sinCambios ; si tengo menos de cuatro filas terminar.
+	cmp ecx, 4
+	jle .sinCambios ; si tengo menos que cuatro columnas terminar.
+
+	xor r8, r8 ; posicion actual
+	xor r9, r9 ; j = 0
+	mov r8d, edx ; r8 = cols
+
+	mov r15d, edx ; r15d = cols
+	xor rdx, rdx
+	mov r14d, ecx ; r14d = filas.
+	sub r14d, 2 ; filas-2
+	xor rax, rax ; limpio para usar en multiplicacion.
+	mov eax, r15d
+	mul r14d ; edx:eax = r15d*r14d = cols*(filas-2).
+	mov ecx, edx
+	shl rdx, 32
+	mov ecx, eax ; ecx = r15d*r14d = cols*(filas-2). contador loop.
+
+	xor r11, r11
+	mov r11d, r15d
+	sub r11d, 2 ; cols-2 = colsToProccess
+
+	shl r8, 1 ; r8*2 = i = 2 - j = 0
+
+	movdqu xmm6, [punpcklbwAndCleanAlpha]
+	movdqu xmm7, [punpckhbwAndCleanAlpha]
+	movdqu xmm8, [saveOnePixelShifter]
+	movdqu xmm2, [repeatDw]
+	movdqu xmm15, xmm8 ; 0|FF|FF|FF|0|0|0|0|0|0|0|0|0|0|0|0
+    psrldq xmm15, 12 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|FF|FF|FF
+    movdqu xmm4, xmm8
+    psrldq xmm4, 14
+    pslldq xmm4, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0
+
+	pxor xmm11, xmm11
+	pxor xmm12, xmm12
+	pxor xmm13, xmm13
+
+.ciclo: ; while(r8 < rcx) == (actual < total) 
+; if(j > 1)
+	cmp r9, 2
+	jl .menorAColDos
+	; estoy en rango.
+	mov r12, r8 ; posicion actual
+	sub r12, r15
+	sub r12, r15 ; posicion actual - dos filas
+	sub r12, 2 ; me corro -2 posiciones
+	xor r10, r10 ; cuento hasta 5
+
+	pxor xmm0, xmm0
     
-    pxor xmm13, xmm13
-    movd xmm13, ebx
-    movdqu xmm12, xmm13 ; 0|0|0|alpha
-    pslldq xmm12, 4 ; 0|0|alpha|0
-    por xmm12, xmm13 ; 0|0|alpha|alpha
-    pslldq xmm12, 4 ; 0|alpha|alpha|0
-    por xmm12, xmm13 ; 0|alpha|alpha|alpha
+   ; SUMA CINCO HORIZONTAL    
+    
+	movd xmm12, ebx
+	pshufb xmm12, xmm2 ; alpha|alpha|alpha|alpha
 
-    pxor xmm14, xmm14
-    movd xmm14, r13d
-    movdqu xmm13, xmm14 ; 0|0|0|max
-    pslldq xmm13, 4 ; 0|0|max|0
-    por xmm13, xmm14 ; 0|0|max|max
-    pslldq xmm13, 4 ; 0|max|max|0
-    por xmm13, xmm14 ; 0|max|max|max
-    pslldq xmm13, 4 ; max|max|max|0
-    por xmm13, xmm14 ; max|max|max|max
+	movd xmm13, r13d
+	pshufb xmm13, xmm2 ; max|max|max|max
 
-    movdqu xmm5, xmm0 0|0|0|0
-    pslldq xmm5, 4 0|0|sumargb|0
-    por xmm5, xmm0 0|0|sumargb|sumargb
-    pslldq xmm5, 4 0|sumargb|sumargb|0
-    por xmm5, xmm0 0|sumargb|sumargb|sumargb
-    pxor xmm14, xmm14
-    movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
-    movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
-    pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
-    punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
-    punpcklwd xmm0, xmm11 ; 0|r|g|b
-    ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b
-    pmulld xmm5, xmm0 
-    ; puede cambiar el signo segun alpha
-    ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b 
-    pmulld xmm5, xmm12 
-     ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
-    cvtdq2ps xmm5, xmm5
-    cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
-    divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
-    cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
-    ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
-    addps xmm5, xmm0 
-    cvttps2dq xmm5, xmm5 ; cast to dw signed 
-    ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
-    packusdw xmm5, xmm11 
-    packuswb xmm5, xmm11 
-    ; tengo los canales calculados saturados a byte.
-    ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max 
-    pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
-    ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
-    por xmm14, xmm5 
+	movdqu xmm5, xmm0
+	pshufb xmm5, xmm2 ; sumargb|sumargb|sumargb|sumargb 
+
+	pxor xmm14, xmm14
+	movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
+
+	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
+	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
+
+	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
+	punpcklwd xmm0, xmm11 ; 0|r|g|b
+
+	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [−2,147,483,648 to 2,147,483,647]
+	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [−2,147,483,648 to 2,147,483,647]
+
+    cvtdq2ps xmm5, xmm5 ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
+	cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
+
+	divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max
+
+	cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
+
+	addps xmm5, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+
+	cvttps2dq xmm5, xmm5 ; cast to dw signed 
+
+	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
+
+	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
+	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+
+    movd [rsi + r8*pixelSize], xmm14
+
+	inc r9
+	inc r8
+	cmp r9, r11
+	je .igualAColsToProccess ; mayor igual a colsToProccess
+	jmp .seguir
     
 \end{verbatim}
 \end{codesnippet}
@@ -458,7 +591,7 @@ Además, escogeremos una implementación en particular para llevar a cabo alguno
 \subsubsection{Metodologias}
 
 Evaluaremos con los distintos tests el rendimiento de cada implementación. El mejor o peor rendimiento de las implementaciones se basa en la toma de tiempos de ejecución. Como los tiempos de ejecución son relativamente pequeños, en general, se utilizará uno de los contadores de performance que posee el procesador. \\
-Para las mediciones realizadas tomaremos una media $\alpha$-podada 0.5 sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Luego tomaremos la varianza muestral, podando los datos con el mismo $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
+Para las mediciones realizadas tomaremos una media $\alpha$-podada 0.5 (promedio intercuartil) sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Luego tomaremos la varianza muestral, podando los datos con el mismo $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
 De esta manera podremos saber que si la dispersion de los datos es muy grande, para dos curvas aparentemente distanciadas en promedio, tal vez no haya diferencias sigificativas.
 
 La imágen elegida para los tests será la siguiente:.
@@ -467,108 +600,156 @@ La imágen elegida para los tests será la siguiente:.
 
 \begin{figure}
   \begin{center}
-	\includegraphics[scale=.5]{imagenes/starWars.jpg}
+	\includegraphics[scale=.5]{imagenes/lena32.jpg}
 	\caption{La última de Star Wars}
-	\label{starwars}
+	\label{lena}
   \end{center}
 \end{figure}
 
-El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con caché L2 de 2MB.
+El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz con caché L2 de 3MB.
 
 Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 2MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
+Además cambiando el valor de la variable $fria$ por uno podremos testear la cache precalentada con la imágen de testeo para ver como influye en los tiempos de proceso de cada algoritmo el estar la imágen cacheada totalmente o parcialmente.
 
 \begin{codesnippet}
 \begin{verbatim}
                 
-                char *basura = (char*)malloc(sizeof(char)*2048);
-                srand(5);
-                int i = 0;
-                while (i < 2048) {
-                    basura[i] = rand() % 27;            
-                    i++;                
-                }
-                long int suma = 0;
-                i = 0;                
-                while (i < 2048) {
-                    suma += basura[i];   
-                    i++;         
-                }
-                //llamada test
-                free(basura);
+               int fria = 0;
+				if (fria) {
+					char *basura = (char*)malloc(sizeof(char)*2048);
+					srand(5);
+					int i = 0;
+					while (i < 2048) {
+						basura[i] = rand() % 27;            
+						i++;                
+					}
+					long int suma = 0;
+					i = 0;                
+					while (i < 2048) {
+						suma += basura[i];   
+						i++;         
+					}
+					free(basura);
+				}else {
+					unsigned int *src_matrix = config->archivo_entrada;
+					unsigned int size = sizeof(config->archivo_entrada);
+					int argbSum = 0;
+					for (int i = 0; i < size; i++)
+					{
+						int argb = src_matrix[i];
+						argbSum += argb;
+					}
+				}
                 
 \end{verbatim}
 \end{codesnippet}
 
 \pagebreak
 
+\subsubsection{Cosideraciones}
+
+Para que las comparaciones entre código $asm$ y $C$ sean más justas, utilizaremos como version default de código $C$ flag de optimización $O1$
+
 \subsection{Hipótesis}
 
 
 \subsubsection{Comportamiento: Aumentando resoluciones}
 
-Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C$) cuando se varia el tamaño de ~\ref{starwars}. Es decir, analizaremos el comportamiento de los algoritmos frente a variaciones de tamaño\\
+Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C-O1$) cuando se varia el tamaño de ~\ref{lena}. Es decir, analizaremos el comportamiento de los algoritmos frente a variaciones de tamaño\\
 
-El resultado esperado es que para todos los filtros en ambas versiones el tiempo sea creciente a medida que el tamaño crece y si el aumento es cuadratico en el tamaño, también lo sea en el tiempo. \\
-Además, que la version en implementada en $asm$ se mantenga por encima de $C$ siempre. \\ 
+El resultado esperado para todos los filtros en ambas versiones es que el tiempo sea lineal en funcion de la cantidad de pixeles.
+Además, que la version en implementada en $asm$ se mantenga por encima de $C-O1$ siempre. \\ 
+En cropflip tomaremos un tamaño proporcional a la imágen de corte que será: \\
 
+\begin{enumerate}
+\item $width-16$ 
+\item $height-16$
+\item $offsetY: 16$
+\item $offsetX: 16$
+\end{enumerate}
 
+De manera que el corte varie con el tamaño. 
+
+\subsubsection{Performance: caché caliente vs. fria}
+
+El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio, es decir sin la imágen previamente leida, contra la caché en caliente, es decir con la imágen previamente leida. \\
+A priori no todas las imágenes entrarán completamente en caché, por lo cual tendremos que ver que sucede cuando la imágen supera el tamaño total de la caché L2. 
+Para $cropflip$ tomaremos el corte de la misma manera que se realizará en el test previo.
+La version de código utilizada para este test será en $asm$.
 
 \subsubsection{Performance: implementaciones y filtros}
 
-La meta principal del informe es comprobar que $asm$ es mejor que la implementación en $C$
-Para esto correremos todos los filtros comparando sus versiones de $assembler$, $C$ y además incluiremos $C$ con flags de optimización, en particular $O3$ para ver que tan bien puede optimizar el compilador. \\
+La meta principal del informe es comprobar si $asm$ es mejor que la implementación en $C-O1$
+Para esto correremos todos los filtros comparando sus versiones de $assembler$, $C-O1$ y además incluiremos $C$ con flags de optimización, en particular $O3$ para ver que tan bien puede optimizar el compilador. \\
 
-El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de ciclos de reloj que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C$ con optimización. \\
-
-
-
-\subsubsection{Performance: $cropflip$ vs. caché}
-
-El filtro $cropflip$ parece poseer una particularidad. Utiliza accesos a memoria aleatorios que en principio deberian afectar el rendimiento en cuanto a si los datos pedidos estan cacheados o no. 
-Si el corte realizado es muy ancho que alto, por principio de vecinidad espacial, el algoritmo debería tener un buen rendimiento, no así, cuando el corte es mas alto que ancho. \\
-
-Llevaremos a cabo entonces, un test para comprobar si este hecho tiene relevancia, esperando que, verdaderamente sea un factor influyente.
-Lo que haremos, como se comentó anteriormente, será limpiar la caché en cada corrida, para que así cada test no se vea afectado por el anterior. Luego esperariamos ver que cuanto más alto que ancho sea el corte peor rendimiento tendrá el algoritmo debido a que como los datos no se encuentran cacheados, tendrá más accesos a memoria ram. \\
+El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de tics de reloj que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C-O3$. \\
 
 \subsubsection{Performance: versiones de $ldr$}
 
-Elegimos el filtro $ldr$ para analizar dos teorias relacionadas a SIMD. 
+Elegimos los filtros $ldr$ y $sepia$ para analizar dos teorias relacionadas a SIMD. 
 
-$A)$ Si igualamos la cantidad de accesos de la version de $assembler$ a la de $C$ aún asi la version de $assembler$ será más óptima.
+$A)$ Si igualamos la cantidad de accesos de escritura y lectura de la imágen en el filtro $ldr$ en las versiones de $assembler$ con respecto a la de $C-01$ aún asi la version de $assembler$ será más óptima.
 
-$B)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de codigo por operaciones con enteros: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
+Veamos que, el código $asm$ de la version de $C-O1$ mantiene la misma cantidad de accesos para lectura y escritura:\\
 
+PONER EL CODIGO OBTENIDO CON OBJDUMP
+
+$B)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de código por operaciones con enteros: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
+
+Para $ldr$, en principio tenemos una desventaja en la comparación, dado que la version de enteros no posee divison empaquetda por lo cual no realizaremos esa operación en ambas versiones (punto flotante y enteros)
+
+Version de $ldr$ con enteros sin division:\\
 
 \begin{codesnippet}
 \begin{verbatim}
                 
-    ;TEST 2: OPERACIONES CON ENTEROS
-    pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b
-    ; puede cambiar el signo segun alpha
-    pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b 
-    mov r10, rdx ; salvo resto
-    xor rdx, rdx
-    xor rax, rax
-    movd eax, xmm5 ; alpha*sumargb*b
-    div r13d ; alpha*sumargb*b/max
-    pxor xmm10, xmm10
-    movd xmm10, eax ; 0|0|0|alpha*sumargb*b
-    pslldq xmm10, 4 ; 0|0|alpha*sumargb*b|0
-    xor rdx, rdx
-    xor rax, rax
-    psrldq xmm5, 4
-    movd eax, xmm5 ; alpha*sumargb*g
-    div r13d ; alpha*sumargb*g/max
-    movd xmm10, eax ; 0|0|alpha*sumargb*b/max|alpha*sumargb*g/max
-    pslldq xmm10, 4 ; 0|alpha*sumargb*b/max|alpha*sumargb*g/max|0
-    xor rdx, rdx
-    xor rax, rax
-    psrldq xmm5, 4
-    movd eax, xmm5 ; alpha*sumargb*r
-    div r13d ; alpha*sumargb*r/max
-    movd xmm10, eax ; 0|0|alpha*sumargb*b/max|alpha*sumargb*g/max|alpha*sumargb*r/max
-    mov rdx, r10 ; recupero resto
+	;TEST 2: OPERACIONES CON ENTEROS
+	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [−2,147,483,648 to 2,147,483,647]
+	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [−2,147,483,648 to 2,147,483,647]
+
+	paddd xmm10, xmm0 ; 0|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)|b+(alpha*sumargb*b)
+	packusdw xmm10, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/|g+(alpha*sumargb*g)/|b+(alpha*sumargb*b)
+	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)/|b+(alpha*sumargb*b) <- tengo los canales calculados saturados a byte.
+	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
+	por xmm14, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)|b+(alpha*sumargb*b)
                 
 \end{verbatim}
 \end{codesnippet}
 
+Version de $ldr$ con punto flotante sin division simplemente se comenta esa linea de código:\\
+
+\begin{codesnippet}
+\begin{verbatim}
+                
+	    ;divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max    
+                
+\end{verbatim}
+\end{codesnippet}
+
+Para el filtro $sepia$ lo que haremos será cambiar los valores del filtro que se aplican a cada canal: 0.2, 0.3, 0.5 por 2, 2, 2 en ambas versiones, dado que, para la version de enteros no disponemos de punto flotante y queremos tener una representación de la cual conozcamos los valores que manejamos.\\
+Lo que si no haremos en la version de punto flotante será convertir los valores de los canales a los cuales aplicaremos el filtro a punto flotante. De esta manera eliminaremos la mayor cantidad de proceso extra para que las comparaciones sean lo más justas posibles.  
+Luego todo será igual, pero a la ahora de aplicar el filtro la version con de enteros será:\\
+
+\begin{codesnippet}
+\begin{verbatim}
+                
+		pmulld xmm1, xmm0; XMM1 = |*|suma0*2|suma0*2|suma0*2|  
+		pmulld xmm2, xmm0; XMM2 = |*|suma2*2|suma2*2|suma2*2|  
+		pmulld xmm3, xmm0; XMM3 = |*|suma1*2|suma1*2|suma1*2|   
+		pmulld xmm4, xmm0; XMM4 = |*|suma3*2|suma3*2|suma3*2|   
+                
+\end{verbatim}
+\end{codesnippet}
+
+Y la version de punto flotante será:
+
+\begin{codesnippet}
+\begin{verbatim}
+
+		mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.2|suma0*0.2|  
+		mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.2|suma2*0.2|  
+		mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.2|suma1*0.2|  
+		mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.2|suma3*0.2|     
+
+\end{verbatim}
+\end{codesnippet}

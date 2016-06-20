@@ -1,5 +1,8 @@
 global cropflip_asm
 
+section .data
+DEFAULT REL
+
 section .text
 ;void cropflip_asm(unsigned char *src,
 ;                  unsigned char *dst,

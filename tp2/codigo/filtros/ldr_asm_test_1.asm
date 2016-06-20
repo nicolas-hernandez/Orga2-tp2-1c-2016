@@ -84,7 +84,10 @@ ldr_asm:
     psrldq xmm4, 14
     pslldq xmm4, 3 ; 0|0|0|0|0|0|0|0|0|0|0|0|FF|0|0|0
 
+	pxor xmm1, xmm1
 	pxor xmm11, xmm11
+	pxor xmm12, xmm12
+	pxor xmm13, xmm13
 
 .ciclo: ; while(r8 < rcx) == (actual < total) 
 ; if(j > 1)
@@ -103,31 +106,31 @@ ldr_asm:
 
 	; 16  12   8   4   0
 	; Li4|Li3|Li2|Li1|Li0
-    ;TEST 1: Con 5 accesos  - acceso extra paa el pixel 5
-	movd xmm13, [rdi + r12*pixelSize] ; 0|0|0|Li0
+    ;TEST 1: Con 5 accesos  - acceso extra para el pixel 5
+	movd xmm1, [rdi + r12*pixelSize] ; 0|0|0|Li0
 	movd xmm10, [rdi + r12*pixelSize+4] ; 0|0|0|Li1
 	pslldq xmm10, pixelSize ; 0|0|Li1|0
-	por xmm13, xmm10 ; 0|0|Li1|Li0
+	por xmm1, xmm10 ; 0|0|Li1|Li0
 	movd xmm10, [rdi + r12*pixelSize+8] ; 0|0|0|Li2
 	pslldq xmm10, 8 ; 0|Li2|0|0
-	por xmm13, xmm10 ; 0|Li2|Li1|Li0
+	por xmm1, xmm10 ; 0|Li2|Li1|Li0
 	movd xmm10, [rdi + r12*pixelSize+12] ; 0|0|0|Li3
 	pslldq xmm10, 12 ; Li3|0|0|0
-	por xmm13, xmm10 ; Li3|Li2|Li1|Li0
+	por xmm1, xmm10 ; Li3|Li2|Li1|Li0
 
 	movdqu xmm9, xmm13
 	pshufb xmm9, xmm6 ; 0|0|0|r1|0|g1|0|b1|0|0|0|r0|0|g0|0|b0
 	phaddw xmm9, xmm11 ; 0|0|0|0|0+r1|g1+b1|0+r0|g0+b0 -- maximo por w = 510 in []
-	pshufb xmm13, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
-    phaddw xmm13, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 -- maximo por w = 510 in []
-    punpcklwd xmm9, xmm11 ; r1|g1+b1|r0|g0+b0
-    punpcklwd xmm13, xmm11 ; r3|g3+b3|r2|g2+b2
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0 -- maximo por dw = 1020 in []
-    movdqu xmm9, xmm13
-    psrldq xmm9, 8 ; 0|0|r3+r1|g3+b3+g1+b1
-    paddd xmm13, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1  -- maximo por dw = 2040 in []
-    pslldq xmm13, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
-    psrldq xmm13, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
+	pshufb xmm1, xmm7 ; 0|0|0|r3|0|g3|0|b3|0|0|0|r2|0|g2|0|b2
+	phaddw xmm1, xmm11 ; 0|0|0|0|r3|g3+b3|r2|g2+b2 -- maximo por w = 510 in []
+	punpcklwd xmm9, xmm11 ; r1|g1+b1|r0|g0+b0
+	punpcklwd xmm1, xmm11 ; r3|g3+b3|r2|g2+b2
+	paddd xmm1, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0|g2+b2+g0+b0 -- maximo por dw = 1020 in []
+	movdqu xmm9, xmm13
+	psrldq xmm9, 8 ; 0|0|r3+r1|g3+b3+g1+b1
+	paddd xmm1, xmm9 ; r3+r1|g3+b3+g1+b1|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1  -- maximo por dw = 2040 in []
+	pslldq xmm1, 8 ; r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1|0|0
+	psrldq xmm1, 8 ; 0|0|r2+r0+r3+r1|g2+b2+g0+b0+g3+b3+g1+b1
 	movd xmm9, [rdi + r12*pixelSize + 16] ; 0|0|0|0|0|0|0|0|0|0|0|0|a4|r4|g4|b4
 
 	pslldq xmm9, 12 ; a4|r4|g4|b4|0|0|0|0|0|0|0|0|0|0|0|0
@@ -136,44 +139,28 @@ ldr_asm:
 	phaddw xmm9, xmm11 ; 0|0|0|0|r4|g4+b4|0|0 -- maximo por w = 510 in []
 	punpcklwd xmm9, xmm11 ; 0|r4|0|g4+b4|0|0|0|0
 	psrldq xmm9, 8 ; 0|0|r4|g4+b4
-	paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4 -- maximo por dw = 2550 in []
-	movdqu xmm9, xmm13
+	paddd xmm1, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4 -- maximo por dw = 2550 in []
+	movdqu xmm9, xmm1
 	psrldq xmm9, 4 ; 0|0|0|r2+r0+r3+r1+r4
-	paddd xmm13, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4 -- maximo por dw = 3825 in []
-	pslldq xmm13, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
-	psrldq xmm13, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
-	paddd xmm0, xmm13 ; suma de la i fila para el pixel ij.
+	paddd xmm1, xmm9 ; 0|0|r2+r0+r3+r1+r4|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4 -- maximo por dw = 3825 in []
+	pslldq xmm1, 12 ; g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4|0|0|0
+	psrldq xmm1, 12 ; 0|0|0|g2+b2+g0+b0+g3+b3+g1+b1+g4+b4+r2+r0+r3+r1+r4
+	paddd xmm0, xmm1 ; suma de la i fila para el pixel ij.
 
 	add r12, r15
 	inc r10
 	cmp r10, 5
 	jl .cincoHorizontal
 
-	pxor xmm13, xmm13
-	movd xmm13, ebx
-	;cvtsi2ss xmm13, ebx ; cast to float!
-	movdqu xmm12, xmm13 ; 0|0|0|alpha
-	pslldq xmm12, 4 ; 0|0|alpha|0
-	por xmm12, xmm13 ; 0|0|alpha|alpha
-	pslldq xmm12, 4 ; 0|alpha|alpha|0
-	por xmm12, xmm13 ; 0|alpha|alpha|alpha
+	movd xmm12, ebx
+	pshufb xmm12, xmm2 ; alpha|alpha|alpha|alpha
 
-	pxor xmm14, xmm14
-	movd xmm14, r13d ; ?
-	;cvtsi2ss xmm14, r13d ; cast to float! 
-	movdqu xmm13, xmm14 ; 0|0|0|max
-	pslldq xmm13, 4 ; 0|0|max|0
-	por xmm13, xmm14 ; 0|0|max|max
-	pslldq xmm13, 4 ; 0|max|max|0
-	por xmm13, xmm14 ; 0|max|max|max
-	pslldq xmm13, 4 ; max|max|max|0
-	por xmm13, xmm14 ; max|max|max|max
+	movd xmm13, r13d
+	pshufb xmm13, xmm2 ; max|max|max|max
 
 	movdqu xmm5, xmm0
-	pslldq xmm5, 4
-	por xmm5, xmm0
-	pslldq xmm5, 4
-	por xmm5, xmm0
+	pshufb xmm5, xmm2 ; sumargb|sumargb|sumargb|sumargb 
+
 	pxor xmm14, xmm14
 	movd xmm14, [rdi + r8*pixelSize] ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b <- get pixel ij
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
@@ -188,8 +175,8 @@ ldr_asm:
 	cvtdq2ps xmm0, xmm0 ; 0|fp(r)|fp(g)|fp(b)
 	addps xmm5, xmm0 ; 0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 	cvttps2dq xmm5, xmm5 ; cast to dw signed 
-	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max
-	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/g+max|(alpha*sumargb*g)/b+max|(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
+	packusdw xmm5, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
+	packuswb xmm5, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max <- tengo los canales calculados saturados a byte.
 	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
 	por xmm14, xmm5 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)/max|g+(alpha*sumargb*g)/max|b+(alpha*sumargb*b)/max
 

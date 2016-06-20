@@ -1,3 +1,5 @@
+global sepia_asm
+
 section .data
 DEFAULT REL
 
@@ -5,7 +7,6 @@ factores: DD  0.2, 0.3, 0.5, 0.0
 alfamasc: DB  0, 0, 0, 0XFF, 0, 0, 0, 0XFF, 0, 0, 0 , 0XFF, 0, 0, 0, 0XFF
 alfainv: DB 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 0    
 section .text
-global sepia_asm
 
 ;Notacion:
 ;px = pixel input 
@@ -32,6 +33,7 @@ sepia_asm:
 	
 	movdqu xmm7, [alfainv] ; XMM7 = | 00 | FF | FF | FF |...
 	movdqu xmm8, [alfamasc]; XMM8 = | FF | 00 | 00 | 00 |...
+	movups xmm0, [factores]
 	pxor xmm6, xmm6	
 
 	.ciclo:	
@@ -70,8 +72,7 @@ sepia_asm:
 		cvtdq2ps xmm3, xmm3;  suma1 asFloat
 		cvtdq2ps xmm4, xmm4;  suma3 asFloat
 
-		movups xmm0, [factores]
-
+		; xmmm0 tiene la mascara con los valores 0.2 0.3 0.5 0.0
 		mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.3|suma0*0.5|  
 		mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.3|suma2*0.5|  
 		mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.3|suma1*0.5|   
@@ -85,7 +86,6 @@ sepia_asm:
 		packusdw xmm1, xmm3; 
 		packusdw xmm2, xmm4;
 		packuswb xmm1, xmm2; XMM1 = | p3' | p2' | p1'| p0'|
-		
 
 		;restaurar canal alfa
 		pand xmm5, xmm8

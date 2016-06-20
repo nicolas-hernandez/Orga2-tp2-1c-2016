@@ -1,64 +1,78 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import os
 import subprocess
 import csv
-from settings import TestClocksParams as Tcp, Filtro, Tests, prunedMean
+from settings import TestClocksParams as Tcp, Filtro, ImageDetails as ImgDet, prunedMeanAndSampleVariance
 
 
-def test(test, version): # test would be A or B.
-    cwd = os.getcwd()  # get current directory
+def test(filtro, version):
+	cwd = os.getcwd()  # get current directory
 
-    os.chdir(Tcp.buildDir)
+	os.chdir(Tcp.buildDir)
 
-    # print "dir actual " + os.getcwd()
+	# print "dir actual " + os.getcwd()
 
-    typeCodes = []
+	typeCodes = []
 
-    if version == "c_o0" or version == "c_o3":
-        typeCodes.append("c")
-    else:
-        typeCodes.append("asm")
+	if 'c_o' in version:
+		typeCodes.append("c")
+	else:
+		typeCodes.append("asm")
 
-    means = []
+	data = []
 
-    for tc in typeCodes:
+	size = ImgDet.width*ImgDet.height
 
-        clocks = []
-        coords = []
+	for tc in typeCodes:
 
-        for i in xrange(Tcp.nInst):
-            # when program ends, cache data that could exists from the stack are invalidated.
-            cmd = ['./tp2', '-v', 'ldr', '-i', tc, Tcp.pathSW + Tcp.imgName + ".bmp"]
+		clocks = []
+		coords = []
 
-            cmd.append(str(Filtro.alpha))
+		for i in xrange(Tcp.nInst):
 
-            # print cmd
-            cmd.append('-t')
-            cmd.append(str(Tcp.indInst))
-            output = subprocess.check_output(cmd)
+			cmd = ['./tp2', '-v', filtro, '-i', tc, Tcp.pathSW + Tcp.imgName + '.bmp']
 
-            output = output.strip(' \n\t')
+			cmd.append(str(Filtro.alpha))
 
-            clocks.append(long(output))
-            coords.append(i + 1)
+			# print cmd
+			cmd.append('-t')
+			cmd.append(str(Tcp.indInst))
+			output = subprocess.check_output(cmd)
+			
+			#cmd = './tp2 ' + '-v ' + filtro + ' -i ' + tc + ' ' + Tcp.pathSW + Tcp.imgName + '.bmp ' + str(Filtro.alpha) + ' -t ' + str(Tcp.indInst)
 
-        print "img " + Tcp.imgName + " has been successfully processed"
+			#output = subprocess.check_output(cmd, shell=True)
+			
+			#subprocess.check_call(<string>, shell=True)
+			
+			#p = subprocess.Popen(<string>, shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE) 
+			#output, err = p.communicate()
+			
+			#print 'ERROR ' + err + '\n'
+			
+			output = output.strip(' \n\t')
 
-        means.append(float(prunedMean(coords, clocks)))
+			clocks.append(long(output)/float(size))
+			coords.append(i + 1)
 
-    os.chdir(cwd)
+		print "img " + Tcp.imgName + " has been successfully processed"
 
-    if not os.path.isdir(Tcp.tablesPath + test):
-        os.makedirs(Tcp.tablesPath + test)
+		data.append(prunedMeanAndSampleVariance(coords, clocks))
 
-    with open(Tcp.tablesPath + test + '/' + version + '.csv', 'wb') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["type code"] + ["mean"])
-        for v, mean in zip([version], means):
-            writer.writerow([v] + [str(mean)])
+	os.chdir(cwd)
+
+	if not os.path.isdir(Tcp.tablesPath):
+		os.makedirs(Tcp.tablesPath)
+
+	with open(Tcp.tablesPath + filtro + version + '.csv', 'wb') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		writer.writerow(["type code"] + ["mean"] + ["variance"])
+		for v, val in zip([version], data):
+			writer.writerow([tc] + [str(float(val[0]))] + [str(float(val[1]))])
 
 if __name__ == "__main__":
-    test()
+	test()
 else:
-    print("test_sizes_performance.py is being imported into another module")
+	print("test_clocks_performance.py is being imported into another module")

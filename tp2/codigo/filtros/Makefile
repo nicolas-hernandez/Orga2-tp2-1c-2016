@@ -15,7 +15,7 @@ endif
 
 ASMFLAGS = $(ASMFLAGS64)
 
-CFLAGS64 ?=-Wall -Wextra -pedantic -O0 -ggdb
+CFLAGS64 ?=-Wall -Wextra -pedantic -O0 -ggdb -m64
 CFLAGS=$(CFLAGS64)
 
 BUILD_DIR = ../build
