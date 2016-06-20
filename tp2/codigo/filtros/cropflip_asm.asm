@@ -1,4 +1,4 @@
-global _cropflip_asm
+global cropflip_asm
 
 section .data
 DEFAULT REL
@@ -21,7 +21,7 @@ section .text
 ;[rsp+ 24] = tamy
 ;[rsp+ 32] = offsetx
 ;[rsp+ 40] = offsety
-_cropflip_asm:
+cropflip_asm:
         push rbp
         mov rbp, rsp
         push rbx

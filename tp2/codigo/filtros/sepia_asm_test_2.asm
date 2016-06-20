@@ -1,4 +1,4 @@
-global _sepia_asm
+global sepia_asm
 
 section .data
 DEFAULT REL
@@ -15,7 +15,7 @@ section .text
 ;El contenido de los registros XMM se muestra del 
 ;	bit mas significativo al menos significativo
 
-_sepia_asm:
+sepia_asm:
 	;rdi *src
 	;rsi *dst
 	;edx int cols
