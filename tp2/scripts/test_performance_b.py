@@ -18,7 +18,7 @@ def test(filtro, letter):
 
 	data = []
 	
-	size = ImgDet.width*ImgDet.height
+	size = 512*512
 
 	for tc in typeCodes:
 

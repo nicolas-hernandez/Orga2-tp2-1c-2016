@@ -23,7 +23,7 @@ def test(filtro, version):
 
 	data = []
 
-	size = ImgDet.width*ImgDet.height
+	size = 512*512
 
 	for tc in typeCodes:
 
