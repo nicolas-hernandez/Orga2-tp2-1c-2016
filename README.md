@@ -14,3 +14,13 @@ sudo apt-get install libgtk2.0-dev
 (les dice algo de un "sanity test")
 sudo apt-get install g++
 
+correr en frio cropflip:
+    ir a la carpeta tp2/codigo/tests y correr python 1_generar_imaganes.py esto te deja imagenes en data/imagenes_a_testear copialas a tp2/codigo/img
+    dejar en tp2.c: int fria = 1;
+	correr desde el directorio tp2 el script tp2.py: python tp2.py -t 2 -v all (aca la version no interesa porque compara c-O1 vs. c-O3 vs. asm)
+	correr python tp2.py -t 5 -v all (compara asm con c-O1)
+	dejar en tp2.c: int fria = 0;
+	correr python tp2.py -t 12 -v asm (solo vamos a ver con asm, creo que ver mas es al cuete, pero podes mirar a ver que pasa)
+	
+	Esperaria ver lo mismo que vine viendo hasta ahora. una curva casi cuadratica. Mira la carpeta graph...ahi estan las corridas para sepia y ldr.
+

@@ -606,7 +606,7 @@ La imágen elegida para los tests será la siguiente:.
   \end{center}
 \end{figure}
 
-El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2450M CPU @ 2.50GHz con caché L2 de 3MB.
+El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con caché L2 de 2MB.
 
 Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 2MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
 Además cambiando el valor de la variable $fria$ por uno podremos testear la cache precalentada con la imágen de testeo para ver como influye en los tiempos de proceso de cada algoritmo el estar la imágen cacheada totalmente o parcialmente.

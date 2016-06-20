@@ -1,4 +1,4 @@
-global ldr_asm
+global _ldr_asm
 
 section .data
 DEFAULT REL
@@ -15,7 +15,7 @@ saveOnePixelShifter: DB 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 maxValue: DD 0x004A6A4B ; check this 4876875 
 
 section .text
-;void ldr_asm    (
+;void _ldr_asm    (
 	;unsigned char *src, rdi
 	;unsigned char *dst, rsi
 	;int cols, edx
@@ -27,7 +27,7 @@ section .text
 	; r8 posicion actual
 	; r9 contador columnas
 
-ldr_asm:
+_ldr_asm:
 	push rbp
 	mov rbp, rsp
 	push rbx

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import os
 import subprocess
@@ -32,7 +31,7 @@ def test(filtro, version):
 
 		for i in xrange(Tcp.nInst):
 
-			cmd = ['./tp2', '-v', filtro, '-i', tc, Tcp.pathSW + Tcp.imgName + '.bmp']
+			cmd = ['./tp2', '-v', filtro, '-i', tc, Tcp.pathSW + Tcp.imgName + ".bmp"]
 
 			cmd.append(str(Filtro.alpha))
 
@@ -40,18 +39,7 @@ def test(filtro, version):
 			cmd.append('-t')
 			cmd.append(str(Tcp.indInst))
 			output = subprocess.check_output(cmd)
-			
-			#cmd = './tp2 ' + '-v ' + filtro + ' -i ' + tc + ' ' + Tcp.pathSW + Tcp.imgName + '.bmp ' + str(Filtro.alpha) + ' -t ' + str(Tcp.indInst)
 
-			#output = subprocess.check_output(cmd, shell=True)
-			
-			#subprocess.check_call(<string>, shell=True)
-			
-			#p = subprocess.Popen(<string>, shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE) 
-			#output, err = p.communicate()
-			
-			#print 'ERROR ' + err + '\n'
-			
 			output = output.strip(' \n\t')
 
 			clocks.append(long(output)/float(size))
