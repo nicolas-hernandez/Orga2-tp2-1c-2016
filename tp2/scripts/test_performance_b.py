@@ -29,7 +29,8 @@ def test(filtro, letter):
 
 			cmd = ['./tp2', '-v', filtro, '-i', tc, Tep.pathSW + Tep.imgName + ".bmp"]
 
-			cmd.append(str(Filtro.alpha))
+			if filtro == Filtro.ldr:
+				cmd.append(str(Filtro.alpha))
 
 			# print cmd
 			cmd.append('-t')

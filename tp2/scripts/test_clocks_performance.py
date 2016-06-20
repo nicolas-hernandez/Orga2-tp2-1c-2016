@@ -34,7 +34,13 @@ def test(filtro, version):
 
 			cmd = ['./tp2', '-v', filtro, '-i', tc, Tcp.pathSW + Tcp.imgName + ".bmp"]
 
-			cmd.append(str(Filtro.alpha))
+			if filtro == Filtro.ldr:
+				cmd.append(str(Filtro.alpha))
+			elif filtro == Filtro.sepia:
+				cmd.append(str(ImgDet.width-ImgDet.decrement))
+				cmd.append(str(ImgDet.height-ImgDet.decrement))
+				cmd.append(str(ImgDet.decrement))
+				cmd.append(str(ImgDet.decrement))
 
 			# print cmd
 			cmd.append('-t')

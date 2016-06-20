@@ -46,10 +46,10 @@ def test(filtro, version, cacheMode):
 
 				if filtro == Filtro.cropflip:
 					# cortamos por el tamaño de la imagen total.
-					cmd.append(str(width))
-					cmd.append(str(height))
-					cmd.append(str(0))
-					cmd.append(str(0))
+					cmd.append(str(width-decrement))
+					cmd.append(str(height-decrement))
+					cmd.append(str(decrement))
+					cmd.append(str(decrement))
 				elif filtro == Filtro.ldr:
 					cmd.append(str(Filtro.alpha))
 
