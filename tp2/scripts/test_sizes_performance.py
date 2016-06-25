@@ -61,7 +61,7 @@ def test(filtro, version, cacheMode):
 				output = output.strip(' \n\t')
 
 				# tics/pixel
-				clocks.append(long(output)/float(size)) 
+				clocks.append(long(output)/float(size))
 				coords.append(i + 1)
 
 			width += decrement
@@ -75,7 +75,7 @@ def test(filtro, version, cacheMode):
 
 		os.chdir(cwd)
 
-		data = list(reversed(data))
+		#data = list(reversed(data))
 
 		if not os.path.isdir(Tsp.tablesPath):
 			os.makedirs(Tsp.tablesPath)

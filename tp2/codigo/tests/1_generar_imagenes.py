@@ -27,7 +27,7 @@ for filename in IMAGENES:
 	width = int(widthAndHeight[0])
 	height = int(widthAndHeight[1])
 
-	while width > 16:
+	while width > 400:
 		sys.stdout.write("  " + size)
 		file_in  = DATADIR + "/" + filename
 		file_out = TESTINDIR + "/" + name[0] + str(i) + "." + name[1]

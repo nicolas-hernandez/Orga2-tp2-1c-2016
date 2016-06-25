@@ -134,7 +134,7 @@ def tester(test, version):
         callBuild(Options.o1, test, True)
         letter = "B_2"
         test_b.test(Filtro.sepia, letter)
-
+    
     #graficar letter = 'A'
     if test == Tests.sizesLdrCold:
         graph_sizes.graph(Filtro.ldr, version)

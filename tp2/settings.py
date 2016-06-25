@@ -96,14 +96,14 @@ def prunedMeanAndSampleVariance(coords = [], ords	= []):
 	 return (mean, total)
 
 class ImageDetails:
-	 width = 24
-	 height = 24
+	 width = 408
+	 height = 408
 	 decrement = 16
 
 class TestSizeParams:
 	 nInst = 100
 	 indInst = 1
-	 cantImg = 76
+	 cantImg = 52
 	 imgName = "lena32"
 	 buildDir = "codigo/build/"
 	 pathSW = "../img/"
