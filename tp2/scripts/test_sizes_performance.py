@@ -38,7 +38,6 @@ def test(filtro, version, cacheMode):
 			size = width*height
 
 			clocks = []
-			coords = []
 
 			for i in xrange(Tsp.nInst):
 				
@@ -62,19 +61,20 @@ def test(filtro, version, cacheMode):
 
 				# tics/pixel
 				clocks.append(long(output)/float(size))
-				coords.append(i + 1)
+				#clocks.append(long(output))
 
 			width += decrement
 			height += decrement
 
-			print "img " + Tsp.imgName + str(n) + " has been successfully processed"
-
-			data.append(prunedMeanAndSampleVariance(coords, clocks))
+			mean = prunedMeanAndSampleVariance(clocks)
+			print "average is " + str(mean) + " for img " + str(n)
+			data.append(mean)
 
 			ids.append(n + 1)
 
 		os.chdir(cwd)
 
+		ids = list(reversed(ids)) # la imagen mas chica sera la 1 y no la de mayor indice como esta en los archivos
 		#data = list(reversed(data))
 
 		if not os.path.isdir(Tsp.tablesPath):

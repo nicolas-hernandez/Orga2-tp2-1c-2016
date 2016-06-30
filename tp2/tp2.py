@@ -28,6 +28,10 @@ def build(option, test, change):
         if change:
             os.system("mv filtros/ldr_asm.asm filtros/" + Tep.ldr_asm_name_o)
             os.system("mv filtros/" + Tep.ldr_asm_name_b + " filtros/ldr_asm.asm")
+    elif test == Tests.compareSepiaA:
+        if change:
+            os.system("mv filtros/sepia_asm.asm filtros/" + Tep.sepia_asm_name_o)
+            os.system("mv filtros/" + Tep.sepia_asm_name_a + " filtros/sepia_asm.asm")
     elif test == Tests.compareSepiaB:
         if change:
             os.system("mv filtros/sepia_asm.asm filtros/" + Tep.sepia_asm_name_o)
@@ -54,6 +58,10 @@ def build(option, test, change):
         if change:
             os.system("mv filtros/ldr_asm.asm filtros/" + Tep.ldr_asm_name_b)
             os.system("mv filtros/" + Tep.ldr_asm_name_o + " filtros/ldr_asm.asm")
+    elif test == Tests.compareSepiaA:
+        if change:
+            os.system("mv filtros/sepia_asm.asm filtros/" + Tep.sepia_asm_name_a)
+            os.system("mv filtros/" + Tep.sepia_asm_name_o + " filtros/sepia_asm.asm")
     elif test == Tests.compareSepiaB:
         if change:
             os.system("mv filtros/sepia_asm.asm filtros/" + Tep.sepia_asm_name_b)
@@ -116,7 +124,7 @@ def tester(test, version):
 
     letter = "A"
     if test == Tests.compareLdrA:
-        callBuild(Options.o1, test, False)
+        callBuild(Options.o, test, False)
         test_a.test(Filtro.ldr, letter)
     elif test == Tests.compareLdrB:
         callBuild(Options.o1, test, False)
@@ -126,6 +134,10 @@ def tester(test, version):
         callBuild(Options.o1, test, True)
         letter = "B_2"
         test_b.test(Filtro.ldr, letter)
+    
+    if test == Tests.compareSepiaA:
+        callBuild(Options.o, test, False)
+        test_a.test(Filtro.sepia, letter)
     elif test == Tests.compareSepiaB:
         callBuild(Options.o1, test, False)
         letter = "B_o"
@@ -145,10 +157,10 @@ def tester(test, version):
 
     if test == Tests.sizesLdrHot:
         graph_cache.graph(Filtro.ldr, 'asm')
-        #graph_cache.graph(Filtro.ldr, 'c')\t\t\t
+        #graph_cache.graph(Filtro.ldr, 'c')
     elif test == Tests.sizesSepHot:
         graph_cache.graph(Filtro.sepia, 'asm')
-        #graph_cache.graph(Filtro.sepia, 'c')
+        graph_cache.graph(Filtro.sepia, 'c')
     elif test == Tests.sizesCfHot:
         graph_cache.graph(Filtro.cropflip, 'asm')
         #graph_cache.graph(Filtro.cropflip, 'c')
@@ -158,6 +170,8 @@ def tester(test, version):
     elif test == Tests.compareLdrB:
         letter = "B"
         graph_b.graph(Filtro.ldr, letter)
+    elif test == Tests.compareSepiaA:
+        graph_a.graph(Filtro.sepia, letter)
     elif test == Tests.compareSepiaB:
         letter = "B"
         graph_b.graph(Filtro.sepia, letter) 
@@ -194,11 +208,10 @@ def main(argv):
             Options.printAllInfo()
             Tests.printAllInfo()
             print "version must be asm, c or all"
-            print "-g for plot"
             sys.exit()
         elif opt in ("-t", "--test"):
             if int(arg) not in (Tests.nothing, Tests.clocksLdr, Tests.clocksCf, Tests.clocksSep, Tests.sizesLdrCold,
-                           Tests.sizesCfCold, Tests.sizesSepCold, Tests.compareLdrA, Tests.compareLdrB, Tests.compareSepiaB, Tests.sizesLdrHot, Tests.sizesCfHot, Tests.sizesSepHot):
+                           Tests.sizesCfCold, Tests.sizesSepCold, Tests.compareLdrA, Tests.compareLdrB, Tests.compareSepiaA, Tests.compareSepiaB, Tests.sizesLdrHot, Tests.sizesCfHot, Tests.sizesSepHot):
                 Tests.printAllInfo()
                 sys.exit(2)
             test = int(arg)

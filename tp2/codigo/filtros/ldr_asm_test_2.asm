@@ -1,4 +1,4 @@
-global ldr_asm
+global _ldr_asm
 
 section .data
 DEFAULT REL
@@ -27,7 +27,7 @@ section .text
 	; r8 posicion actual
 	; r9 contador columnas
 
-ldr_asm:
+_ldr_asm:
 	push rbp
 	mov rbp, rsp
 	push rbx

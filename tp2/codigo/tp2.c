@@ -93,27 +93,29 @@ void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
 	{
 		imagenes_abrir(config);
 		unsigned long long start, end;
-		MEDIR_TIEMPO_START(start)
-		for (int i = 0; i < config->cant_iteraciones; i++) {
+		
+		//for (int i = 0; i < config->cant_iteraciones; i++) {
 				int fria = 1;
 				if (fria == 1) {
-					char *basura = (char*)malloc(sizeof(char)*786432);
+					char *basura = (char*)malloc(sizeof(char)*6291456);
 					srand(5);
 					int i = 0;
-					while (i < 786432) {
+					while (i < 6291456) {
 						basura[i] = rand() % 27;            
 						i++;                
 					}
 					long int suma = 0;
 					i = 0;                
-					while (i < 786432) {
+					while (i < 6291456) {
 						suma += basura[i];   
 						i++;         
 					}
 					free(basura);
 				}else {
-					unsigned int *src_matrix = config->archivo_entrada;
-					unsigned int size = sizeof(config->archivo_entrada);
+					char *src_matrix = config->archivo_entrada;
+					buffer_info_t *buffer = &config->src;
+		
+					unsigned int size = buffer->bytes;
 					int argbSum = 0;
 					for (int i = 0; i < size; i++)
 					{
@@ -121,10 +123,10 @@ void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
 						argbSum += argb;
 					}
 				}
-
+				MEDIR_TIEMPO_START(start)
 				aplicador(config);
-		}
-		MEDIR_TIEMPO_STOP(end)
+				MEDIR_TIEMPO_STOP(end)
+		//}
 		imagenes_guardar(config);
 		imagenes_liberar(config);
 		imprimir_tiempos_ejecucion(start, end, config->cant_iteraciones);

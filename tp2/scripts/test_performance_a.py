@@ -23,7 +23,6 @@ def test(filtro, letter):
 	for tc in typeCodes:
 
 		clocks = []
-		coords = []
 
 		for i in xrange(Tep.nInst):
 
@@ -40,11 +39,10 @@ def test(filtro, letter):
 			output = output.strip(' \n\t')
 
 			clocks.append(long(output)/float(size))
-			coords.append(i + 1)
 
 		print "img " + Tep.imgName + " has been successfully processed"
 
-		data.append(prunedMeanAndSampleVariance(coords, clocks))
+		data.append(prunedMeanAndSampleVariance(clocks))
 
 	os.chdir(cwd)
 

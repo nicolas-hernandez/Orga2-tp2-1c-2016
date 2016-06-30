@@ -28,7 +28,7 @@ def graph(filtro, letter):
 
 	avgAsm = int((meanC / float(meanAsm))*100)
 
-	objects = ('Asm: ' + str(avgAsm) + '%', 'C flag O1')
+	objects = ('Asm: ' + str(avgAsm) + '%', 'C flag O0')
 	x_pos = np.arange(len(objects))
 	performance = [meanAsm, meanC]
 	errors = [errorAsm, errorC]
@@ -39,7 +39,7 @@ def graph(filtro, letter):
 	sub.bar(x_pos, performance, align='center', color='r', alpha=0.5, yerr=errors)
 	plt.xticks(x_pos, objects)
 	plt.ylabel('$Clocks/Pixel$ $insumidos$')
-	plt.title('Asm vs. C flag O1')
+	plt.title('Asm vs. C flag O0')
 	plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
 	 
 	if not os.path.isdir(Tep.graphsPath):

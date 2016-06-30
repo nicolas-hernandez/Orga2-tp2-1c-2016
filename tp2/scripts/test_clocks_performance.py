@@ -28,7 +28,6 @@ def test(filtro, version):
 	for tc in typeCodes:
 
 		clocks = []
-		coords = []
 
 		for i in xrange(Tcp.nInst):
 
@@ -50,11 +49,10 @@ def test(filtro, version):
 			output = output.strip(' \n\t')
 
 			clocks.append(long(output)/float(size))
-			coords.append(i + 1)
 
 		print "img " + Tcp.imgName + " has been successfully processed"
 
-		data.append(prunedMeanAndSampleVariance(coords, clocks))
+		data.append(prunedMeanAndSampleVariance(clocks))
 
 	os.chdir(cwd)
 

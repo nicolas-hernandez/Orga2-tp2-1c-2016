@@ -1,4 +1,5 @@
 import os
+import math
 
 
 class Options:
@@ -24,10 +25,11 @@ class Tests:
 	 sizesSepCold = 6
 	 compareLdrA = 7
 	 compareLdrB = 8
-	 compareSepiaB = 9
-	 sizesLdrHot = 10
-	 sizesCfHot = 11
-	 sizesSepHot = 12	
+	 compareSepiaA = 9
+	 compareSepiaB = 10
+	 sizesLdrHot = 11
+	 sizesCfHot = 12
+	 sizesSepHot = 13	
 
 	 @staticmethod
 	 def printAllInfo():
@@ -41,6 +43,7 @@ class Tests:
 		 print str(Tests.sizesSepCold) + ": size sepia test cold cache\n"
 		 print str(Tests.compareLdrA) + ": compare ldr asm with c with same nums of read and write ops\n version is ignored\n"
 		 print str(Tests.compareLdrB) + ": compare ldr asm integer operations with fp operations\n version is ignored\n"
+		 print str(Tests.compareSepiaA) + ": compare sepia asm with c with same nums of read and write ops\n version is ignored\n"
 		 print str(Tests.compareSepiaB) + ": compare sepia asm integer operations with fp operations\n version is ignored\n"
 		 print str(Tests.sizesLdrHot) + ": size ldr test hot cache\n"
 		 print str(Tests.sizesCfHot) + ": size cropflip test hot cache\n"
@@ -58,12 +61,12 @@ class Filtro:
 	 offsetY = 0
 
 
-def prunedMeanAndSampleVariance(coords = [], ords	= []):
+def prunedMeanAndSampleVariance(ords = []):
 	 if len(ords) == 1:
 		  return (ords[0], 0)
 
 	 alpha = 0.5
-	 n = len(coords)
+	 n = len(ords)
 	 x0 = n*alpha
 	 mean = 0
 	 sampleVariance = 0
@@ -93,17 +96,19 @@ def prunedMeanAndSampleVariance(coords = [], ords	= []):
 	 print 'sumatoria es: ' + str(total) + ' len ords: ' + str(len(ords))	
 	 total = total/float(len(ords))
 
+	 total = math.sqrt(total)
+
 	 return (mean, total)
 
 class ImageDetails:
-	 width = 408
-	 height = 408
+	 width = 424
+	 height = 424
 	 decrement = 16
 
 class TestSizeParams:
 	 nInst = 100
 	 indInst = 1
-	 cantImg = 52
+	 cantImg = 51
 	 imgName = "lena32"
 	 buildDir = "codigo/build/"
 	 pathSW = "../img/"
