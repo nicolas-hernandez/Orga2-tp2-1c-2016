@@ -487,8 +487,8 @@ _ldr_asm:
 	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
 	punpcklwd xmm0, xmm11 ; 0|r|g|b
 
-	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [−2,147,483,648 to 2,147,483,647]
-	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [−2,147,483,648 to 2,147,483,647]
+	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [-2,147,483,648 to 2,147,483,647]
+	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [-2,147,483,648 to 2,147,483,647]
 
     cvtdq2ps xmm5, xmm5 ; 0|fp(alpha*sumargb*r)|fp(alpha*sumargb*g)|fp(alpha*sumargb*b)
 	cvtdq2ps xmm13, xmm13 ; fp(max)|fp(max)|fp(max)|fp(max)
@@ -516,6 +516,7 @@ _ldr_asm:
 	jmp .seguir
     
 \end{verbatim}
+
 \end{codesnippet}
 
 \subsubsection{C}
@@ -579,19 +580,23 @@ Como ya hemos explicado, C compilado en modo default, carece de paralelismo en l
 
 \subsection{Análisis experimental}
 
-En general, al aplicar filtros sobre imagenes, la performance puede verse afectada por varios motivos, como por ejemplo el scheduler del sistema, que puede generar caidas en el tiempo debido a que debe realizar operaciones de mayor prioridad antes de poder retornar al algoritmo.\\
+En general, al aplicar filtros sobre imagenes, la performance puede verse afectada por varios motivos, como por ejemplo el scheduler del sistema, que puede generar caidas en el tiempo debido a que debe realizar operaciones de mayor prioridad antes de poder retornar al algoritmo. Cuestiones como esta, serán tenidas en cuenta en la toma de mediciones.\\
 
 Como bien se sabe, la mayoria de los procesadores poseen una memoria integrada que es la más rápida luego de los registros, conocida como memoria caché, y que se subdivide en dos niveles: L1 (a su vez subdividida en datos e instrucciones) y L2 para datos. 
 La idea de la misma es tener $"$a mano$"$ datos que sean pedidos al sistema, trayendo consigo además los contiguos en un bloque de memoria (principio de vecinidad espacial), de manera tal que al consultar por el mismo nuevamente o algún contiguo, se obtenga mucho más rápido desde esta memoria. Pero cuando los mismos no se encuentran, el procesador tiene que buscarlos en la memoria ram, siendo este proceso la causa en la caida de performance que más suele afectar a los algoritmos.\\ 
 
-Este y algunos motivos más serán de estudio en este informe. Para ello introduciremos cada una de las hipótesis que se plantearán en base a lo que cada implementación en particular genere y propondremos un test a realizar, explicando la metodologia para llevarlo a cabo y los resultados obtenidos con las conclusiones que correspondan.\\
+Este último y algunas cuesitones  más serán de estudio en este informe. Para ello introduciremos cada una de las hipótesis que se plantearán en base a lo que cada implementación en particular genere y propondremos un test a realizar, explicando la metodologia para llevarlo a cabo y los resultados obtenidos con las conclusiones que correspondan.\\
  
 Además, escogeremos una implementación en particular para llevar a cabo algunos tests especiales que surjan en base a resultados más o menos generales para tener una vision extra de lo que sucede en esos casos.\\
 
 \subsubsection{Metodologias}
 
 Evaluaremos con los distintos tests el rendimiento de cada implementación. El mejor o peor rendimiento de las implementaciones se basa en la toma de tiempos de ejecución. Como los tiempos de ejecución son relativamente pequeños, en general, se utilizará uno de los contadores de performance que posee el procesador. \\
-Para las mediciones realizadas tomaremos una media $\alpha$-podada 0.5 (promedio intercuartil) sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Luego tomaremos la varianza muestral, podando los datos con el mismo $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
+
+Cada vez que se corra un filtro se tomará la diferencia entre el comienzo y el final del proceso y se dividirá este valor por la cantidad de pixeles de la imágen (resolución de la imágen) para poder analizar todas las muestras en la misma unidad ($tics de reloj /cantidad de pixeles$) y que además nos permitirá observar mejor cambios en el comportamiento de las muestras.\\
+
+Luego al conjunto de mediciones tomadas para una misma imágen calcularemos una media $\alpha$-podada 0.5 (promedio intercuartil) sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Lo cual es más que suficiente para 100 iteraciones sobre una imágen (que es la cantidad de iteraciones que utilizaremos en todos los tests), que nos deja 50 muestras luego de aplicar la poda. \\ 
+Además tomaremos el desvio standard muestral, utilizando el mismo set de datos al que aplicamos la poda $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
 De esta manera podremos saber que si la dispersion de los datos es muy grande, para dos curvas aparentemente distanciadas en promedio, tal vez no haya diferencias sigificativas.
 
 La imágen elegida para los tests será la siguiente:.
@@ -606,26 +611,26 @@ La imágen elegida para los tests será la siguiente:.
   \end{center}
 \end{figure}
 
-El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz con caché L2 de 2MB.
+El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) Intel Core i5-2430M @ 2.40GHz con caché L2 de 3MB.
 
-Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 2MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
+Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 3MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
 Además cambiando el valor de la variable $fria$ por uno podremos testear la cache precalentada con la imágen de testeo para ver como influye en los tiempos de proceso de cada algoritmo el estar la imágen cacheada totalmente o parcialmente.
 
 \begin{codesnippet}
 \begin{verbatim}
                 
-               int fria = 0;
-				if (fria) {
-					char *basura = (char*)malloc(sizeof(char)*2048);
+  				int fria = 1;
+				if (fria == 1) {
+					char *basura = (char*)malloc(sizeof(char)*786432);
 					srand(5);
 					int i = 0;
-					while (i < 2048) {
+					while (i < 786432) {
 						basura[i] = rand() % 27;            
 						i++;                
 					}
 					long int suma = 0;
 					i = 0;                
-					while (i < 2048) {
+					while (i < 786432) {
 						suma += basura[i];   
 						i++;         
 					}
@@ -648,18 +653,45 @@ Además cambiando el valor de la variable $fria$ por uno podremos testear la cac
 
 \subsubsection{Cosideraciones}
 
-Para que las comparaciones entre código $asm$ y $C$ sean más justas, utilizaremos como version default de código $C$ flag de optimización $O1$
+Para que las comparaciones entre código $asm$ y $C$ sean más justas, utilizaremos como version default de código $C$ flag de optimización $O1$. El motivo de esta elección es que el código generado por $O0$ no realiza grandes optimizaciones y solo utiliza $SIMD$ para escalares por lo cual la performance es muy baja. \\
 
+De todas maneras, uno de los fines de este informe es mostrar que sin flags de optimización, sería a día de hoy casi imposible realizar, por ejemplo, reproducción de video en tiempo real con gran carga de procesamiento en un computador de sobremesa. Es decir, que código generado con $SIMD$ ya sea por un programador o por el compilador con ayuda de flags de optimización es muy importante para esta problematica.\\
+
+Veamos entonces cuanta diferencia existe entre flags $O1$ y $O0$ para cada filtro.
+
+\begin{figure}[h]
+  \begin{center}
+	\includegraphics[scale=0.5]{ldrClocksO1VsO0.pdf}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{center}
+	\includegraphics[scale=0.5]{sepiaClocksO1VsO0.pdf}
+  \end{center}
+\end{figure}
+ 
+\begin{figure}[h]
+  \begin{center}
+	\includegraphics[scale=0.5]{cropflipClocksO1VsO0.pdf}
+  \end{center}
+\end{figure}
+ 
+Como podemos notar, se logran eficiencias elevadas utilizando solamente $O1$ y en principio podriamos lograr más eficiencia utilizando $O2$ y $O3$. Así que por fines prácticos eligiremos el último para ver que tan lejos podemos llegar.\\ 
+ 
 \subsection{Hipótesis}
 
 
 \subsubsection{Comportamiento: Aumentando resoluciones}
 
-Nos interesa saber como varia el rendimiento de los algoritmos para cada filtro en sus dos variantes ($asm$, $C-O1$) cuando se varia el tamaño de ~\ref{lena}. Es decir, analizaremos el comportamiento de los algoritmos frente a variaciones de tamaño\\
+Nos interesa saber como se comportan los algoritmos para cada filtro en sus dos variantes ($asm$, $C-O1$) cuando se varia el tamaño de ~\ref{lena}. Es decir, analizaremos el comportamiento de los algoritmos frente a variaciones de tamaño\\
 
-El resultado esperado para todos los filtros en ambas versiones es que el tiempo sea lineal en funcion de la cantidad de pixeles.
-Además, que la version en implementada en $asm$ se mantenga por encima de $C-O1$ siempre. \\ 
-En cropflip tomaremos un tamaño proporcional a la imágen de corte que será: \\
+El resultado esperado para todos los filtros en ambas versiones es que el tiempo aumente linealmente para aumentos lineales en el tamaño de las imágenes. En particular como lo que haremos será tomar cada medición como $tics /(ancho \times alto)$ esta linealidad será en realidad una constante sobre las mediciones. 
+
+Es decir que no varia el tiempo para un pixel si no que varia el tiempo en funcion de la cantidad total de pixeles.
+
+Además, sería deseable que la version implementada en $asm$ se mantenga por encima en performance (por debajo en cuanto a tiempos) de $C-O1$. \\ 
+En cropflip, en particular, tomaremos un tamaño proporcional a la imágen de corte para realizar las mediciones que será proporcional al tamaño de la imagne original: \\
 
 \begin{enumerate}
 \item $width-16$ 
@@ -670,65 +702,186 @@ En cropflip tomaremos un tamaño proporcional a la imágen de corte que será: \
 
 De manera que el corte varie con el tamaño. 
 
-\subsubsection{Performance: caché caliente vs. fria}
+\subsubsection{Performance caché: caliente vs. fria}
 
-El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio, es decir sin la imágen previamente leida, contra la caché en caliente, es decir con la imágen previamente leida. \\
-A priori no todas las imágenes entrarán completamente en caché, por lo cual tendremos que ver que sucede cuando la imágen supera el tamaño total de la caché L2. 
-Para $cropflip$ tomaremos el corte de la misma manera que se realizará en el test previo.
-La version de código utilizada para este test será en $asm$.
+El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio (es decir sin la imágen previamente leida) con respecto a caché caliente (imágen previamente leida). \\
+
+A priori, el principio de localidad espacial con el cual trabaja la memoria caché podría hacer que la diferencia entre ambos tests no sea tan notable. 
+Sabemos que una linea de caché en un procesador intel es de 64 bytes, por lo cual podremos almacenar hasta 16 pixeles en una linea. Veremos luego de los tests con más detalle porque podría influir esto.
+
+Para $cropflip$ tomaremos el corte de la misma manera que se realizará en el test de resoluciones.
+La version de código utilizada en estos tests será en $asm$.
 
 \subsubsection{Performance: implementaciones y filtros}
 
-La meta principal del informe es comprobar si $asm$ es mejor que la implementación en $C-O1$
-Para esto correremos todos los filtros comparando sus versiones de $assembler$, $C-O1$ y además incluiremos $C$ con flags de optimización, en particular $O3$ para ver que tan bien puede optimizar el compilador. \\
+Como se comentó, el principal objetivo del informe es comprobar si $assembler$ $SIMD$ supone una ventaja frente a código compilado sin flags de optimización. 
+Hemos podido comprobar que con flags $O1$ se obtiene una performance elevada frente a $O0$.\\
 
-El resultado esperado es que $assembler$ debería ser superior, es decir insumir una menor cantidad de tics de reloj que las otras dos versiones. Aunque no esperariamos un mal rendimiento de $C-O3$. \\
+En este test correremos todos los filtros comparando sus versiones de $assembler$ $SIMD$ contra $C-O1$ y además incluiremos $C$ con flags de optimización $O3$ para ver que tan bien puede optimizar el compilador. \\
+La idea es ver que ventaja supone programar a mano en $SIMD$ frente a utilizar flags de optimización en el proceso de compilación.\\ 
 
 \subsubsection{Performance: versiones de $ldr$}
 
-Elegimos los filtros $ldr$ y $sepia$ para analizar dos teorias relacionadas a SIMD. 
+Elegimos el filtro $sepia$ para analizar dos teorias relacionadas a SIMD. 
 
-$A)$ Si igualamos la cantidad de accesos de escritura y lectura de la imágen en el filtro $ldr$ en las versiones de $assembler$ con respecto a la de $C-01$ aún asi la version de $assembler$ será más óptima.
+$A)$ Deseamos ver que sucede si igualamos la cantidad de accesos a memoria de la imágen en la implementacion de $assembler$ $SIMD$ a la de $C-O1$ (es decir, cambiando los accesos de a 128 bits por accesos de 32 bits) manteniendo las operaciones de los pixeles sin cambios  y ver si aún asi la version de $assembler$ $SIMD$ sigue siendo más óptima.
 
-Veamos que, el código $asm$ de la version de $C-O1$ mantiene la misma cantidad de accesos para lectura y escritura:\\
+El mótivo de este test es comprobar que el principio de localidad espacial se cumple, es decir, que al acceder a una posición de memoria, una linea completa se cargará en memoria caché, por lo cual no importa si accedemos con instrucciones de 128 o 32 bits, siempre estaremos accediendo a la caché para las posiciones de memoria contiguas.
 
-PONER EL CODIGO OBTENIDO CON OBJDUMP
-
-$B)$ Si en vez de dividir en punto flotante se reemplaza esa seccion de código por operaciones con enteros: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
-
-Para $ldr$, en principio tenemos una desventaja en la comparación, dado que la version de enteros no posee divison empaquetda por lo cual no realizaremos esa operación en ambas versiones (punto flotante y enteros)
-
-Version de $ldr$ con enteros sin division:\\
+El código $assembler$ $SIMD$ sin accesos empaquetados cambia de la siguiente manera:
 
 \begin{codesnippet}
 \begin{verbatim}
-                
-	;TEST 2: OPERACIONES CON ENTEROS
-	pmulld xmm5, xmm0 ; 0|sumargb*r|sumargb*g|sumargb*b == 0|sumargb*r|sumargb*g|sumargb*b -- maximo posible por dword 75*255*255 = 4876875 in  [−2,147,483,648 to 2,147,483,647]
-	pmulld xmm5, xmm12 ; 0|alpha*sumargb*r|alpha*sumargb*g|alpha*sumargb*b <- puede cambiar el signo segun alpha. -- maximo posible por dword 75*255*255*255 or 75*255*255*-255 = +-1,243,603,125 in  [−2,147,483,648 to 2,147,483,647]
 
-	paddd xmm10, xmm0 ; 0|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)|b+(alpha*sumargb*b)
-	packusdw xmm10, xmm11 ; 0|0|0|0|0|r+(alpha*sumargb*r)/|g+(alpha*sumargb*g)/|b+(alpha*sumargb*b)
-	packuswb xmm10, xmm11 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)/|b+(alpha*sumargb*b) <- tengo los canales calculados saturados a byte.
-	pand xmm14, xmm4 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|0|0|0
-	por xmm14, xmm10 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r+(alpha*sumargb*r)|g+(alpha*sumargb*g)|b+(alpha*sumargb*b)
-                
+		;mascaras
+		movd xmm7, [alfainv]
+ 	    pslldq xmm7, 4
+	    movd xmm7, [alfainv + 4]
+	    pslldq xmm7, 4
+	    movd xmm7, [alfainv + 8]
+	    pslldq xmm7, 4
+	    movd xmm7, [alfainv + 12]
+	    pslldq xmm7, 4
+
+	    movd xmm8, [alfamasc]
+	    pslldq xmm8, 4
+	    movd xmm8, [alfamasc + 4]
+	    pslldq xmm8, 4
+	    movd xmm8, [alfamasc + 8]
+	    pslldq xmm8, 4
+	    movd xmm8, [alfamasc + 12]
+	    pslldq xmm8, 4
+
+	    movd xmm0, [factores]
+	    pslldq xmm0, 4
+	    movd xmm0, [factores + 4]
+	    pslldq xmm0, 4
+	    movd xmm0, [factores + 8]
+	    pslldq xmm0, 4
+	    movd xmm0, [factores + 12]
+	    pslldq xmm0, 4
+
+		;leer de memoria pixeles
+		;movdqu xmm1, [rdi]; XMM1 = | p3 | p2 | p1 | p0 |
+		movd xmm1, [rdi]
+		pslldq xmm1, 4
+		movd xmm1, [rdi + 4]
+		pslldq xmm1, 4
+		movd xmm1, [rdi + 8]
+		pslldq xmm1, 4
+		movd xmm1, [rdi + 12]	
+		
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		
+		;escribir a memoria pixeles
+		;movdqu [rsi], xmm1
+		movd [rsi], xmm1
+		psrldq xmm1, 4
+		movd [rsi + 4], xmm1
+		psrldq xmm1, 4
+		movd [rsi + 8], xmm1
+		psrldq xmm1, 4
+		movd [rsi + 12], xmm1
+
 \end{verbatim}
 \end{codesnippet}
 
-Version de $ldr$ con punto flotante sin division simplemente se comenta esa linea de código:\\
+Veamos que el código $C$ compilado con $O1$ tiene una cantidad de accesos para lectura y escritura a memoria similar a la de $assember$ $SIMD$ modificado
 
 \begin{codesnippet}
 \begin{verbatim}
-                
-	    ;divps xmm5, xmm13 ; 0|(alpha*sumargb*r)/max|(alpha*sumargb*g)/max|(alpha*sumargb*b)/max    
-                
+
+<sepia_c>:
+test   ecx,ecx
+jle    114 <sepia_c+0x114>
+push   r15
+push   r14
+push   r13
+push   r12
+push   rbp
+push   rbx
+movsxd r13,r8d
+movsxd r14,r9d
+mov    rbp,rsi
+mov    rbx,rdi
+mov    r12d,0x0
+movsd  xmm7,QWORD PTR [rip+0x0]        # 2c <sepia_c+0x2c>
+
+movsd  xmm6,QWORD PTR [rip+0x0]        # 34 <sepia_c+0x34>
+
+movsd  xmm5,QWORD PTR [rip+0x0]        # 3c <sepia_c+0x3c>
+
+movapd xmm4,xmm6
+movsd  xmm3,QWORD PTR [rip+0x0]        # 48 <sepia_c+0x48>
+
+movapd xmm2,xmm6
+mov    r9d,0xffffffff
+jmp    f5 <sepia_c+0xf5>
+mov    BYTE PTR [r11],al
+movzx  eax,BYTE PTR [r10+0x3]
+mov    BYTE PTR [r11+0x3],al
+add    r8d,0x1
+cmp    edx,r8d
+je     e6 <sepia_c+0xe6>
+lea    r10d,[r8*4+0x0]
+
+movsxd r10,r10d
+lea    r11,[rdi+r10*1]
+add    r10,rsi
+movzx  eax,BYTE PTR [r10+0x2]
+movzx  r15d,BYTE PTR [r10+0x1]
+add    eax,r15d
+movzx  r15d,BYTE PTR [r10]
+add    eax,r15d
+pxor   xmm0,xmm0
+cvtsi2sd xmm0,eax
+movapd xmm1,xmm0
+mulsd  xmm1,xmm7
+mov    eax,r9d
+ucomisd xmm1,xmm6
+ja     af <sepia_c+0xaf>
+cvttsd2si eax,xmm1
+mov    BYTE PTR [r11+0x2],al
+movapd xmm1,xmm0
+mulsd  xmm1,xmm5
+mov    eax,r9d
+ucomisd xmm1,xmm4
+ja     c8 <sepia_c+0xc8>
+cvttsd2si eax,xmm1
+mov    BYTE PTR [r11+0x1],al
+mulsd  xmm0,xmm3
+mov    eax,r9d
+ucomisd xmm0,xmm2
+ja     57 <sepia_c+0x57>
+cvttsd2si eax,xmm0
+jmp    57 <sepia_c+0x57>
+add    r12d,0x1
+add    rbp,r14
+add    rbx,r13
+cmp    ecx,r12d
+je     10a <sepia_c+0x10a>
+test   edx,edx
+jle    e6 <sepia_c+0xe6>
+mov    rdi,rbp
+mov    rsi,rbx
+mov    r8d,0x0
+jmp    6c <sepia_c+0x6c>
+pop    rbx
+pop    rbp
+pop    r12
+pop    r13
+pop    r14
+pop    r15
+repz ret 
+       
 \end{verbatim}
 \end{codesnippet}
 
-Para el filtro $sepia$ lo que haremos será cambiar los valores del filtro que se aplican a cada canal: 0.2, 0.3, 0.5 por 2, 2, 2 en ambas versiones, dado que, para la version de enteros no disponemos de punto flotante y queremos tener una representación de la cual conozcamos los valores que manejamos.\\
-Lo que si no haremos en la version de punto flotante será convertir los valores de los canales a los cuales aplicaremos el filtro a punto flotante. De esta manera eliminaremos la mayor cantidad de proceso extra para que las comparaciones sean lo más justas posibles.  
-Luego todo será igual, pero a la ahora de aplicar el filtro la version con de enteros será:\\
+$B)$ Deseamos ver que sucede si en lugar de dividir en punto flotante empaquetados se reemplaza esa seccion de código por operaciones con enteros empaquetados: que version tiene mejor rendimiento? $assembler$ con ops de punto flotante o $assembler$ con ops en enteros?
+
+Para llevarlo a cabo cambiaremos los valores del filtro que se aplican a cada canal: 0.2, 0.3, 0.5 por 2, 2, 2 en ambas versiones, dado que, para la version de enteros no disponemos de punto flotante y queremos tener una representación de la cual conozcamos los valores que manejamos.\\
+Lo que si no haremos en la version de punto flotante será convertir los valores de los canales a enteros luego de aplicar la operación y no empaquetaremos en ninguna de las dos versiones los resultados que se obtengan. De esta manera eliminaremos la mayor cantidad de proceso extra para que las comparaciones sean lo más justas posibles.  
+Luego todo será igual, pero a la ahora de aplicar el filtro la version de enteros será:\\
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -746,10 +899,10 @@ Y la version de punto flotante será:
 \begin{codesnippet}
 \begin{verbatim}
 
-		mulps xmm1, xmm0; XMM1 = |*|suma0*0.2|suma0*0.2|suma0*0.2|  
-		mulps xmm2, xmm0; XMM2 = |*|suma2*0.2|suma2*0.2|suma2*0.2|  
-		mulps xmm3, xmm0; XMM3 = |*|suma1*0.2|suma1*0.2|suma1*0.2|  
-		mulps xmm4, xmm0; XMM4 = |*|suma3*0.2|suma3*0.2|suma3*0.2|     
+		mulps xmm1, xmm0; XMM1 = |*|suma0*2|suma0*2|suma0*2|  
+		mulps xmm2, xmm0; XMM2 = |*|suma2*2|suma2*2|suma2*2|  
+		mulps xmm3, xmm0; XMM3 = |*|suma1*2|suma1*2|suma1*2|  
+		mulps xmm4, xmm0; XMM4 = |*|suma3*2|suma3*2|suma3*2|     
 
 \end{verbatim}
 \end{codesnippet}
