@@ -1,5 +1,5 @@
-Para realizar el test, como se mencionó, se setea en el flag frio el valor uno para testear en frio y luego en cero para el test en calientes.
-Se procesan 51 imágenes $lena32.bmp$ desde la resolución 424x424 con el id: 1 (539KB) aumentando de 16x16 hasta la resolución 1224x1224 con el id: 51 (4.5MB). Cada imágen se corre 100 veces y a cada muestra, que serán los tics de reloj totales para procesar la imágen, se la divide por el tamaño de la imágen, y se toma el promedio muestral intercuartil y el desvio estardar sobre la poda realizada.
+Para realizar el test, como se mencionó, se setea en el flag frio el valor uno para testear con la cache en frio y luego en cero para testear en caliente.
+Se procesan 51 imágenes $lena32.bmp$ desde la resolución 424x424 con el id: 1 (539KB) aumentando de 16x16 hasta la resolución 1224x1224 con el id: 51 (4.5MB). Cada imagen se corre 100 veces y a cada muestra, que serán los tics de reloj totales para procesar la imagen, se la divide por el tamaño de la imagen, y se toma el promedio muestral intercuartil y el desvío estandar sobre la poda realizada.
 
 \begin{figure}[h]
   \begin{center}
