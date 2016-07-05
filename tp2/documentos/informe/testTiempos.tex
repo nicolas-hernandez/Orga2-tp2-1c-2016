@@ -23,6 +23,7 @@ Para cada filtro e implementación ($assembler$ $SIMD$, $C-O1$ y $C-O3$): Se pro
   \end{center}
 \end{figure}
 
-Como puede observarse, salvo en el caso del filtro $cropflip$, el flag de optimización $O3$ no supone una ventaja sobre $O1$ pero la implementación en $assembler$ $SIMD$ logra una buena performance en comparación. 
+Como puede observarse, salvo en el caso del filtro $cropflip$, el flag de optimización $O3$ no supone una ventaja sobre $O1$ pero la implementación en $assembler$ $SIMD$ logra una buena performance en comparación. Al contrario, en $cropflip$ puede observarse que $O3$ está muy cerca de $assembler$ $SIMD$. Esta diferencia la atribuimos al hecho de que el filtro $cropflip$ no realiza operaciones aritmeticas sobre los pixeles de la imagen. Esto facilita la optimizacion del codigo por parte del compilador. 
 
-Al contrario, en $cropflip$ puede observarse que $O3$ está muy cerca de $assembler$ $SIMD$ con lo cual nuestra conclusion es que dependiendo del filtro o tarea que querramos realizar el compilador podrá optimizar más o menos y será cuestion del desarrollador evaluar si es necesario realizar el código en $assembler$ $SIMD$ sin ayuda del compilador.
+Con lo cual nuestra conclusion es que dependiendo del filtro o tarea que querramos realizar el compilador podrá optimizar más o menos y será cuestion del desarrollador evaluar si es necesario realizar el código en $assembler$ $SIMD$ sin ayuda del compilador. 
+
