@@ -25,8 +25,8 @@ En principio esto es algo que tiene sentido. Una linea de caché tiene 64 bytes,
 Para el test en caliente las imágenes de menos de 3MB estarán completamente en memoria caché y tendremos 16/16 $hits$ = 100 $\%$ de $hits$ por linea. Es decir que nunca habrá necesidad de ir a buscar a memoria RAM pixeles de la imágen.\\ 
 Para el test en frio lo que sucederá no es muy diferente. \\
 
-Al no estar la imágen previamente en caché, el primer acceso será un $miss$ pero como el controlador caché utiliza el principio de localidad espacial traera a caché un bloque contiguo a una linea de la caché. Con lo cual los 15 accesos siguientes serán $hits$ por tendremos 15/16 $hits$ = 93,75 $\%$ de $hits$. 
-Cuando la imágen supere el tamaño de la caché lo que puede estar sucediendo es que parte de la imágen esta en memoria caché, con lo cual se sigue obteniendo un rendimiento por debajo del test en frio.\\
+Al no estar la imagen previamente en caché, el primer acceso será un $miss$ pero como el controlador caché utiliza el principio de localidad espacial traera a caché un bloque contiguo a una linea de la caché. Con lo cual los 15 accesos siguientes serán $hits$ por tendremos 15/16 $hits$ = 93,75 $\%$ de $hits$. 
+Cuando la imagen supere el tamaño de la caché lo que puede estar sucediendo es que parte de la imagen esta en memoria caché, con lo cual se sigue obteniendo un rendimiento por debajo del test en frio.\\
 
-El caso del filtro $ldr$ puede deberse a que las operaciones realizadas no dependen tanto de si la imágen está en caché o no. En particular, por como fué implementada la suma, el controlador caché podria estar desalojando y alojando lineas continuamente con lo cual no se beneficia tanto de las ventajas de esta memoria.
+El caso del filtro $ldr$ puede deberse a que las operaciones realizadas no dependen tanto de si la imagen está en caché o no. En particular, por como fué implementada la suma, el controlador caché podria estar desalojando y alojando lineas continuamente con lo cual no se beneficia tanto de las ventajas de esta memoria.
 

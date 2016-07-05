@@ -3,9 +3,9 @@
 Las siguientes implementaciones operan con imágenes del tipo bmp y canales $alfa$, $red$, $green$ y $blue$ ($argb$) de 8 bits cada uno (de ahí la variante bmp 32 bits).\\
 
 En memoria los datos de cada pixel estarán ordenados a la inversa, es decir, $bgra$, por lo cual al trabajarlos en registros de procesador, los mismos serán invertidos debido a que es el formato standard utilizado por la arquitectura intel para almacenar datos en memoria.
-El puntero de fuente obtenido en todas las implementaciones representa a la imágen a la cual se le quiere aplicar el filtro. La misma tiene una particularidad para la lectura y es que la primera fila leida es la última de la imágen.\\
+El puntero de fuente obtenido en todas las implementaciones representa a la imagen a la cual se le quiere aplicar el filtro. La misma tiene una particularidad para la lectura y es que la primera fila leida es la última de la imagen.\\
 
-Llamaremos $O$ a la imágen de salida generada por cada filtro. Por ejemplo, el filtro identidad
+Llamaremos $O$ a la imagen de salida generada por cada filtro. Por ejemplo, el filtro identidad
 estaría caracterizado por la fórmula\\
 
 \begin{center}
@@ -21,10 +21,10 @@ Introduciremos cada filtro mencionandolos en el siguiente orden:
 \item Low dynamic range 
 \end{enumerate}
 
-Para cada uno expondremos su idea principal, es decir, que efecto tiene sobre la imágen a la que se aplica, mostrando un caso de ejemplo. Luego expondremos las implementaciones, focalizando y detallando principalmente la implementación en lenguaje assembler SIMD.
+Para cada uno expondremos su idea principal, es decir, que efecto tiene sobre la imagen a la que se aplica, mostrando un caso de ejemplo. Luego expondremos las implementaciones, focalizando y detallando principalmente la implementación en lenguaje assembler SIMD.
 
 \subsection{Cropflip}
-Este filtro es una unión de dos filtros: crop y vertical-flip. Al aplicarlo sobre una imágen, recorta una parte de la misma y la voltea verticalmente. Para ello recibe cuatro argumentos delimitando un rectangulo de la imágen.
+Este filtro es una unión de dos filtros: crop y vertical-flip. Al aplicarlo sobre una imagen, recorta una parte de la misma y la voltea verticalmente. Para ello recibe cuatro argumentos delimitando un rectangulo de la imagen.
 
 \begin{itemize}
 \item{$tamx$: Posee la cantidad de columnas, en pixeles, a recortar. Este número es multiplo de 4.}
@@ -50,7 +50,7 @@ Si bien es el código más sencillo de implementar, incluso de manera eficiente,
 \subsubsection{Assembler SIMD}
 
 En la implementación de SIMD se aprovecha el uso de paralelismo y la capacidad de almacenar hasta cuatro pixeles en un registro $xmm$.\\ 
-Tomando entonces de a 4 pixeles, desde el inicio del rectangulo determinado por los parametros, se rearma la imágen, logrando finalmente, al recorrer todas las filas indicadas, el espejado vertical esperado.
+Tomando entonces de a 4 pixeles, desde el inicio del rectangulo determinado por los parametros, se rearma la imagen, logrando finalmente, al recorrer todas las filas indicadas, el espejado vertical esperado.
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -64,7 +64,7 @@ Tomando entonces de a 4 pixeles, desde el inicio del rectangulo determinado por 
 \end{verbatim}
 \end{codesnippet}
 
-Como puede observarse, mediante un ciclo podemos con la ayuda de un registro xmm transportar desde la fuente hasta el destino, 4 pixeles simultaneamente, que corresponde en total a la fila de la imágen.
+Como puede observarse, mediante un ciclo podemos con la ayuda de un registro xmm transportar desde la fuente hasta el destino, 4 pixeles simultaneamente, que corresponde en total a la fila de la imagen.
 
 \subsubsection{C}
 
@@ -116,15 +116,15 @@ El efecto logrado es que realza más el canal verde.
   \subfloat[Sepia]{\includegraphics[width=0.4\textwidth]{imagenes/lena32sepia.jpg}\label{fig:f4}}
 \end{figure}
 
-Si bien es una operación sencilla, los tiempos de cómputo se ven comprometidos para imágenes muy grandes debido a la cantidad de operaciones en punto flotante: En una imágen de 512x512 pixeles tenemos 512x512x3 = 786432 operaciones de punto flotante. Lo cual puede suponer un desafio si no se dispone de tecnologias como SIMD.
+Si bien es una operación sencilla, los tiempos de cómputo se ven comprometidos para imágenes muy grandes debido a la cantidad de operaciones en punto flotante: En una imagen de 512x512 pixeles tenemos 512x512x3 = 786432 operaciones de punto flotante. Lo cual puede suponer un desafio si no se dispone de tecnologias como SIMD.
 
 \subsubsection{Assembler SIMD}
 
 Al igual que en el primer filtro, se aprovecha el paralelismo de SIMD para el cálculo en punto flotante.\\
 
-Para operar la imágen se procesa de a 4 pixeles. Luego cada pixel se lleva a un registro $xmm$ extendiendo sus canales a 32 bits. Como no se asume que el alfa sea cero se utiliza una máscara para borrarlo previemente. Luego se realiza la suma de los canales para cada pixel y por último se convierte cada una a punto flotante 32 bits y se realizan los 3 productos para cada suma que corresponden a los nuevos canales $r$, $g$ y $b$ mediante el uso de operaciones de punto flotante.\\
+Para operar la imagen se procesa de a 4 pixeles. Luego cada pixel se lleva a un registro $xmm$ extendiendo sus canales a 32 bits. Como no se asume que el alfa sea cero se utiliza una máscara para borrarlo previemente. Luego se realiza la suma de los canales para cada pixel y por último se convierte cada una a punto flotante 32 bits y se realizan los 3 productos para cada suma que corresponden a los nuevos canales $r$, $g$ y $b$ mediante el uso de operaciones de punto flotante.\\
 
-Al final se restaura el canal alfa junto con el nuevo pixel calculado y se devuelve a la imágen destino. 
+Al final se restaura el canal alfa junto con el nuevo pixel calculado y se devuelve a la imagen destino. 
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -255,7 +255,7 @@ Como sucede en $cropflip$, sin flags de optimización el codigo compilado con $O
 \subsection{LDR: Low Dynamic Range}
 
 El filtro $ldr$ es el que más operaciones lleva a cabo de los tres.
-Toma una imágen y aplica un efecto que modifica la imagen según su iluminación. El filtro toma el valor de un pixel y le añade un porcentaje $\alpha$ del de sus vecinos.\\
+Toma una imagen y aplica un efecto que modifica la imagen según su iluminación. El filtro toma el valor de un pixel y le añade un porcentaje $\alpha$ del de sus vecinos.\\
 
 De esta manera, dado un porcentaje positivo, los pixeles rodeados por pixeles claros se vuelven
 aún más claros, mientras que los rodeados por pixeles oscuros se mantienen igual. La intensidad
@@ -367,7 +367,7 @@ El primer paso es armar la un registro con el valor de $alfa$ en sus primeras tr
 
 Se crea un registro con la suma replicada en las tres posiciones menos significativas y se procede a calcular la fórmula, para lo cual tenemos la siguiente consideración:\\
  
-Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de 32 bits (el máximo es 75x255x255x255 o 75x255x255x-255 = +-1,243,603,125 $\in$ $[$-2,147,483,648 a 2,147,483,647$]$, no se convierte a punto flotante si no hasta la division, por lo tanto será la única operacion de punto flotante del algoritmo, aunque vale mencionar que si por cada pixel, exceptuando las primeras y últimas dos filas y columnas se aplica esta fórmula en total habrá 3x(filas-2)x(columnas-2) operaciones de punto flotante. Para una imágen de 512$x$512 supone 780300 divisiones de punto flotante, que se asemeja bastante a la cantidad de operaciones de punto flotante de $sepia$.
+Debido a que, $canal x sumargb x alfa$ cabe perfectamente dentro de un entero de 32 bits (el máximo es 75x255x255x255 o 75x255x255x-255 = +-1,243,603,125 $\in$ $[$-2,147,483,648 a 2,147,483,647$]$, no se convierte a punto flotante si no hasta la division, por lo tanto será la única operacion de punto flotante del algoritmo, aunque vale mencionar que si por cada pixel, exceptuando las primeras y últimas dos filas y columnas se aplica esta fórmula en total habrá 3x(filas-2)x(columnas-2) operaciones de punto flotante. Para una imagen de 512$x$512 supone 780300 divisiones de punto flotante, que se asemeja bastante a la cantidad de operaciones de punto flotante de $sepia$.
 
 
 \begin{codesnippet}
@@ -593,13 +593,13 @@ Además, escogeremos una implementación en particular para llevar a cabo alguno
 
 Evaluaremos con los distintos tests el rendimiento de cada implementación. El mejor o peor rendimiento de las implementaciones se basa en la toma de tiempos de ejecución. Como los tiempos de ejecución son relativamente pequeños, en general, se utilizará uno de los contadores de performance que posee el procesador. \\
 
-Cada vez que se corra un filtro se tomará la diferencia entre el comienzo y el final del proceso y se dividirá este valor por la cantidad de pixeles de la imágen (resolución de la imágen) para poder analizar todas las muestras en la misma unidad ($tics de reloj /cantidad de pixeles$) y que además nos permitirá observar mejor cambios en el comportamiento de las muestras.\\
+Cada vez que se corra un filtro se tomará la diferencia entre el comienzo y el final del proceso y se dividirá este valor por la cantidad de pixeles de la imagen (resolución de la imagen) para poder analizar todas las muestras en la misma unidad ($tics de reloj /cantidad de pixeles$) y que además nos permitirá observar mejor cambios en el comportamiento de las muestras.\\
 
-Luego al conjunto de mediciones tomadas para una misma imágen calcularemos una media $\alpha$-podada 0.5 (promedio intercuartil) sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Lo cual es más que suficiente para 100 iteraciones sobre una imágen (que es la cantidad de iteraciones que utilizaremos en todos los tests), que nos deja 50 muestras luego de aplicar la poda. \\ 
+Luego al conjunto de mediciones tomadas para una misma imagen calcularemos una media $\alpha$-podada 0.5 (promedio intercuartil) sobre el total de las corridas de un experimento. La poda se realizará a derecha, eliminando así los outliers más grandes que puedan existir (las muestras se ordenan de menor a mayor). Lo cual es más que suficiente para 100 iteraciones sobre una imagen (que es la cantidad de iteraciones que utilizaremos en todos los tests), que nos deja 50 muestras luego de aplicar la poda. \\ 
 Además tomaremos el desvio standard muestral, utilizando el mismo set de datos al que aplicamos la poda $\alpha$, para poder medir que dispersion tienen los mismos con respecto a la media. 
 De esta manera podremos saber que si la dispersion de los datos es muy grande, para dos curvas aparentemente distanciadas en promedio, tal vez no haya diferencias sigificativas.
 
-La imágen elegida para los tests será la siguiente:.
+La imagen elegida para los tests será la siguiente:.
 
 \newpage
 
@@ -614,7 +614,7 @@ La imágen elegida para los tests será la siguiente:.
 El procesador utilizado para realizar todos los tests sera un Intel(R) Core(TM) Intel Core i5-2430M @ 2.40GHz con caché L2 de 3MB.
 
 Para que la caché no influya en cada corrida se implementó un algoritmo sencillo que lo que hará es ocupar la caché L2 antes de cada corrida. Sabiendo que la caché es de 3MB el algoritmo siguiente debería garantizar que la caché se ocupará con información que no altere los resultados de los tests. \\
-Además cambiando el valor de la variable $fria$ por uno podremos testear la cache precalentada con la imágen de testeo para ver como influye en los tiempos de proceso de cada algoritmo el estar la imágen cacheada totalmente o parcialmente.
+Además cambiando el valor de la variable $fria$ por uno podremos testear la cache precalentada con la imagen de testeo para ver como influye en los tiempos de proceso de cada algoritmo el estar la imagen cacheada totalmente o parcialmente.
 
 \begin{codesnippet}
 \begin{verbatim}
@@ -691,7 +691,7 @@ El resultado esperado para todos los filtros en ambas versiones es que el tiempo
 Es decir que no varia el tiempo para un pixel si no que varia el tiempo en funcion de la cantidad total de pixeles.
 
 Además, sería deseable que la version implementada en $asm$ se mantenga por encima en performance (por debajo en cuanto a tiempos) de $C-O1$. \\ 
-En cropflip, en particular, tomaremos un tamaño proporcional a la imágen de corte para realizar las mediciones que será proporcional al tamaño de la imagne original: \\
+En cropflip, en particular, tomaremos un tamaño proporcional a la imagen de corte para realizar las mediciones que será proporcional al tamaño de la imagne original: \\
 
 \begin{enumerate}
 \item $width-16$ 
@@ -704,7 +704,7 @@ De manera que el corte varie con el tamaño.
 
 \subsubsection{Performance caché: caliente vs. fria}
 
-El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio (es decir sin la imágen previamente leida) con respecto a caché caliente (imágen previamente leida). \\
+El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio (es decir sin la imagen previamente leida) con respecto a caché caliente (imagen previamente leida). \\
 
 A priori, el principio de localidad espacial con el cual trabaja la memoria caché podría hacer que la diferencia entre ambos tests no sea tan notable. 
 Sabemos que una linea de caché en un procesador intel es de 64 bytes, por lo cual podremos almacenar hasta 16 pixeles en una linea. Veremos luego de los tests con más detalle porque podría influir esto.
@@ -724,7 +724,7 @@ La idea es ver que ventaja supone programar a mano en $SIMD$ frente a utilizar f
 
 Elegimos el filtro $sepia$ para analizar dos teorias relacionadas a SIMD. 
 
-$A)$ Deseamos ver que sucede si igualamos la cantidad de accesos a memoria de la imágen en la implementacion de $assembler$ $SIMD$ a la de $C-O1$ (es decir, cambiando los accesos de a 128 bits por accesos de 32 bits) manteniendo las operaciones de los pixeles sin cambios  y ver si aún asi la version de $assembler$ $SIMD$ sigue siendo más óptima.
+$A)$ Deseamos ver que sucede si igualamos la cantidad de accesos a memoria de la imagen en la implementacion de $assembler$ $SIMD$ a la de $C-O1$ (es decir, cambiando los accesos de a 128 bits por accesos de 32 bits) manteniendo las operaciones de los pixeles sin cambios  y ver si aún asi la version de $assembler$ $SIMD$ sigue siendo más óptima.
 
 El mótivo de este test es comprobar que el principio de localidad espacial se cumple, es decir, que al acceder a una posición de memoria, una linea completa se cargará en memoria caché, por lo cual no importa si accedemos con instrucciones de 128 o 32 bits, siempre estaremos accediendo a la caché para las posiciones de memoria contiguas.
 
