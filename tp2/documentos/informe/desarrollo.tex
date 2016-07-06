@@ -37,7 +37,7 @@ El recuadro obtenido se devuelve espejadolo verticalmente. Para ello rearma las 
 
 \newpage
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \subfloat[Original]{\includegraphics[width=0.4\textwidth]{imagenes/lena32.jpg}\label{fig:f1}}
   \hfill
@@ -109,7 +109,7 @@ El efecto logrado es que realza más el canal verde.
 
 \newpage
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \subfloat[Original]{\includegraphics[width=0.4\textwidth]{imagenes/lena32.jpg}\label{fig:f3}}
   \hfill
@@ -180,7 +180,12 @@ _sepia_asm:
 		punpckhbw xmm3, xmm6; XMM3 = | 0 | r1 | g1 | b1 |
 		punpcklbw xmm2, xmm6; XMM2 = | 0 | r2 | g2 | b2 |
 		punpckhbw xmm4, xmm6; XMM4 = | 0 | r3 | g3 | b3 |
-		
+
+\end{verbatim}
+\end{codesnippet}
+
+\begin{codesnippet}
+\begin{verbatim}
 		phaddd xmm1, xmm1; XMM1 = | r0 | g0 + b0 | r0 | g0 + b0 |
 		phaddd xmm1, xmm1; XMM1 = | suma0 | suma0 | suma0 | suma0 | 
 		phaddd xmm2, xmm2; idem con pixeles 1, 2 y 3
@@ -428,6 +433,11 @@ _ldr_asm:
 	mov r14d, ecx ; r14d = filas.
 	sub r14d, 2 ; filas-2
 	xor rax, rax ; limpio para usar en multiplicacion.
+\end{verbatim}
+\end{codesnippet}
+
+\begin{codesnippet}
+\begin{verbatim}
 	mov eax, r15d
 	mul r14d ; edx:eax = r15d*r14d = cols*(filas-2).
 	mov ecx, edx
@@ -466,6 +476,7 @@ _ldr_asm:
 	xor r10, r10 ; cuento hasta 5
 
 	pxor xmm0, xmm0
+  
     
    ; SUMA CINCO HORIZONTAL    
     
@@ -483,7 +494,11 @@ _ldr_asm:
 
 	movdqu xmm0, xmm14 ; 0|0|0|0|0|0|0|0|0|0|0|0|a|r|g|b
 	pand xmm0, xmm15 ; 0|0|0|0|0|0|0|0|0|0|0|0|0|r|g|b
+\end{verbatim}
+\end{codesnippet}
 
+\begin{codesnippet}
+\begin{verbatim}
 	punpcklbw xmm0, xmm11 ; 0|0|0|0|0|r|g|b
 	punpcklwd xmm0, xmm11 ; 0|r|g|b
 
@@ -606,7 +621,7 @@ La imagen elegida para los tests será la siguiente:.
 \begin{figure}
   \begin{center}
 	\includegraphics[scale=.5]{imagenes/lena32.jpg}
-	\caption{La última de Star Wars}
+	\caption{Lena}
 	\label{lena}
   \end{center}
 \end{figure}
@@ -846,7 +861,15 @@ movapd xmm1,xmm0
 mulsd  xmm1,xmm5
 mov    eax,r9d
 ucomisd xmm1,xmm4
-ja     c8 <sepia_c+0xc8>
+ja     c8 <sepia_c+0xc8>  
+\end{verbatim}
+\end{codesnippet}
+
+
+\begin{codesnippet}
+\begin{verbatim}
+
+
 cvttsd2si eax,xmm1
 mov    BYTE PTR [r11+0x1],al
 mulsd  xmm0,xmm3
@@ -873,7 +896,7 @@ pop    r13
 pop    r14
 pop    r15
 repz ret 
-       
+
 \end{verbatim}
 \end{codesnippet}
 
