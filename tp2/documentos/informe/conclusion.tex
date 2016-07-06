@@ -1,8 +1,6 @@
 Como pudimos comprobar, la importancia de $SIMD$ para resolver este tipo de problematicas es muy significativa. 
-Pudo observarse que los tiempos para un algoritmo en un lenguaje convencional como $C$ compilados sin flags de optimización son muy elevados, llegando a requerir aproximadamente cuatro veces más de tiempo para realizar la misma tarea que en lenguaje $assembler$ $SIMD$ $($es decir que se obtiene una eficiencia del 400$ \% )$\\
+Pudo observarse que los tiempos para un algoritmo en un lenguaje convencional como $C$ compilados sin ningun tipo de optimización son muy elevados, llegando a requerir aproximadamente cuatro veces más de tiempo para realizar la misma tarea que en lenguaje $assembler$ $SIMD$ $($es decir que se obtiene una eficiencia del 400$ \% )$\\
 
 Pudimos observar que el principio de localidad espacial es una ventaja a la hora de manejarse con bloques de datos contiguos como es el caso de los filtros de imágenes que acceden de esta manera a los pixeles.\\
 
-Tambien pudimos observar que los flags de optimización pueden ser una buena solución a la hora de encarar problematicas de este estillo, como es el caso del filtro $cropflip$, logrando eficiencias comparables a implementar el código en $SIMD$ a mano. Pero que en otros casos como vimos en los filtros $sepia$ y $ldr$ era claramente más conveniente realizar estas implementaciones.
-
-
+Tambien pudimos observar que los flags de optimización pueden ser una buena solución a la hora de encarar problematicas de este estilo, como es el caso del filtro $cropflip$, logrando una eficiencia comparable a implementar el código en $SIMD$ a mano. Pero que en otros casos, como vimos en los filtros $sepia$ y $ldr$, era claramente más conveniente realizar la implementación en codigo assembler.
