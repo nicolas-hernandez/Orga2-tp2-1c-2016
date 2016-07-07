@@ -717,6 +717,14 @@ En cropflip, en particular, tomaremos un tamaño proporcional a la imagen de cor
 
 De manera que el corte varie con el tamaño. 
 
+\subsubsection{Performance: implementaciones y filtros}
+
+Como se comentó, el principal objetivo del informe es comprobar si $assembler$ $SIMD$ supone una ventaja frente a código compilado sin flags de optimización. 
+Hemos podido comprobar que con flags $O1$ se obtiene una performance elevada frente a $O0$.\\
+
+En este test correremos todos los filtros comparando sus versiones de $assembler$ $SIMD$ contra $C-O1$ y además incluiremos $C$ con flags de optimización $O3$ para ver que tan bien puede optimizar el compilador. \\
+La idea es ver que ventaja supone programar a mano en $SIMD$ frente a utilizar flags de optimización en el proceso de compilación.\\ 
+
 \subsubsection{Performance caché: caliente vs. fria}
 
 El fin de este test es ver si existen diferencias entre correr los algoritmos con la cache en frio (es decir sin la imagen previamente leida) con respecto a caché caliente (imagen previamente leida). \\
@@ -727,15 +735,7 @@ Sabemos que una linea de caché en un procesador intel es de 64 bytes, por lo cu
 Para $cropflip$ tomaremos el corte de la misma manera que se realizará en el test de resoluciones.
 La version de código utilizada en estos tests será en $asm$.
 
-\subsubsection{Performance: implementaciones y filtros}
-
-Como se comentó, el principal objetivo del informe es comprobar si $assembler$ $SIMD$ supone una ventaja frente a código compilado sin flags de optimización. 
-Hemos podido comprobar que con flags $O1$ se obtiene una performance elevada frente a $O0$.\\
-
-En este test correremos todos los filtros comparando sus versiones de $assembler$ $SIMD$ contra $C-O1$ y además incluiremos $C$ con flags de optimización $O3$ para ver que tan bien puede optimizar el compilador. \\
-La idea es ver que ventaja supone programar a mano en $SIMD$ frente a utilizar flags de optimización en el proceso de compilación.\\ 
-
-\subsubsection{Performance: tipos de datos}
+\subsubsection{Instrucciones $SIMD$}
 
 Elegimos el filtro $sepia$ para analizar dos teorias relacionadas a SIMD. 
 
