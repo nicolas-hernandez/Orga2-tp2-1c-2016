@@ -1,4 +1,4 @@
-# Orga2-2016
+# Organización del computador II - tp2 - 1c - 2016
 
 La idea es usar el mismo repo para los dos tps. 
 Sean descriptivos con los mensajes de los commits, 
